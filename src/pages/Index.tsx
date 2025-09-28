@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import VisionPanel from '@/components/VisionPanel';
 import AudioControls from '@/components/AudioControls';
 import EmergencyInterface from '@/components/EmergencyInterface';
+import EmergencyRecordMode from '@/components/EmergencyRecordMode';
 import LostItemFinder from '@/components/LostItemFinder';
 import SettingsDashboard from '@/components/SettingsDashboard';
 import UsageMeter from '@/components/UsageMeter';
@@ -33,20 +34,23 @@ const Index = () => {
 
         {/* Main Interface */}
         <Tabs defaultValue="vision" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="vision" className="text-sm">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="vision" className="text-xs">
               Vision
             </TabsTrigger>
-            <TabsTrigger value="audio" className="text-sm">
+            <TabsTrigger value="audio" className="text-xs">
               Audio
             </TabsTrigger>
-            <TabsTrigger value="emergency" className="text-sm">
+            <TabsTrigger value="emergency" className="text-xs">
               Emergency
             </TabsTrigger>
-            <TabsTrigger value="finder" className="text-sm">
+            <TabsTrigger value="recorder" className="text-xs">
+              Recorder
+            </TabsTrigger>
+            <TabsTrigger value="finder" className="text-xs">
               Lost Items
             </TabsTrigger>
-            <TabsTrigger value="settings" className="text-sm">
+            <TabsTrigger value="settings" className="text-xs">
               Settings
             </TabsTrigger>
           </TabsList>
@@ -62,6 +66,10 @@ const Index = () => {
             
             <TabsContent value="emergency" className="w-full flex justify-center">
               <EmergencyInterface />
+            </TabsContent>
+            
+            <TabsContent value="recorder" className="w-full flex justify-center">
+              <EmergencyRecordMode />
             </TabsContent>
             
             <TabsContent value="finder" className="w-full flex justify-center">

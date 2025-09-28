@@ -79,6 +79,16 @@ CLOUD_DESCRIBE_ENABLED: boolean (future feature, currently disabled)
 - **Performance**: Must not regress daytime processing targets
 - **Gating**: Feature flag check + subscription validation
 
+### Emergency Record Mode (ERM)
+- **Ring Buffer**: 2-5 minute pre-event storage in encrypted segments
+- **Video Format**: 720p MP4 segments via AVAssetWriter (iOS) / MediaRecorder (Android)
+- **Audio Format**: Mono 16kHz when permitted by jurisdiction
+- **Encryption**: AES-GCM with device keystore/keychain key management
+- **Triggers**: Fall detection, SOS activation, manual button, voice command ("StrideGuide, record"), triple volume press
+- **Policy Engine**: Region-aware consent and indicator requirements
+- **Storage**: Local only, excluded from cloud backups, biometric Evidence Locker
+- **Cleanup**: Automatic deletion per retention policy, safe cryptographic wipe
+
 ## Internationalization (i18n)
 
 ### Language Support

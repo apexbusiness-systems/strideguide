@@ -61,6 +61,48 @@
     "limitReached": "Limite d'utilisation quotidienne atteinte. Veuillez passer à la version premium pour continuer le guidage.",
     "nightModeLocked": "Le mode nuit nécessite un abonnement Premium"
   },
+  "navigation": {
+    "vision": "Vision",
+    "audio": "Audio", 
+    "emergency": "Urgence",
+    "recorder": "Enregistreur",
+    "finder": "Objets Perdus",
+    "settings": "Paramètres"
+  },
+  "finder": {
+    "title": "Recherche d'Objets Perdus",
+    "teach_new": "Enseigner Nouvel Objet",
+    "teaching": "Enseignement...",
+    "find": "Chercher",
+    "searching": "Recherche...",
+    "teach_locked": "Fonctionnalité Verrouillée",
+    "teach_locked_desc": "Les utilisateurs gratuits peuvent enseigner 1 objet. Passez au premium pour des objets illimités.",
+    "teaching_progress": "Progrès d'Enseignement",
+    "teaching_instruction": "Prenez des photos sous différents angles et conditions d'éclairage",
+    "item_detected": "Objet Détecté!",
+    "learned_items": "Objets Appris",
+    "no_items": "Aucun objet appris encore. Enseignez votre premier objet pour commencer.",
+    "audio_on": "Audio Activé",
+    "audio_off": "Audio Désactivé", 
+    "haptics_on": "Haptiques Activés",
+    "haptics_off": "Haptiques Désactivés",
+    "ready": "Prêt",
+    "searching_active": "Recherche Active",
+    "teaching_mode": "Mode Enseignement",
+    "ml_model": "Modèle ML",
+    "on_device": "Sur l'appareil",
+    "direction": {
+      "left": "Tournez à gauche",
+      "right": "Tournez à droite", 
+      "center": "Tout droit"
+    },
+    "distance": {
+      "very_close": "Très proche",
+      "close": "Proche",
+      "medium": "Ça se réchauffe",
+      "far": "Continuez à chercher"
+    }
+  },
   "strap": {
     "title": "Sangle de Cou Gratuite Incluse",
     "description": "Attache téléphone universelle avec fermoir de sécurité",
@@ -70,5 +112,64 @@
       "Matériau doux et sûr pour la peau",
       "Compatible avec les étuis de téléphone"
     ]
+  },
+  "erm": {
+    "title": "Mode Enregistrement d'Urgence",
+    "subtitle": "Enregistrement d'incidents hors ligne avec protection de la vie privée",
+    "startRecording": "Démarrer l'Enregistrement d'Urgence",
+    "stopRecording": "ARRÊTER L'ENREGISTREMENT",
+    "recordingActive": "🔴 ENREGISTREMENT ACTIF",
+    "videoOnly": "Vidéo Seulement",
+    "videoAudio": "Vidéo + Audio",
+    "preEventBuffer": "Tampon pré-événement: 2-5 minutes disponibles",
+    "consentRequired": "Consentement d'Enregistrement Requis",
+    "consentMessage": "Cette juridiction exige le consentement de toutes les parties pour l'enregistrement audio. En procédant, vous confirmez que toutes les parties présentes consentent à être enregistrées.",
+    "consentOptions": "Si le consentement n'est pas obtenu, l'enregistrement continuera avec vidéo seulement, indicateurs forcés et bip d'enregistrement obligatoire.",
+    "allPartiesConsent": "Toutes les Parties Consentent",
+    "videoOnlyMode": "Vidéo Seulement",
+    "audioDisabled": "Enregistrement Audio Désactivé",
+    "audioDisabledDesc": "L'enregistrement continuera avec vidéo seulement et indicateurs forcés.",
+    "triggers": {
+      "fallDetection": "Détection de Chute",
+      "fallDesc": "Démarre automatiquement sur chute confirmée",
+      "sosActivation": "Activation SOS",
+      "sosDesc": "Démarre avec SOS d'urgence",
+      "voiceCommand": "Commande Vocale",
+      "voiceDesc": "\"StrideGuide, enregistrer\"",
+      "tripleVolume": "Triple Volume",
+      "tripleDesc": "Appuyez sur le volume 3x rapidement"
+    },
+    "storage": {
+      "title": "Stockage et Rétention",
+      "used": "Stockage Utilisé",
+      "retentionPeriod": "Période de Rétention",
+      "encryption": "Chiffrement",
+      "nearlyFull": "Stockage presque plein. Basculera en mode audio seulement.",
+      "evidenceLocker": "Coffre-fort de Preuves",
+      "biometricLock": "Verrouillage Biométrique",
+      "export": "Exporter"
+    },
+    "legal": {
+      "ca": "Enregistrement d'urgence sous Code Criminel s.184(2)(a) - consentement d'une partie pour sécurité des participants",
+      "qc": "Enregistrement d'urgence sous exception d'intérêts vitaux, sujet aux exigences de transparence de la Loi 25",
+      "usOneParty": "Enregistrement d'urgence sous lois de consentement d'une partie et intérêts vitaux pour sécurité utilisateur",
+      "usAllParty": "L'enregistrement nécessite le consentement de toutes les parties dans cette juridiction. Audio désactivé jusqu'à obtention du consentement.",
+      "eu": "Enregistrement d'urgence sous RGPD Art. 6(1)(d) intérêts vitaux (Considérant 46) pour sécurité utilisateur",
+      "other": "Enregistrement d'urgence sous intérêts vitaux pour sécurité utilisateur, sujet aux lois locales de protection de la vie privée"
+    },
+    "badges": {
+      "audioEnabled": "Audio Activé",
+      "audioDisabled": "Audio Désactivé",
+      "beepRequired": "Bip Requis",
+      "sessions": "sessions"
+    },
+    "toast": {
+      "recordingStarted": "Enregistrement d'Urgence Actif",
+      "recordingDesc": "Enregistrement {{mode}}. Appuyez sur ARRÊTER pour terminer.",
+      "recordingStopped": "Enregistrement Arrêté",
+      "sessionSaved": "Session sauvegardée dans le Coffre-fort de Preuves. Durée: {{duration}}s",
+      "iceNotified": "Contact d'Urgence Notifié",
+      "iceDesc": "SMS envoyé avec horodatage et localisation (si disponible)"
+    }
   }
 }

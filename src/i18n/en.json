@@ -8,6 +8,7 @@
     "vision": "Vision",
     "audio": "Audio", 
     "emergency": "Emergency",
+    "recorder": "Recorder",
     "finder": "Lost Items",
     "settings": "Settings"
   },
@@ -111,5 +112,64 @@
       "Soft, skin-safe material",
       "Works with phone cases"
     ]
+  },
+  "erm": {
+    "title": "Emergency Record Mode",
+    "subtitle": "Offline incident recording with privacy protection",
+    "startRecording": "Start Emergency Recording",
+    "stopRecording": "STOP RECORDING",
+    "recordingActive": "🔴 RECORDING ACTIVE",
+    "videoOnly": "Video Only",
+    "videoAudio": "Video + Audio",
+    "preEventBuffer": "Pre-event buffer: 2-5 minutes available",
+    "consentRequired": "Recording Consent Required",
+    "consentMessage": "This jurisdiction requires all-party consent for audio recording. By proceeding, you confirm all parties present consent to being recorded.",
+    "consentOptions": "If consent is not obtained, recording will continue with video only, forced indicators, and mandatory recording beep.",
+    "allPartiesConsent": "All Parties Consent", 
+    "videoOnlyMode": "Video Only",
+    "audioDisabled": "Audio Recording Disabled",
+    "audioDisabledDesc": "Recording will continue with video only and forced indicators.",
+    "triggers": {
+      "fallDetection": "Fall Detection",
+      "fallDesc": "Auto-starts on confirmed fall",
+      "sosActivation": "SOS Activation", 
+      "sosDesc": "Starts with emergency SOS",
+      "voiceCommand": "Voice Command",
+      "voiceDesc": "\"StrideGuide, record\"",
+      "tripleVolume": "Triple Volume",
+      "tripleDesc": "Press volume 3x quickly"
+    },
+    "storage": {
+      "title": "Storage & Retention",
+      "used": "Storage Used",
+      "retentionPeriod": "Retention Period",
+      "encryption": "Encryption", 
+      "nearlyFull": "Storage nearly full. Will switch to audio-only mode.",
+      "evidenceLocker": "Evidence Locker",
+      "biometricLock": "Biometric Lock",
+      "export": "Export"
+    },
+    "legal": {
+      "ca": "Emergency recording under Criminal Code s.184(2)(a) - one-party consent for participant safety",
+      "qc": "Emergency recording under vital interests exception, subject to Law 25 transparency requirements",
+      "usOneParty": "Emergency recording under one-party consent laws and vital interests for user safety",
+      "usAllParty": "Recording requires all-party consent in this jurisdiction. Audio disabled until consent obtained.",
+      "eu": "Emergency recording under GDPR Art. 6(1)(d) vital interests (Recital 46) for user safety",
+      "other": "Emergency recording under vital interests for user safety, subject to local privacy laws"
+    },
+    "badges": {
+      "audioEnabled": "Audio Enabled",
+      "audioDisabled": "Audio Disabled", 
+      "beepRequired": "Beep Required",
+      "sessions": "sessions"
+    },
+    "toast": {
+      "recordingStarted": "Emergency Recording Active",
+      "recordingDesc": "Recording {{mode}}. Tap STOP to end.",
+      "recordingStopped": "Recording Stopped",
+      "sessionSaved": "Session saved to Evidence Locker. Duration: {{duration}}s",
+      "iceNotified": "Emergency Contact Notified",
+      "iceDesc": "SMS sent with timestamp and location (if available)"
+    }
   }
 }
