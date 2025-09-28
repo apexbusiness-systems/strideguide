@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AlertTriangle, Phone, MessageSquare, MapPin, Clock, X } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface EmergencyContact {
   id: string;
@@ -17,6 +18,9 @@ const EmergencyInterface = () => {
   const [countdown, setCountdown] = React.useState(30);
   const [emergencyActive, setEmergencyActive] = React.useState(false);
   const [location] = React.useState({ lat: 45.4215, lng: -75.6972 }); // Ottawa
+  const [isLongPressing, setIsLongPressing] = React.useState(false);
+  const [longPressProgress, setLongPressProgress] = React.useState(0);
+  const { toast } = useToast();
 
   const emergencyContacts: EmergencyContact[] = [
     { id: '1', name: 'Sarah Johnson', phone: '+1-613-555-0123', relationship: 'Daughter' },
@@ -54,6 +58,51 @@ const EmergencyInterface = () => {
   const triggerManualEmergency = () => {
     setEmergencyActive(true);
     setFallDetected(false);
+    toast({
+      title: "Emergency Activated",
+      description: "Contacting emergency services and sending location...",
+      variant: "destructive"
+    });
+  };
+
+  // SOS Long Press Handlers
+  const handleSOSMouseDown = () => {
+    setIsLongPressing(true);
+    setLongPressProgress(0);
+    
+    const interval = setInterval(() => {
+      setLongPressProgress(prev => {
+        const newProgress = prev + (100 / 30); // 3 seconds = 30 * 100ms
+        if (newProgress >= 100) {
+          clearInterval(interval);
+          setIsLongPressing(false);
+          setLongPressProgress(0);
+          triggerManualEmergency();
+          return 0;
+        }
+        return newProgress;
+      });
+    }, 100);
+
+    // Haptic feedback pattern during long press
+    if (navigator.vibrate) {
+      const vibrationPattern = Array(30).fill([50, 50]).flat(); // Rhythmic pattern
+      navigator.vibrate(vibrationPattern);
+    }
+
+    // Store interval for cleanup
+    (window as any).sosInterval = interval;
+  };
+
+  const handleSOSMouseUp = () => {
+    setIsLongPressing(false);
+    setLongPressProgress(0);
+    if ((window as any).sosInterval) {
+      clearInterval((window as any).sosInterval);
+    }
+    if (navigator.vibrate) {
+      navigator.vibrate(0); // Stop vibration
+    }
   };
 
   return (
@@ -139,18 +188,34 @@ const EmergencyInterface = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Manual Emergency Button */}
-          <Button
-            variant="destructive"
-            size="lg"
-            className="w-full h-16 text-lg"
-            onClick={triggerManualEmergency}
-            disabled={emergencyActive}
-            aria-label="Trigger emergency alert"
-          >
-            <Phone className="h-6 w-6 mr-3" />
-            Emergency SOS
-          </Button>
+          {/* SOS Long Press Button - Large Touch Target */}
+          <div className="relative">
+            <Button
+              variant="destructive"
+              size="lg"
+              className="w-full h-20 text-lg font-semibold relative overflow-hidden"
+              onMouseDown={handleSOSMouseDown}
+              onMouseUp={handleSOSMouseUp}
+              onMouseLeave={handleSOSMouseUp}
+              onTouchStart={handleSOSMouseDown}
+              onTouchEnd={handleSOSMouseUp}
+              disabled={emergencyActive}
+              aria-label="Emergency SOS - Hold for 3 seconds to activate"
+              aria-describedby="sos-instructions"
+            >
+              <Phone className="h-6 w-6 mr-3" />
+              Emergency SOS
+              {isLongPressing && (
+                <div 
+                  className="absolute inset-0 bg-white/20 transition-all duration-100"
+                  style={{ width: `${longPressProgress}%` }}
+                />
+              )}
+            </Button>
+            <p id="sos-instructions" className="text-xs text-center text-muted-foreground mt-2">
+              Hold for 3 seconds to activate emergency protocol
+            </p>
+          </div>
 
           {/* Fall Detection Status */}
           <div className="p-4 rounded-lg bg-muted space-y-3">

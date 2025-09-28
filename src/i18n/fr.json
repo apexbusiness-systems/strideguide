@@ -1,0 +1,74 @@
+{
+  "app": {
+    "name": "StrideGuide",
+    "tagline": "Votre assistant de guidage visuel, dans votre poche.",
+    "slogan": "Marchez en confiance."
+  },
+  "plans": {
+    "free": {
+      "name": "Gratuit",
+      "dailyLimit": "2 heures/jour",
+      "features": "Guidage de base seulement"
+    },
+    "paid": {
+      "name": "Premium",
+      "price": "28,99 $/mois",
+      "dailyLimit": "8 heures/jour", 
+      "features": "Mode nuit + extras",
+      "strapIncentive": "Sangle de cou gratuite incluse!"
+    }
+  },
+  "usage": {
+    "remaining": "{{hours}}h {{minutes}}m restantes aujourd'hui",
+    "limitReached": "Limite d'utilisation quotidienne atteinte. Guidage en pause.",
+    "upgradePrompt": "Passez à Premium pour 8 heures quotidiennes + mode nuit",
+    "premiumUnlocked": "Fonctionnalités Premium débloquées"
+  },
+  "vision": {
+    "startGuidance": "Démarrer le Guidage",
+    "stopGuidance": "Arrêter le Guidage",
+    "nightMode": "Mode Nuit",
+    "nightModeLocked": "Mode Nuit (Premium seulement)",
+    "dayMode": "Mode Jour",
+    "cameraActive": "Traitement caméra actif",
+    "cameraInactive": "Caméra inactive"
+  },
+  "emergency": {
+    "sos": "SOS d'Urgence",
+    "sosHint": "Maintenez enfoncé pendant 3 secondes",
+    "fallDetected": "Chute détectée! Aide en route dans {{seconds}} secondes",
+    "cancelFall": "Ça va - Annuler",
+    "getHelpNow": "Obtenir de l'Aide Maintenant",
+    "emergencyActive": "Services d'urgence contactés",
+    "locationSent": "Localisation partagée avec contact d'urgence"
+  },
+  "accessibility": {
+    "largeTargets": "Grandes cibles tactiles activées",
+    "highContrast": "Mode contraste élevé",
+    "screenReaderSupport": "Optimisé pour lecteur d'écran"
+  },
+  "haptics": {
+    "confirmTap": "Bouton pressé",
+    "stopAlert": "Arrêt - obstacle devant",
+    "sosCountdown": "Compte à rebours d'urgence actif"
+  },
+  "tts": {
+    "veerLeft": "Déviez à gauche",
+    "veerRight": "Déviez à droite",
+    "stepUp": "Montez une marche", 
+    "stepDown": "Descendez une marche",
+    "stopObstacle": "Arrêt - obstacle devant",
+    "limitReached": "Limite d'utilisation quotidienne atteinte. Veuillez passer à la version premium pour continuer le guidage.",
+    "nightModeLocked": "Le mode nuit nécessite un abonnement Premium"
+  },
+  "strap": {
+    "title": "Sangle de Cou Gratuite Incluse",
+    "description": "Attache téléphone universelle avec fermoir de sécurité",
+    "features": [
+      "Fermoir de sécurité détachable",
+      "Longueur ajustable", 
+      "Matériau doux et sûr pour la peau",
+      "Compatible avec les étuis de téléphone"
+    ]
+  }
+}

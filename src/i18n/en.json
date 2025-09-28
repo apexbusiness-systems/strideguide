@@ -1,0 +1,74 @@
+{
+  "app": {
+    "name": "StrideGuide",
+    "tagline": "Your seeing‑eye assistant in your pocket.",
+    "slogan": "Walk with confidence."
+  },
+  "plans": {
+    "free": {
+      "name": "Free",
+      "dailyLimit": "2 hours/day",
+      "features": "Basic guidance only"
+    },
+    "paid": {
+      "name": "Premium",
+      "price": "$28.99/month",
+      "dailyLimit": "8 hours/day",
+      "features": "Night mode + extras",
+      "strapIncentive": "Free neck strap included!"
+    }
+  },
+  "usage": {
+    "remaining": "{{hours}}h {{minutes}}m remaining today",
+    "limitReached": "Daily usage limit reached. Guidance paused.",
+    "upgradePrompt": "Upgrade to Premium for 8 hours daily + night mode",
+    "premiumUnlocked": "Premium features unlocked"
+  },
+  "vision": {
+    "startGuidance": "Start Guidance",
+    "stopGuidance": "Stop Guidance", 
+    "nightMode": "Night Mode",
+    "nightModeLocked": "Night Mode (Premium only)",
+    "dayMode": "Day Mode",
+    "cameraActive": "Camera processing active",
+    "cameraInactive": "Camera inactive"
+  },
+  "emergency": {
+    "sos": "Emergency SOS",
+    "sosHint": "Long press and hold for 3 seconds",
+    "fallDetected": "Fall detected! Getting help in {{seconds}} seconds",
+    "cancelFall": "I'm OK - Cancel",
+    "getHelpNow": "Get Help Now",
+    "emergencyActive": "Emergency services contacted",
+    "locationSent": "Location shared with emergency contact"
+  },
+  "accessibility": {
+    "largeTargets": "Large touch targets enabled",
+    "highContrast": "High contrast mode",
+    "screenReaderSupport": "Screen reader optimized"
+  },
+  "haptics": {
+    "confirmTap": "Button pressed",
+    "stopAlert": "Stop - obstacle ahead",
+    "sosCountdown": "Emergency countdown active"
+  },
+  "tts": {
+    "veerLeft": "Veer left",
+    "veerRight": "Veer right", 
+    "stepUp": "Step up",
+    "stepDown": "Step down",
+    "stopObstacle": "Stop - obstacle ahead",
+    "limitReached": "Daily usage limit reached. Please upgrade to continue guidance.",
+    "nightModeLocked": "Night mode requires Premium subscription"
+  },
+  "strap": {
+    "title": "Free Neck Strap Included",
+    "description": "Universal phone tether with breakaway safety clasp",
+    "features": [
+      "Breakaway safety clasp",
+      "Adjustable length",
+      "Soft, skin-safe material",
+      "Works with phone cases"
+    ]
+  }
+}

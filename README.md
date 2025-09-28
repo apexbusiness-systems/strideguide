@@ -1,4 +1,79 @@
-# Welcome to your Lovable project
+# StrideGuide - Seeing-Eye Assistant for Seniors & Blind Users
+
+**Offline-first guidance system built for Canada (EN/FR), expanding to US/EU**
+
+An accessibility-first mobile assistant providing real-time obstacle detection, stereo audio guidance, fall detection, and emergency SOS capabilities. Built with privacy and safety as core principles.
+
+## Pricing Tiers
+
+### Free Tier
+- **Daily Limit**: 2 hours active guidance time
+- **Features**: Basic obstacle detection, stereo audio cues, fall detection, SOS
+- **Restrictions**: No night mode access
+
+### Premium Tier ($28.99/month)
+- **Daily Limit**: 8 hours active guidance time  
+- **Features**: All free features + night mode + enhanced low-light detection
+- **Bonus**: Free neck strap with breakaway safety clasp included
+
+## Core Features
+
+### Vision & Guidance
+- On-device YOLO-nano inference (≤800px @10+ FPS)
+- Real-time hazard detection: potholes, curbs, steps, ice, obstacles
+- Stereo-panned TTS guidance ("Veer left", "Step up")
+- Night mode with low-light enhancement (Premium only)
+
+### Safety & Emergency
+- Fall detection via accelerometer + gyroscope fusion
+- 30-second confirmation countdown before automatic emergency contact
+- GPS-enabled SOS with SMS alerts to emergency contacts
+- All safety functions work offline
+
+### Accessibility (WCAG 2.2 AA+)
+- Touch targets ≥52dp/pt minimum
+- Complete VoiceOver/TalkBack support
+- High contrast color palette
+- Haptic feedback for confirmations and alerts
+- Large text options for seniors
+
+### i18n Support
+- Full EN/FR language parity
+- Offline TTS voices for both languages
+- Metric units throughout (meters, celsius)
+- Localized emergency contact formats
+
+## Technical Architecture
+
+### Offline-First Design
+- **No cloud dependency** for core safety features
+- Camera frames never leave device
+- Local usage metering (resets daily)
+- Emergency functions work without internet
+
+### Platform Support
+- **iOS**: AVFoundation camera, Core ML inference, Core Motion sensors
+- **Android**: CameraX, TensorFlow Lite + NNAPI, SensorManager
+- **Minimum**: iPhone 12+ (iOS 15+), Pixel 6+ (Android 12+)
+
+### Performance Targets
+- Vision processing: ≥10 FPS @800px resolution
+- Battery life: ≥2.5h continuous guidance at 50% brightness
+- Thermal management: Degrades gracefully to 5 FPS under stress
+- Memory footprint: <150MB including ML models
+
+## Privacy & Compliance
+
+### Data Protection
+- **PIPEDA/Alberta PIPA** compliant
+- No camera frames transmitted
+- Usage metrics stored locally only
+- Opt-in telemetry for performance data (anonymous)
+
+### Safety Standards
+- Emergency SMS includes GPS coordinates only
+- Breakaway neck strap meets CPSIA safety standards
+- Fall detection tuned to minimize false positives
 
 ## Project info
 

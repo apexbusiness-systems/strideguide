@@ -4,6 +4,7 @@ import VisionPanel from '@/components/VisionPanel';
 import AudioControls from '@/components/AudioControls';
 import EmergencyInterface from '@/components/EmergencyInterface';
 import SettingsDashboard from '@/components/SettingsDashboard';
+import UsageMeter from '@/components/UsageMeter';
 import { Badge } from '@/components/ui/badge';
 import Logo from '@/components/Logo';
 
@@ -24,6 +25,9 @@ const Index = () => {
             <Badge variant="secondary">Offline-First</Badge>
             <Badge variant="secondary">Privacy-First</Badge>
           </div>
+          
+          {/* Usage Meter */}
+          <UsageMeter />
         </div>
 
         {/* Main Interface */}
