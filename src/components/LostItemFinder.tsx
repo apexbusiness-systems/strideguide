@@ -26,7 +26,11 @@ interface SearchResult {
   direction: 'left' | 'center' | 'right';
 }
 
-const LostItemFinder = () => {
+interface LostItemFinderProps {
+  onBack?: () => void;
+}
+
+const LostItemFinder: React.FC<LostItemFinderProps> = ({ onBack }) => {
   const [mode, setMode] = useState<'teach' | 'search' | 'idle'>('idle');
   const [isPremium] = useState(false); // Demo: will be connected to actual subscription state
   const [isNightMode, setIsNightMode] = useState(false);

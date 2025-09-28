@@ -17,7 +17,11 @@ import {
   Battery
 } from 'lucide-react';
 
-const SettingsDashboard = () => {
+interface SettingsDashboardProps {
+  onBack?: () => void;
+}
+
+const SettingsDashboard: React.FC<SettingsDashboardProps> = ({ onBack }) => {
   const [lowEndMode, setLowEndMode] = React.useState(false);
   const [winterMode, setWinterMode] = React.useState(false);
   const [cloudDescribe, setCloudDescribe] = React.useState(false);

@@ -1,0 +1,153 @@
+/**
+ * AudioArmer - Handles audio initialization and earcon playback
+ * Complies with browser autoplay policies by requiring user gesture
+ */
+
+class AudioArmerClass {
+  private audioContext: AudioContext | null = null;
+  private isInitialized = false;
+  private earcons: Map<string, AudioBuffer> = new Map();
+
+  async initialize(): Promise<void> {
+    if (this.isInitialized) return;
+
+    try {
+      // Create AudioContext only after user gesture
+      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+
+      // Load earcons
+      await this.loadEarcons();
+      
+      this.isInitialized = true;
+      console.log('AudioArmer initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize AudioArmer:', error);
+      throw error;
+    }
+  }
+
+  private async loadEarcons(): Promise<void> {
+    if (!this.audioContext) return;
+
+    const earconDefinitions = {
+      start: { frequency: 800, duration: 0.2, type: 'sine' as OscillatorType },
+      stop: { frequency: 400, duration: 0.2, type: 'sine' as OscillatorType },
+      success: { frequency: 600, duration: 0.3, type: 'sine' as OscillatorType },
+      found: { frequency: 1000, duration: 0.15, type: 'sine' as OscillatorType },
+      warning: { frequency: 300, duration: 0.5, type: 'square' as OscillatorType },
+      hot: { frequency: 1200, duration: 0.1, type: 'sine' as OscillatorType },
+      cold: { frequency: 200, duration: 0.1, type: 'sine' as OscillatorType }
+    };
+
+    for (const [name, config] of Object.entries(earconDefinitions)) {
+      const buffer = await this.createEarcon(config);
+      this.earcons.set(name, buffer);
+    }
+  }
+
+  private async createEarcon(config: {
+    frequency: number;
+    duration: number;
+    type: OscillatorType;
+  }): Promise<AudioBuffer> {
+    if (!this.audioContext) throw new Error('AudioContext not initialized');
+
+    const sampleRate = this.audioContext.sampleRate;
+    const numSamples = Math.floor(sampleRate * config.duration);
+    const buffer = this.audioContext.createBuffer(2, numSamples, sampleRate);
+
+    for (let channel = 0; channel < 2; channel++) {
+      const channelData = buffer.getChannelData(channel);
+      
+      for (let i = 0; i < numSamples; i++) {
+        const t = i / sampleRate;
+        let sample = 0;
+
+        switch (config.type) {
+          case 'sine':
+            sample = Math.sin(2 * Math.PI * config.frequency * t);
+            break;
+          case 'square':
+            sample = Math.sin(2 * Math.PI * config.frequency * t) > 0 ? 1 : -1;
+            break;
+          default:
+            sample = Math.sin(2 * Math.PI * config.frequency * t);
+        }
+
+        // Apply envelope to prevent clicks
+        const envelope = Math.sin((Math.PI * i) / numSamples);
+        channelData[i] = sample * envelope * 0.3; // Volume control
+      }
+    }
+
+    return buffer;
+  }
+
+  playEarcon(name: string, panValue: number = 0): void {
+    if (!this.isInitialized || !this.audioContext) {
+      console.warn('AudioArmer not initialized, cannot play earcon');
+      return;
+    }
+
+    const buffer = this.earcons.get(name);
+    if (!buffer) {
+      console.warn(`Earcon '${name}' not found`);
+      return;
+    }
+
+    try {
+      const source = this.audioContext.createBufferSource();
+      const gainNode = this.audioContext.createGain();
+      const pannerNode = this.audioContext.createStereoPanner();
+
+      source.buffer = buffer;
+      pannerNode.pan.value = Math.max(-1, Math.min(1, panValue)); // Clamp between -1 and 1
+      
+      source.connect(gainNode);
+      gainNode.connect(pannerNode);
+      pannerNode.connect(this.audioContext.destination);
+
+      source.start();
+    } catch (error) {
+      console.error(`Failed to play earcon '${name}':`, error);
+    }
+  }
+
+  playDirectionalCue(direction: 'left' | 'right' | 'center', intensity: number = 1): void {
+    const panValue = direction === 'left' ? -0.8 : direction === 'right' ? 0.8 : 0;
+    const earconName = intensity > 0.7 ? 'hot' : intensity > 0.3 ? 'found' : 'cold';
+    
+    this.playEarcon(earconName, panValue);
+  }
+
+  announceText(text: string): void {
+    if (!('speechSynthesis' in window)) {
+      console.warn('Speech synthesis not supported');
+      return;
+    }
+
+    // Cancel any ongoing speech
+    speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+    utterance.volume = 0.8;
+
+    speechSynthesis.speak(utterance);
+  }
+
+  isArmed(): boolean {
+    return this.isInitialized;
+  }
+
+  getContext(): AudioContext | null {
+    return this.audioContext;
+  }
+}
+
+export const AudioArmer = new AudioArmerClass();

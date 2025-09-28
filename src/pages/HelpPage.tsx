@@ -1,0 +1,131 @@
+import React from 'react';
+import { ArrowLeft, Shield, Wifi, Volume2, Eye } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslation } from 'react-i18next';
+
+interface HelpPageProps {
+  onBack: () => void;
+}
+
+const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
+  const { t } = useTranslation();
+
+  const helpSections = [
+    {
+      icon: Shield,
+      title: t('help.privacy.title'),
+      description: t('help.privacy.description'),
+      color: 'text-success'
+    },
+    {
+      icon: Wifi,
+      title: t('help.offline.title'),
+      description: t('help.offline.description'),
+      color: 'text-primary'
+    },
+    {
+      icon: Volume2,
+      title: t('help.audio.title'),
+      description: t('help.audio.description'),
+      color: 'text-accent'
+    },
+    {
+      icon: Eye,
+      title: t('help.accessibility.title'),
+      description: t('help.accessibility.description'),
+      color: 'text-warning'
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-md mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="min-h-[44px] px-3"
+            aria-label={t('common.back')}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl font-bold">{t('help.title')}</h1>
+        </div>
+
+        {/* Help Sections */}
+        <div className="space-y-4">
+          {helpSections.map((section, index) => (
+            <Card key={index}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-3">
+                  <section.icon className={`h-5 w-5 ${section.color}`} />
+                  {section.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {section.description}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Quick Tips */}
+        <Card className="bg-muted/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Quick Tips</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-2 text-sm">
+              <div className="flex items-start gap-2">
+                <div className="h-1.5 w-1.5 bg-primary rounded-full mt-2 shrink-0" />
+                <p>Tap anywhere on the home screen to enable audio features</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="h-1.5 w-1.5 bg-primary rounded-full mt-2 shrink-0" />
+                <p>Hold Emergency SOS for 1.2 seconds to activate</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="h-1.5 w-1.5 bg-primary rounded-full mt-2 shrink-0" />
+                <p>Install as PWA for better performance and offline access</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="h-1.5 w-1.5 bg-primary rounded-full mt-2 shrink-0" />
+                <p>Use headphones for best spatial audio experience</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Contact Support */}
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="pt-6 text-center space-y-3">
+            <h3 className="font-semibold">Need More Help?</h3>
+            <p className="text-sm text-muted-foreground">
+              Contact our support team for personalized assistance
+            </p>
+            <Button
+              onClick={() => window.open('mailto:support@strideguide.ca')}
+              variant="outline"
+              className="min-h-[44px]"
+            >
+              Email Support
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Version Info */}
+        <div className="text-center text-xs text-muted-foreground pt-4">
+          <p>StrideGuide PWA v1.0 • Built in Canada</p>
+          <p>For seniors and vision-impaired users</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default HelpPage;
