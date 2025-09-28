@@ -21,11 +21,26 @@ registerRoute(
   })
 );
 
-// Cache audio files
+// Cache audio files and earcons
 registerRoute(
-  ({ url }) => url.pathname.startsWith('/audio/'),
+  ({ url }) => url.pathname.startsWith('/audio/') || url.pathname.startsWith('/earcons/'),
   new CacheFirst({
     cacheName: 'audio-assets'
+  })
+);
+
+// Cache earcons specifically
+registerRoute(
+  ({ url }) => url.pathname.includes('earcon'),
+  new CacheFirst({
+    cacheName: 'earcons-v1',
+    plugins: [
+      {
+        cacheKeyWillBeUsed: async ({ request }) => {
+          return `${request.url}?v=1`;
+        }
+      }
+    ]
   })
 );
 

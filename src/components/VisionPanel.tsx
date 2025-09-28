@@ -14,7 +14,7 @@ interface DetectedHazard {
 }
 
 interface VisionPanelProps {
-  onBack?: () => void;
+  onBack: () => void;
 }
 
 const VisionPanel: React.FC<VisionPanelProps> = ({ onBack }) => {
@@ -68,11 +68,21 @@ const VisionPanel: React.FC<VisionPanelProps> = ({ onBack }) => {
   };
 
   return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Eye className="h-5 w-5" />
-          Vision Control Panel
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-md mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <Button onClick={onBack} variant="outline" className="min-h-[44px]">
+            Back
+          </Button>
+          <h1 className="text-xl font-semibold">Vision Guidance</h1>
+          <div className="w-20" />
+        </div>
+        
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Vision Control Panel
           {isActive && (
             <Badge variant="secondary" className="ml-auto">
               <Activity className="h-3 w-3 mr-1" />
@@ -202,6 +212,8 @@ const VisionPanel: React.FC<VisionPanelProps> = ({ onBack }) => {
         </div>
       </CardContent>
     </Card>
+      </div>
+    </div>
   );
 };
 

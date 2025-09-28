@@ -19,9 +19,10 @@ import {
 
 interface SettingsDashboardProps {
   onBack?: () => void;
+  replayTutorial?: () => void;
 }
 
-const SettingsDashboard: React.FC<SettingsDashboardProps> = ({ onBack }) => {
+const SettingsDashboard: React.FC<SettingsDashboardProps> = ({ onBack, replayTutorial }) => {
   const [lowEndMode, setLowEndMode] = React.useState(false);
   const [winterMode, setWinterMode] = React.useState(false);
   const [cloudDescribe, setCloudDescribe] = React.useState(false);

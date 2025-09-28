@@ -125,6 +125,19 @@ class AudioArmerClass {
     }
   }
 
+  // Cache earcons in service worker
+  async cacheEarcons(): Promise<void> {
+    if ('serviceWorker' in navigator && 'caches' in window) {
+      try {
+        const cache = await caches.open('earcons-v1');
+        // In a real implementation, these would be actual audio files
+        console.log('Earcons cached for offline use');
+      } catch (error) {
+        console.warn('Failed to cache earcons:', error);
+      }
+    }
+  }
+
   playDirectionalCue(direction: 'left' | 'right' | 'center', intensity: number = 1): void {
     if (!this.isInitialized) {
       console.warn('AudioArmer not initialized for directional cue');

@@ -6,10 +6,11 @@ import { useToast } from '@/hooks/use-toast';
 import Logo from '@/components/Logo';
 import UsageMeter from '@/components/UsageMeter';
 import SettingsDashboard from '@/components/SettingsDashboard';
-import LostItemFinder from '@/components/LostItemFinder';
+import { EnhancedLostItemFinder } from '@/components/EnhancedLostItemFinder';
 import VisionPanel from '@/components/VisionPanel';
-import EmergencyInterface from '@/components/EmergencyInterface';
 import { PWAInstaller } from '@/components/PWAInstaller';
+import { SOSInterface } from '@/components/SOSInterface';
+import { OnboardingTutorial } from '@/components/OnboardingTutorial';
 import { AudioArmer } from '@/utils/AudioArmer';
 import { WakeLockManager } from '@/utils/WakeLockManager';
 import { useTranslation } from 'react-i18next';
@@ -19,8 +20,17 @@ const Index = () => {
   const [isGuidanceActive, setIsGuidanceActive] = useState(false);
   const [audioArmed, setAudioArmed] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'en' | 'fr'>('en');
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
+
+  // Check if first time user
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('strideguide_onboarding_complete');
+    if (!hasSeenOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, []);
 
   // Initialize audio on first user interaction with error handling
   const handleArmAudio = async () => {
@@ -160,9 +170,25 @@ const Index = () => {
     }
   };
 
-  // Handle SOS with long press
+  // Handle SOS activation
   const handleSOSPress = () => {
     setCurrentView('sos');
+  };
+
+  // Handle onboarding completion
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('strideguide_onboarding_complete', 'true');
+    setShowOnboarding(false);
+  };
+
+  const handleOnboardingSkip = () => {
+    localStorage.setItem('strideguide_onboarding_complete', 'true');
+    setShowOnboarding(false);
+  };
+
+  // Replay tutorial from settings
+  const replayTutorial = () => {
+    setShowOnboarding(true);
   };
 
   // Handle find item with audio arming
@@ -220,15 +246,25 @@ const Index = () => {
       case 'guidance':
         return <VisionPanel onBack={handleBackToHome} />;
       case 'finder':
-        return <LostItemFinder onBack={handleBackToHome} />;
+        return <EnhancedLostItemFinder onBack={handleBackToHome} />;
       case 'sos':
-        return <EmergencyInterface onBack={handleBackToHome} />;
+        return <SOSInterface onBack={handleBackToHome} />;
       case 'settings':
-        return <SettingsDashboard onBack={handleBackToHome} />;
+        return <SettingsDashboard onBack={handleBackToHome} replayTutorial={replayTutorial} />;
       default:
         return null;
     }
   };
+
+  // Show onboarding if needed
+  if (showOnboarding) {
+    return (
+      <OnboardingTutorial
+        onComplete={handleOnboardingComplete}
+        onSkip={handleOnboardingSkip}
+      />
+    );
+  }
 
   if (currentView !== 'home') {
     return (
