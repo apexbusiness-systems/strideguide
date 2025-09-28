@@ -27,11 +27,13 @@ import { CameraView } from './CameraView';
 interface Props {
   isPremium?: boolean;
   currentLang?: 'en' | 'fr';
+  onBack: () => void;
 }
 
 export const EnhancedLostItemFinder: React.FC<Props> = ({ 
   isPremium = false,
-  currentLang = 'en'
+  currentLang = 'en',
+  onBack
 }) => {
   const { toast } = useToast();
   const [isNightMode, setIsNightMode] = useState(false);
@@ -172,7 +174,26 @@ export const EnhancedLostItemFinder: React.FC<Props> = ({
   }
 
   return (
-    <div className="w-full max-w-4xl space-y-6">
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-md mx-auto space-y-6">
+        {/* Header with Back Button */}
+        <div className="flex items-center justify-between">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="min-h-[44px]"
+            aria-label="Back to home"
+          >
+            <Search className="h-5 w-5 mr-2" />
+            Back
+          </Button>
+          <h1 className="text-xl font-semibold">
+            {currentLang === 'fr' ? 'Chercheur d\'objets perdus' : 'Lost Item Finder'}
+          </h1>
+          <div className="w-20" />
+        </div>
+        
+        <div className="w-full max-w-4xl space-y-6">
       {/* Main Controls */}
       <Card>
         <CardHeader>
@@ -397,6 +418,8 @@ export const EnhancedLostItemFinder: React.FC<Props> = ({
           </div>
         </CardContent>
       </Card>
+        </div>
+      </div>
     </div>
   );
 };
