@@ -1,197 +1,258 @@
 /**
- * PolicyManager - Region-aware recording policies and consent management
- * Implements jurisdiction-specific rules for Emergency Record Mode
+ * Policy Manager - Centralized configuration for security and privacy policies
+ * Controls feature flags, consent management, and compliance settings
  */
 
-export type Region = 'CA' | 'QC' | 'US_ONE_PARTY' | 'US_ALL_PARTY' | 'EU' | 'OTHER';
-
-export type LawfulBasis = 'vital_interests' | 'consent' | 'legitimate_interests';
-
-export interface RecordingPolicy {
-  region: Region;
-  audioAllowed: boolean;
-  requiresBeep: boolean;
-  requiresBanner: boolean;
-  forceIndicators: boolean;
-  requiresConsent: boolean;
-  defaultRetentionHours: number;
-  lawfulBasis: LawfulBasis;
-  requiresEventLog: boolean;
-  consentModalRequired: boolean;
+interface SecurityPolicy {
+  cspEnabled: boolean;
+  allowInlineStyles: boolean;
+  allowExternalScripts: boolean;
+  strictTransportSecurity: boolean;
 }
 
-export interface ConsentState {
-  allPartyConsent: boolean;
-  consentTimestamp: number | null;
-  consentVersion: string;
+interface PrivacyPolicy {
+  telemetryEnabled: boolean;
+  analyticsEnabled: boolean;
+  crashReportingEnabled: boolean;
+  dataRetentionDays: number;
+  requireExplicitConsent: boolean;
 }
 
-class PolicyManager {
-  private currentRegion: Region = 'CA';
-  private consentState: ConsentState = {
-    allPartyConsent: false,
-    consentTimestamp: null,
-    consentVersion: '1.0'
-  };
+interface FeatureFlags {
+  cloudDescribeEnabled: boolean;
+  lowEndModeEnabled: boolean;
+  winterModeEnabled: boolean;
+  betaFeaturesEnabled: boolean;
+  debugModeEnabled: boolean;
+}
 
-  // Detect region based on locale/timezone (simplified for demo)
-  detectRegion(): Region {
-    const locale = navigator.language.toLowerCase();
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    
-    if (locale.includes('fr') && (timezone.includes('Montreal') || timezone.includes('Quebec'))) {
-      return 'QC';
-    }
-    if (locale.includes('en') && timezone.includes('America')) {
-      // Simplified: assume all-party states for demo
-      return 'US_ALL_PARTY';
-    }
-    if (timezone.includes('Europe')) {
-      return 'EU';
-    }
-    
-    return 'CA'; // Default to Canada (excluding QC)
+interface PolicyConfig {
+  security: SecurityPolicy;
+  privacy: PrivacyPolicy;
+  features: FeatureFlags;
+  version: string;
+  lastUpdated: string;
+}
+
+class PolicyManagerClass {
+  private config: PolicyConfig;
+  private consentGiven: boolean = false;
+  private callbacks: Set<(config: PolicyConfig) => void> = new Set();
+
+  constructor() {
+    this.config = this.loadDefaultPolicy();
+    this.loadStoredPolicy();
   }
 
-  setRegion(region: Region): void {
-    this.currentRegion = region;
-  }
-
-  getCurrentPolicy(): RecordingPolicy {
-    const policies: Record<Region, RecordingPolicy> = {
-      'CA': {
-        region: 'CA',
-        audioAllowed: true,
-        requiresBeep: true, // Default ON, user may disable
-        requiresBanner: true,
-        forceIndicators: false,
-        requiresConsent: false,
-        defaultRetentionHours: 168, // 7 days
-        lawfulBasis: 'vital_interests',
-        requiresEventLog: false,
-        consentModalRequired: false
+  private loadDefaultPolicy(): PolicyConfig {
+    return {
+      security: {
+        cspEnabled: true,
+        allowInlineStyles: false,
+        allowExternalScripts: false,
+        strictTransportSecurity: true
       },
-      'QC': {
-        region: 'QC',
-        audioAllowed: true,
-        requiresBeep: true, // FORCED
-        requiresBanner: true, // FORCED
-        forceIndicators: true,
-        requiresConsent: false,
-        defaultRetentionHours: 72, // Shorter for QC Law 25
-        lawfulBasis: 'vital_interests',
-        requiresEventLog: true,
-        consentModalRequired: false
+      privacy: {
+        telemetryEnabled: false, // Opt-in by default
+        analyticsEnabled: false,
+        crashReportingEnabled: false,
+        dataRetentionDays: 30,
+        requireExplicitConsent: true
       },
-      'US_ONE_PARTY': {
-        region: 'US_ONE_PARTY',
-        audioAllowed: true,
-        requiresBeep: true,
-        requiresBanner: true,
-        forceIndicators: false,
-        requiresConsent: false,
-        defaultRetentionHours: 168,
-        lawfulBasis: 'consent',
-        requiresEventLog: false,
-        consentModalRequired: false
+      features: {
+        cloudDescribeEnabled: process.env.CLOUD_DESCRIBE_ENABLED === 'true',
+        lowEndModeEnabled: false,
+        winterModeEnabled: false,
+        betaFeaturesEnabled: false,
+        debugModeEnabled: process.env.NODE_ENV === 'development'
       },
-      'US_ALL_PARTY': {
-        region: 'US_ALL_PARTY',
-        audioAllowed: this.consentState.allPartyConsent,
-        requiresBeep: true, // FORCED if no consent
-        requiresBanner: true, // FORCED if no consent
-        forceIndicators: !this.consentState.allPartyConsent,
-        requiresConsent: true,
-        defaultRetentionHours: 168,
-        lawfulBasis: 'consent',
-        requiresEventLog: false,
-        consentModalRequired: true
-      },
-      'EU': {
-        region: 'EU',
-        audioAllowed: true,
-        requiresBeep: true,
-        requiresBanner: true,
-        forceIndicators: false,
-        requiresConsent: false,
-        defaultRetentionHours: 72, // GDPR minimization
-        lawfulBasis: 'vital_interests',
-        requiresEventLog: false,
-        consentModalRequired: false
-      },
-      'OTHER': {
-        region: 'OTHER',
-        audioAllowed: false, // Conservative default
-        requiresBeep: true,
-        requiresBanner: true,
-        forceIndicators: true,
-        requiresConsent: true,
-        defaultRetentionHours: 24,
-        lawfulBasis: 'consent',
-        requiresEventLog: false,
-        consentModalRequired: true
-      }
+      version: '1.0.0',
+      lastUpdated: new Date().toISOString()
     };
-
-    return policies[this.currentRegion];
   }
 
-  updateConsent(allPartyConsent: boolean): void {
-    this.consentState = {
-      allPartyConsent,
-      consentTimestamp: Date.now(),
-      consentVersion: '1.0'
-    };
-    
-    // Store in encrypted local storage
+  private loadStoredPolicy(): void {
     try {
-      localStorage.setItem('erm_consent', JSON.stringify(this.consentState));
-    } catch (error) {
-      console.error('Failed to store consent state:', error);
-    }
-  }
-
-  loadConsent(): void {
-    try {
-      const stored = localStorage.getItem('erm_consent');
+      const stored = localStorage.getItem('strideguide_policy_config');
       if (stored) {
-        this.consentState = JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        this.config = { ...this.config, ...parsed };
       }
+
+      const consent = localStorage.getItem('strideguide_consent_given');
+      this.consentGiven = consent === 'true';
     } catch (error) {
-      console.error('Failed to load consent state:', error);
+      console.warn('Failed to load stored policy config:', error);
     }
   }
 
-  getConsentState(): ConsentState {
-    return { ...this.consentState };
+  private savePolicy(): void {
+    try {
+      localStorage.setItem('strideguide_policy_config', JSON.stringify(this.config));
+      this.notifyCallbacks();
+    } catch (error) {
+      console.error('Failed to save policy config:', error);
+    }
   }
 
-  getLegalBasisText(): string {
-    const policy = this.getCurrentPolicy();
-    const region = policy.region;
+  // Get current policy configuration
+  getPolicy(): PolicyConfig {
+    return { ...this.config };
+  }
+
+  // Update specific policy section
+  updateSecurityPolicy(updates: Partial<SecurityPolicy>): void {
+    this.config.security = { ...this.config.security, ...updates };
+    this.config.lastUpdated = new Date().toISOString();
+    this.savePolicy();
+  }
+
+  updatePrivacyPolicy(updates: Partial<PrivacyPolicy>): void {
+    this.config.privacy = { ...this.config.privacy, ...updates };
+    this.config.lastUpdated = new Date().toISOString();
+    this.savePolicy();
+  }
+
+  updateFeatureFlags(updates: Partial<FeatureFlags>): void {
+    this.config.features = { ...this.config.features, ...updates };
+    this.config.lastUpdated = new Date().toISOString();
+    this.savePolicy();
+  }
+
+  // Consent management
+  giveConsent(): void {
+    this.consentGiven = true;
+    localStorage.setItem('strideguide_consent_given', 'true');
+    console.log('User consent granted');
+    this.notifyCallbacks();
+  }
+
+  revokeConsent(): void {
+    this.consentGiven = false;
+    localStorage.removeItem('strideguide_consent_given');
     
-    const legalTexts: Record<Region, string> = {
-      'CA': 'Emergency recording under Criminal Code s.184(2)(a) - one-party consent for participant safety',
-      'QC': 'Emergency recording under vital interests exception, subject to Law 25 transparency requirements',
-      'US_ONE_PARTY': 'Emergency recording under one-party consent laws and vital interests for user safety',
-      'US_ALL_PARTY': 'Recording requires all-party consent in this jurisdiction. Audio disabled until consent obtained.',
-      'EU': 'Emergency recording under GDPR Art. 6(1)(d) vital interests (Recital 46) for user safety',
-      'OTHER': 'Emergency recording under vital interests for user safety, subject to local privacy laws'
+    // Disable privacy-related features
+    this.updatePrivacyPolicy({
+      telemetryEnabled: false,
+      analyticsEnabled: false,
+      crashReportingEnabled: false
+    });
+    
+    console.log('User consent revoked');
+  }
+
+  hasConsent(): boolean {
+    return this.consentGiven;
+  }
+
+  // Feature flag checks
+  isFeatureEnabled(feature: keyof FeatureFlags): boolean {
+    return this.config.features[feature];
+  }
+
+  // Privacy checks
+  canCollectTelemetry(): boolean {
+    return this.consentGiven && this.config.privacy.telemetryEnabled;
+  }
+
+  canCollectAnalytics(): boolean {
+    return this.consentGiven && this.config.privacy.analyticsEnabled;
+  }
+
+  canSendCrashReports(): boolean {
+    return this.consentGiven && this.config.privacy.crashReportingEnabled;
+  }
+
+  // Security validation
+  isSecurityFeatureEnabled(feature: keyof SecurityPolicy): boolean {
+    return this.config.security[feature];
+  }
+
+  // Data retention management
+  getDataRetentionDays(): number {
+    return this.config.privacy.dataRetentionDays;
+  }
+
+  shouldPurgeOldData(): boolean {
+    const lastPurge = localStorage.getItem('strideguide_last_purge');
+    if (!lastPurge) return true;
+
+    const daysSinceLastPurge = (Date.now() - parseInt(lastPurge)) / (1000 * 60 * 60 * 24);
+    return daysSinceLastPurge >= this.config.privacy.dataRetentionDays;
+  }
+
+  markDataPurged(): void {
+    localStorage.setItem('strideguide_last_purge', Date.now().toString());
+  }
+
+  // Reset to defaults
+  resetToDefaults(): void {
+    this.config = this.loadDefaultPolicy();
+    this.revokeConsent();
+    localStorage.removeItem('strideguide_policy_config');
+    this.notifyCallbacks();
+    console.log('Policy configuration reset to defaults');
+  }
+
+  // Export policy for transparency
+  exportPolicy(): string {
+    return JSON.stringify({
+      ...this.config,
+      consentGiven: this.consentGiven,
+      exportedAt: new Date().toISOString()
+    }, null, 2);
+  }
+
+  // Subscribe to policy changes
+  onPolicyChange(callback: (config: PolicyConfig) => void): () => void {
+    this.callbacks.add(callback);
+    
+    return () => {
+      this.callbacks.delete(callback);
     };
-
-    return legalTexts[region];
   }
 
-  shouldShowConsentModal(): boolean {
-    const policy = this.getCurrentPolicy();
-    return policy.consentModalRequired && !this.consentState.allPartyConsent;
+  private notifyCallbacks(): void {
+    this.callbacks.forEach(callback => {
+      try {
+        callback(this.getPolicy());
+      } catch (error) {
+        console.error('Policy manager callback error:', error);
+      }
+    });
   }
 
-  initialize(): void {
-    this.currentRegion = this.detectRegion();
-    this.loadConsent();
+  // Compliance helpers
+  getPIPEDACompliantSettings(): Partial<PrivacyPolicy> {
+    return {
+      telemetryEnabled: false,
+      analyticsEnabled: false,
+      crashReportingEnabled: false,
+      dataRetentionDays: 30,
+      requireExplicitConsent: true
+    };
+  }
+
+  applyPIPEDACompliance(): void {
+    const compliantSettings = this.getPIPEDACompliantSettings();
+    this.updatePrivacyPolicy(compliantSettings);
+    console.log('PIPEDA compliance settings applied');
+  }
+
+  // Get compliance status
+  getComplianceStatus(): {
+    pipeda: boolean;
+    gdpr: boolean;
+    ccpa: boolean;
+  } {
+    const policy = this.config.privacy;
+    
+    return {
+      pipeda: policy.requireExplicitConsent && policy.dataRetentionDays <= 365,
+      gdpr: policy.requireExplicitConsent && policy.dataRetentionDays <= 365,
+      ccpa: policy.requireExplicitConsent
+    };
   }
 }
 
-// Singleton instance
-export const policyManager = new PolicyManager();
+export const PolicyManager = new PolicyManagerClass();

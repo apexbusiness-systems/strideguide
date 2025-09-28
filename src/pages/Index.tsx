@@ -13,6 +13,9 @@ import { SOSInterface } from '@/components/SOSInterface';
 import { OnboardingTutorial } from '@/components/OnboardingTutorial';
 import { AudioArmer } from '@/utils/AudioArmer';
 import { WakeLockManager } from '@/utils/WakeLockManager';
+import { BatteryGuard } from '@/utils/BatteryGuard';
+import { HealthManager } from '@/utils/HealthManager';
+import { SOSGuard } from '@/utils/SOSGuard';
 import { useTranslation } from 'react-i18next';
 
 const Index = () => {
@@ -24,13 +27,31 @@ const Index = () => {
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
 
-  // Check if first time user
+  // Initialize security guards and check onboarding
   useEffect(() => {
     const hasSeenOnboarding = localStorage.getItem('strideguide_onboarding_complete');
     if (!hasSeenOnboarding) {
       setShowOnboarding(true);
     }
-  }, []);
+
+    // Initialize security guards
+    BatteryGuard.initialize();
+    SOSGuard.initialize();
+    
+    // Subscribe to health changes
+    const unsubscribe = HealthManager.onHealthChange((status) => {
+      if (status.overall === 'critical') {
+        toast({
+          title: t('errors.systemCritical'),
+          variant: 'destructive',
+        });
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [toast, t]);
 
   // Initialize audio on first user interaction with error handling
   const handleArmAudio = async () => {

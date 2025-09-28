@@ -21,7 +21,7 @@ import {
   Volume2
 } from 'lucide-react';
 import { useEmergencyRecording } from '@/hooks/useEmergencyRecording';
-import { policyManager } from '@/utils/PolicyManager';
+import { PolicyManager } from '@/utils/PolicyManager';
 import { useToast } from '@/hooks/use-toast';
 
 const EmergencyRecordMode = () => {

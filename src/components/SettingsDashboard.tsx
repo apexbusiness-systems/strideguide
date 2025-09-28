@@ -5,6 +5,9 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+import { BatteryGuard } from '@/utils/BatteryGuard';
+import { HealthManager } from '@/utils/HealthManager';
 import { 
   Settings, 
   Smartphone, 
@@ -29,11 +32,30 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({ onBack, replayTut
   const [telemetryOptIn, setTelemetryOptIn] = React.useState(false);
   const [highContrast, setHighContrast] = React.useState(false);
   const [largeTargets, setLargeTargets] = React.useState(true);
+  const [healthStatus, setHealthStatus] = React.useState(HealthManager.getStatus());
+  const [batteryInfo, setBatteryInfo] = React.useState(BatteryGuard.getBatteryInfo());
+  const { toast } = useToast();
+
+  // Update health status and battery info
+  React.useEffect(() => {
+    const unsubscribeHealth = HealthManager.onHealthChange(setHealthStatus);
+    const unsubscribeBattery = BatteryGuard.onLowPowerModeChange(() => {
+      setBatteryInfo(BatteryGuard.getBatteryInfo());
+    });
+
+    // Initialize guards
+    BatteryGuard.initialize();
+
+    return () => {
+      unsubscribeHealth();
+      unsubscribeBattery();
+    };
+  }, []);
 
   const deviceStats = {
-    thermal: 'Normal',
-    battery: '78%',
-    performance: 'Optimal',
+    thermal: healthStatus.overall === 'critical' ? 'Warning' : 'Normal',
+    battery: batteryInfo.level ? `${Math.round(batteryInfo.level * 100)}%` : 'Unknown',
+    performance: healthStatus.overall === 'healthy' ? 'Optimal' : 'Degraded',
     storageUsed: '2.1 GB'
   };
 
@@ -207,6 +229,46 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({ onBack, replayTut
                 <strong>Privacy Note:</strong> No camera frames or personal data are collected. 
                 All processing happens on-device.
               </p>
+            </div>
+
+            <div className="space-y-3 pt-4">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={async () => {
+                  try {
+                    const { kvStore } = await import('@/crypto/kv');
+                    await kvStore.clear();
+                    toast({ title: 'All encrypted data deleted' });
+                  } catch (error) {
+                    console.error('Delete failed:', error);
+                    toast({ title: 'Delete failed', variant: 'destructive' });
+                  }
+                }}
+              >
+                Delete All Stored Data
+              </Button>
+              
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  const data = {
+                    settings: { lowEndMode, winterMode, cloudDescribe, telemetryOptIn, highContrast, largeTargets },
+                    timestamp: new Date().toISOString(),
+                    version: '1.0.0'
+                  };
+                  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `strideguide-settings-${Date.now()}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Export Settings Data
+              </Button>
             </div>
           </div>
         </div>

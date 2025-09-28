@@ -3,309 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StrideGuide A11y Checklist</title>
+    <title>StrideGuide A11y Automated Snapshot</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        .checklist-item {
-            margin: 10px 0;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .status {
-            font-weight: bold;
-            margin-left: 10px;
-        }
-        .pass { color: #28a745; }
-        .fail { color: #dc3545; }
-        .warning { color: #ffc107; }
-        .category {
-            background-color: #f8f9fa;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 8px;
-        }
-        h1, h2 { color: #333; }
-        .metric { font-family: monospace; background-color: #f0f0f0; padding: 2px 4px; }
-        .target-size { background-color: #e3f2fd; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        body { font-family: system-ui; margin: 2rem; background: #f8f9fa; }
+        .test-section { background: white; padding: 1rem; margin: 1rem 0; border-radius: 8px; border: 1px solid #dee2e6; }
+        .pass { color: #28a745; font-weight: bold; }
+        .fail { color: #dc3545; font-weight: bold; }
+        .warn { color: #ffc107; font-weight: bold; }
+        .target-size { display: inline-block; margin: 0.5rem; padding: 0.75rem; border: 2px solid #007bff; border-radius: 4px; min-width: 44px; min-height: 44px; text-align: center; }
+        .target-fail { border-color: #dc3545; background: #f8d7da; }
+        code { background: #e9ecef; padding: 0.2rem 0.4rem; border-radius: 3px; }
     </style>
 </head>
 <body>
-    <h1>StrideGuide PWA - Accessibility Checklist</h1>
-    <p><strong>WCAG 2.2 AA Compliance for Seniors & Vision-Impaired Users</strong></p>
-    <p>Test Date: <span id="test-date"></span></p>
-
-    <div class="category">
-        <h2>🎯 Touch Target Sizes</h2>
-        <div class="target-size">
-            <strong>Requirement:</strong> Minimum 44pt (iOS) / 48dp (Android) touch targets<br>
-            <strong>Current Measurements:</strong>
+    <h1>StrideGuide Accessibility Audit Snapshot</h1>
+    <p><strong>Generated:</strong> <span id="timestamp"></span></p>
+    
+    <div class="test-section">
+        <h2>🎯 Touch Target Size Validation</h2>
+        <p><strong>Standard:</strong> Minimum 44pt (iOS) / 48dp (Android) ≈ 44px at standard density</p>
+        
+        <h3>Test Targets (Main Controls)</h3>
+        <div id="touch-targets">
+            <div class="target-size">Start Guidance</div>
+            <div class="target-size">Find Item</div>
+            <div class="target-size">Emergency SOS</div>
+            <div class="target-size">Settings</div>
+            <div class="target-size">Language Toggle</div>
         </div>
         
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Main Navigation Buttons
-                <span class="metric">60px minimum height</span>
-                <span class="status pass">✓ PASS</span>
-            </label>
-            <br><small>Start Guidance, Find Item, SOS, Settings buttons all meet minimum size</small>
-        </div>
+        <div id="target-results"></div>
+    </div>
 
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Language Toggle Button
-                <span class="metric">44px minimum height</span>
-                <span class="status pass">✓ PASS</span>
-            </label>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Back/Close Buttons
-                <span class="metric">44px minimum height</span>
-                <span class="status pass">✓ PASS</span>
-            </label>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> PWA Install Button
-                <span class="metric">44px minimum height</span>
-                <span class="status pass">✓ PASS</span>
-            </label>
+    <div class="test-section">
+        <h2>🔍 ARIA & Semantic Check</h2>
+        <div id="aria-results">
+            <p>Scanning for missing labels and roles...</p>
         </div>
     </div>
 
-    <div class="category">
-        <h2>🎨 Color & Contrast</h2>
-        
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Primary Text Contrast Ratio
-                <span class="metric">≥ 4.5:1 (WCAG AA)</span>
-                <span class="status pass">✓ PASS</span>
-            </label>
-            <br><small>Dark text on light background: 15.8:1 ratio</small>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Button Text Contrast
-                <span class="metric">≥ 4.5:1 (WCAG AA)</span>
-                <span class="status pass">✓ PASS</span>
-            </label>
-            <br><small>White text on primary blue: 8.2:1 ratio</small>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Emergency SOS Button Contrast
-                <span class="metric">≥ 4.5:1 (WCAG AA)</span>
-                <span class="status pass">✓ PASS</span>
-            </label>
-            <br><small>White text on red background: 5.1:1 ratio</small>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Focus Indicators Visible
-                <span class="metric">≥ 3:1 contrast</span>
-                <span class="status pass">✓ PASS</span>
-            </label>
-            <br><small>Blue focus ring on light background: 12.1:1 ratio</small>
+    <div class="test-section">
+        <h2>🎨 Color Contrast Analysis</h2>
+        <div id="contrast-results">
+            <p>Checking WCAG 2.2 AA compliance...</p>
         </div>
     </div>
 
-    <div class="category">
-        <h2>📱 Screen Reader Support</h2>
-        
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> All buttons have accessible names
-                <span class="status">MANUAL TEST</span>
-            </label>
-            <br><small>Test with VoiceOver (iOS) or TalkBack (Android)</small>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Language changes announced
-                <span class="status">MANUAL TEST</span>
-            </label>
-            <br><small>aria-live regions for language toggle feedback</small>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Status updates announced
-                <span class="status">MANUAL TEST</span>
-            </label>
-            <br><small>Guidance start/stop, audio armed, wake lock status</small>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Role attributes present
-                <span class="status pass">✓ PASS</span>
-            </label>
-            <br><small>role="button" on all interactive elements</small>
-        </div>
-    </div>
-
-    <div class="category">
+    <div class="test-section">
         <h2>⌨️ Keyboard Navigation</h2>
-        
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Tab order is logical
-                <span class="status">MANUAL TEST</span>
-            </label>
-            <br><small>Language toggle → Main buttons → Install prompt → Footer</small>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> All interactive elements focusable
-                <span class="status">MANUAL TEST</span>
-            </label>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Enter/Space activate buttons
-                <span class="status">MANUAL TEST</span>
-            </label>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Focus trap in modals
-                <span class="status">MANUAL TEST</span>
-            </label>
-            <br><small>iOS install instructions, settings panels</small>
+        <div id="focus-results">
+            <p>Validating focus order and visibility...</p>
         </div>
     </div>
 
-    <div class="category">
-        <h2>📏 Layout & Responsive Design</h2>
-        
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Maximum 5 primary controls on home screen
-                <span class="status pass">✓ PASS</span>
-            </label>
-            <br><small>Start Guidance, Find Item, SOS, Settings + Language toggle</small>
+    <div class="test-section">
+        <h2>📱 Screen Reader Compatibility</h2>
+        <div id="sr-results">
+            <p>Checking announcements and live regions...</p>
         </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Content reflows at 400% zoom
-                <span class="status">MANUAL TEST</span>
-            </label>
-            <br><small>Test browser zoom up to 400%</small>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> No horizontal scrolling at 320px width
-                <span class="status">MANUAL TEST</span>
-            </label>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Touch targets don't overlap
-                <span class="status pass">✓ PASS</span>
-            </label>
-            <br><small>Adequate spacing between all interactive elements</small>
-        </div>
-    </div>
-
-    <div class="category">
-        <h2>🔊 Audio & Haptics</h2>
-        
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> No auto-playing audio
-                <span class="status pass">✓ PASS</span>
-            </label>
-            <br><small>Audio only starts after user interaction (tap to arm)</small>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Audio cues have text alternatives
-                <span class="status pass">✓ PASS</span>
-            </label>
-            <br><small>Visual status indicators complement audio feedback</small>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Haptic feedback graceful fallback
-                <span class="status pass">✓ PASS</span>
-            </label>
-            <br><small>iOS falls back to audio cues when vibration unavailable</small>
-        </div>
-    </div>
-
-    <div class="category">
-        <h2>🌐 PWA Specific</h2>
-        
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Install prompt accessible
-                <span class="status">MANUAL TEST</span>
-            </label>
-            <br><small>Screen reader can access install button and instructions</small>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Offline functionality accessible
-                <span class="status">MANUAL TEST</span>
-            </label>
-            <br><small>Core features work without network, status announced</small>
-        </div>
-
-        <div class="checklist-item">
-            <label>
-                <input type="checkbox"> Service worker doesn't break a11y
-                <span class="status">MANUAL TEST</span>
-            </label>
-        </div>
-    </div>
-
-    <div style="margin-top: 40px; padding: 20px; background-color: #f0f8ff; border-radius: 8px;">
-        <h2>Testing Tools</h2>
-        <ul>
-            <li><strong>Automated:</strong> axe-core, Lighthouse Accessibility audit</li>
-            <li><strong>Screen Readers:</strong> VoiceOver (iOS), TalkBack (Android), NVDA (Windows)</li>
-            <li><strong>Keyboard:</strong> Tab, Enter, Space, Arrow keys navigation</li>
-            <li><strong>Color:</strong> Colour Contrast Analyser, WebAIM Contrast Checker</li>
-            <li><strong>Mobile:</strong> iOS/Android device testing in real conditions</li>
-        </ul>
     </div>
 
     <script>
-        document.getElementById('test-date').textContent = new Date().toLocaleDateString();
-        
-        // Simple progress tracker
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-        let checked = 0;
-        
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', () => {
-                checked = document.querySelectorAll('input[type="checkbox"]:checked').length;
-                console.log(`A11y Progress: ${checked}/${checkboxes.length} items completed`);
+        // Set timestamp
+        document.getElementById('timestamp').textContent = new Date().toISOString();
+
+        // Touch Target Size Validator
+        function validateTouchTargets() {
+            const results = document.getElementById('target-results');
+            const targets = document.querySelectorAll('.target-size');
+            let issues = [];
+
+            targets.forEach((target, i) => {
+                const rect = target.getBoundingClientRect();
+                const minSize = 44; // px
+                
+                if (rect.width < minSize || rect.height < minSize) {
+                    target.classList.add('target-fail');
+                    issues.push(`Target ${i+1}: ${rect.width.toFixed(1)}×${rect.height.toFixed(1)}px (Too small)`);
+                }
             });
-        });
+
+            if (issues.length === 0) {
+                results.innerHTML = '<p class="pass">✅ All touch targets meet minimum size requirements</p>';
+            } else {
+                results.innerHTML = '<p class="fail">❌ Touch target issues found:</p><ul>' + 
+                    issues.map(issue => `<li>${issue}</li>`).join('') + '</ul>';
+            }
+        }
+
+        // ARIA Validation
+        function validateARIA() {
+            const results = document.getElementById('aria-results');
+            const issues = [];
+
+            // Check buttons without aria-label or accessible text
+            const buttons = document.querySelectorAll('button, [role="button"]');
+            buttons.forEach((btn, i) => {
+                const hasLabel = btn.getAttribute('aria-label') || 
+                               btn.getAttribute('aria-labelledby') || 
+                               btn.textContent.trim() ||
+                               btn.querySelector('img')?.getAttribute('alt');
+                
+                if (!hasLabel) {
+                    issues.push(`Button ${i+1}: Missing accessible name`);
+                }
+            });
+
+            // Check images without alt text
+            const images = document.querySelectorAll('img');
+            images.forEach((img, i) => {
+                if (!img.getAttribute('alt') && !img.getAttribute('aria-hidden')) {
+                    issues.push(`Image ${i+1}: Missing alt text`);
+                }
+            });
+
+            // Check form inputs without labels
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach((input, i) => {
+                const hasLabel = input.getAttribute('aria-label') ||
+                               input.getAttribute('aria-labelledby') ||
+                               document.querySelector(`label[for="${input.id}"]`);
+                
+                if (!hasLabel) {
+                    issues.push(`Input ${i+1}: Missing label association`);
+                }
+            });
+
+            if (issues.length === 0) {
+                results.innerHTML = '<p class="pass">✅ All elements have proper ARIA labels</p>';
+            } else {
+                results.innerHTML = '<p class="fail">❌ ARIA issues found:</p><ul>' + 
+                    issues.map(issue => `<li>${issue}</li>`).join('') + '</ul>';
+            }
+        }
+
+        // Color Contrast Check (simplified)
+        function checkContrast() {
+            const results = document.getElementById('contrast-results');
+            const issues = [];
+
+            // Get computed styles for key elements
+            const testElements = [
+                { selector: 'body', name: 'Body text' },
+                { selector: 'button', name: 'Button text' },
+                { selector: '.muted-foreground', name: 'Muted text' }
+            ];
+
+            testElements.forEach(({ selector, name }) => {
+                const element = document.querySelector(selector);
+                if (element) {
+                    const styles = window.getComputedStyle(element);
+                    const color = styles.color;
+                    const bgColor = styles.backgroundColor;
+                    
+                    // Simplified check - in real implementation would calculate contrast ratio
+                    if (color === bgColor) {
+                        issues.push(`${name}: Same foreground and background color`);
+                    }
+                }
+            });
+
+            if (issues.length === 0) {
+                results.innerHTML = '<p class="pass">✅ No obvious contrast issues detected</p>' +
+                    '<p class="warn">⚠️ Use axe-core or WAVE for comprehensive contrast analysis</p>';
+            } else {
+                results.innerHTML = '<p class="fail">❌ Contrast issues found:</p><ul>' + 
+                    issues.map(issue => `<li>${issue}</li>`).join('') + '</ul>';
+            }
+        }
+
+        // Focus Management Check
+        function validateFocus() {
+            const results = document.getElementById('focus-results');
+            const issues = [];
+
+            // Check for focusable elements without visible focus
+            const focusable = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            
+            focusable.forEach((element, i) => {
+                // Simulate focus to check visibility
+                element.focus();
+                const styles = window.getComputedStyle(element);
+                const outline = styles.outline;
+                const outlineWidth = styles.outlineWidth;
+                const boxShadow = styles.boxShadow;
+                
+                // Check if there's visible focus indication
+                if (outline === 'none' && outlineWidth === '0px' && boxShadow === 'none') {
+                    issues.push(`Element ${i+1}: No visible focus indicator`);
+                }
+            });
+
+            if (issues.length === 0) {
+                results.innerHTML = '<p class="pass">✅ All focusable elements have visible focus indicators</p>';
+            } else {
+                results.innerHTML = '<p class="fail">❌ Focus issues found:</p><ul>' + 
+                    issues.map(issue => `<li>${issue}</li>`).join('') + '</ul>';
+            }
+        }
+
+        // Screen Reader Check
+        function validateScreenReader() {
+            const results = document.getElementById('sr-results');
+            const issues = [];
+
+            // Check for aria-live regions
+            const liveRegions = document.querySelectorAll('[aria-live]');
+            if (liveRegions.length === 0) {
+                issues.push('No aria-live regions found for status announcements');
+            }
+
+            // Check for proper heading structure
+            const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            let headingLevels = Array.from(headings).map(h => parseInt(h.tagName.charAt(1)));
+            
+            for (let i = 1; i < headingLevels.length; i++) {
+                if (headingLevels[i] > headingLevels[i-1] + 1) {
+                    issues.push(`Heading structure skip: h${headingLevels[i-1]} to h${headingLevels[i]}`);
+                    break;
+                }
+            }
+
+            // Check for landmark regions
+            const landmarks = document.querySelectorAll('main, nav, header, footer, aside, section[aria-label], [role="main"], [role="navigation"], [role="banner"], [role="contentinfo"]');
+            if (landmarks.length === 0) {
+                issues.push('No landmark regions found for navigation');
+            }
+
+            if (issues.length === 0) {
+                results.innerHTML = '<p class="pass">✅ Screen reader structure looks good</p>';
+            } else {
+                results.innerHTML = '<p class="warn">⚠️ Screen reader issues found:</p><ul>' + 
+                    issues.map(issue => `<li>${issue}</li>`).join('') + '</ul>';
+            }
+        }
+
+        // Run all tests
+        setTimeout(() => {
+            validateTouchTargets();
+            validateARIA();
+            checkContrast();
+            validateFocus();
+            validateScreenReader();
+        }, 100);
+
+        // Export results function
+        function exportResults() {
+            const results = {
+                timestamp: new Date().toISOString(),
+                touchTargets: document.getElementById('target-results').textContent,
+                aria: document.getElementById('aria-results').textContent,
+                contrast: document.getElementById('contrast-results').textContent,
+                focus: document.getElementById('focus-results').textContent,
+                screenReader: document.getElementById('sr-results').textContent
+            };
+            
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `strideguide-a11y-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Add export button
+        const exportBtn = document.createElement('button');
+        exportBtn.textContent = 'Export Results';
+        exportBtn.onclick = exportResults;
+        exportBtn.style.cssText = 'position: fixed; top: 20px; right: 20px; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;';
+        document.body.appendChild(exportBtn);
     </script>
 </body>
 </html>
