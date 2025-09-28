@@ -22,77 +22,140 @@ const Index = () => {
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
 
-  // Initialize audio on first user interaction
+  // Initialize audio on first user interaction with error handling
   const handleArmAudio = async () => {
     if (!audioArmed) {
       try {
         await AudioArmer.initialize();
         setAudioArmed(true);
+        console.log('Audio system armed successfully');
         toast({
-          title: t('audio.armed'),
-          description: t('audio.armedDescription'),
+          title: t('audio.armed') || 'Audio Ready',
+          description: t('audio.armedDescription') || 'Audio features are now available.',
         });
       } catch (error) {
         console.error('Failed to arm audio:', error);
+        toast({
+          title: 'Audio Setup Failed',
+          description: 'Audio features may not work properly. Please try again.',
+          variant: 'destructive',
+        });
       }
     }
   };
 
-  // Toggle language with announcement
+  // Toggle language with announcement and error handling
   const toggleLanguage = () => {
-    const newLang = currentLanguage === 'en' ? 'fr' : 'en';
-    setCurrentLanguage(newLang);
-    i18n.changeLanguage(newLang);
-    
-    // Announce language change for screen readers
-    const announcement = newLang === 'en' ? 'Language changed to English' : 'Langue changée en français';
-    const announcer = document.createElement('div');
-    announcer.setAttribute('aria-live', 'polite');
-    announcer.setAttribute('aria-atomic', 'true');
-    announcer.style.position = 'absolute';
-    announcer.style.left = '-10000px';
-    announcer.textContent = announcement;
-    document.body.appendChild(announcer);
-    setTimeout(() => document.body.removeChild(announcer), 1000);
+    try {
+      const newLang = currentLanguage === 'en' ? 'fr' : 'en';
+      setCurrentLanguage(newLang);
+      i18n.changeLanguage(newLang);
+      
+      console.log(`Language changed to: ${newLang}`);
+      
+      // Announce language change for screen readers
+      const announcement = newLang === 'en' ? 'Language changed to English' : 'Langue changée en français';
+      const announcer = document.createElement('div');
+      announcer.setAttribute('aria-live', 'polite');
+      announcer.setAttribute('aria-atomic', 'true');
+      announcer.style.position = 'absolute';
+      announcer.style.left = '-10000px';
+      announcer.style.width = '1px';
+      announcer.style.height = '1px';
+      announcer.style.overflow = 'hidden';
+      announcer.textContent = announcement;
+      document.body.appendChild(announcer);
+      
+      // Clean up announcer after screen reader processes it
+      setTimeout(() => {
+        if (document.body.contains(announcer)) {
+          document.body.removeChild(announcer);
+        }
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to change language:', error);
+      toast({
+        title: 'Language Change Failed',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
-  // Handle guidance toggle with wake lock
+  // Handle guidance toggle with comprehensive error handling
   const handleGuidanceToggle = async () => {
-    await handleArmAudio();
-    
-    if (!isGuidanceActive) {
-      try {
-        await WakeLockManager.request();
+    try {
+      await handleArmAudio();
+      
+      if (!isGuidanceActive) {
+        console.log('Starting guidance mode...');
+        
+        // Check if wake lock is supported before attempting
+        if (WakeLockManager.isSupported()) {
+          try {
+            await WakeLockManager.request();
+            console.log('Wake lock acquired successfully');
+          } catch (wakeLockError) {
+            console.warn('Wake lock failed, continuing without it:', wakeLockError);
+            toast({
+              title: t('guidance.wakeLockFailed') || 'Screen Wake Failed',
+              description: t('guidance.wakeLockHelp') || 'Please adjust your device power settings to prevent screen dimming',
+              variant: 'destructive',
+            });
+          }
+        } else {
+          console.log('Wake lock not supported on this device');
+        }
+        
         setIsGuidanceActive(true);
         setCurrentView('guidance');
         
-        if (audioArmed) {
-          AudioArmer.playEarcon('start');
+        // Play audio confirmation if available
+        if (audioArmed && AudioArmer.isArmed()) {
+          try {
+            AudioArmer.playEarcon('start');
+          } catch (audioError) {
+            console.warn('Failed to play start earcon:', audioError);
+          }
         }
         
         toast({
-          title: t('guidance.started'),
-          description: t('guidance.stayAwake'),
+          title: t('guidance.started') || 'Guidance Started',
+          description: t('guidance.stayAwake') || 'Screen will stay awake during guidance',
         });
-      } catch (error) {
-        console.error('Failed to start guidance:', error);
+      } else {
+        console.log('Stopping guidance mode...');
+        
+        // Release wake lock
+        try {
+          WakeLockManager.release();
+          console.log('Wake lock released');
+        } catch (error) {
+          console.warn('Failed to release wake lock:', error);
+        }
+        
+        setIsGuidanceActive(false);
+        setCurrentView('home');
+        
+        // Play audio confirmation if available
+        if (audioArmed && AudioArmer.isArmed()) {
+          try {
+            AudioArmer.playEarcon('stop');
+          } catch (audioError) {
+            console.warn('Failed to play stop earcon:', audioError);
+          }
+        }
+        
         toast({
-          title: t('guidance.wakeLockFailed'),
-          description: t('guidance.wakeLockHelp'),
-          variant: 'destructive',
+          title: t('guidance.stopped') || 'Guidance Stopped',
         });
       }
-    } else {
-      WakeLockManager.release();
-      setIsGuidanceActive(false);
-      setCurrentView('home');
-      
-      if (audioArmed) {
-        AudioArmer.playEarcon('stop');
-      }
-      
+    } catch (error) {
+      console.error('Error in guidance toggle:', error);
       toast({
-        title: t('guidance.stopped'),
+        title: 'Guidance Error',
+        description: 'Failed to start/stop guidance. Please try again.',
+        variant: 'destructive',
       });
     }
   };
@@ -102,20 +165,53 @@ const Index = () => {
     setCurrentView('sos');
   };
 
-  // Handle find item
+  // Handle find item with audio arming
   const handleFindItem = async () => {
-    await handleArmAudio();
-    setCurrentView('finder');
+    try {
+      console.log('Starting lost item finder...');
+      await handleArmAudio();
+      setCurrentView('finder');
+    } catch (error) {
+      console.error('Error starting item finder:', error);
+      toast({
+        title: 'Item Finder Error',
+        description: 'Failed to start item finder. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
-  // Handle settings
+  // Handle settings navigation
   const handleSettings = () => {
-    setCurrentView('settings');
+    try {
+      console.log('Opening settings...');
+      setCurrentView('settings');
+    } catch (error) {
+      console.error('Error opening settings:', error);
+    }
   };
 
-  // Back to home
+  // Safe navigation back to home
   const handleBackToHome = () => {
-    setCurrentView('home');
+    try {
+      console.log('Navigating back to home...');
+      
+      // Clean up any active states
+      if (isGuidanceActive) {
+        try {
+          WakeLockManager.release();
+          setIsGuidanceActive(false);
+        } catch (error) {
+          console.warn('Failed to clean up guidance state:', error);
+        }
+      }
+      
+      setCurrentView('home');
+    } catch (error) {
+      console.error('Error navigating to home:', error);
+      // Force reset to home even if there's an error
+      setCurrentView('home');
+    }
   };
 
   // Render current view

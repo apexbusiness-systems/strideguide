@@ -89,7 +89,15 @@ class AudioArmerClass {
 
   playEarcon(name: string, panValue: number = 0): void {
     if (!this.isInitialized || !this.audioContext) {
-      console.warn('AudioArmer not initialized, cannot play earcon');
+      console.warn('AudioArmer not initialized, cannot play earcon:', name);
+      return;
+    }
+
+    if (this.audioContext.state === 'suspended') {
+      console.warn('AudioContext suspended, attempting to resume...');
+      this.audioContext.resume().catch(err => {
+        console.error('Failed to resume AudioContext:', err);
+      });
       return;
     }
 
@@ -118,9 +126,15 @@ class AudioArmerClass {
   }
 
   playDirectionalCue(direction: 'left' | 'right' | 'center', intensity: number = 1): void {
+    if (!this.isInitialized) {
+      console.warn('AudioArmer not initialized for directional cue');
+      return;
+    }
+    
     const panValue = direction === 'left' ? -0.8 : direction === 'right' ? 0.8 : 0;
     const earconName = intensity > 0.7 ? 'hot' : intensity > 0.3 ? 'found' : 'cold';
     
+    console.log(`Playing directional cue: ${direction}, intensity: ${intensity}, earcon: ${earconName}`);
     this.playEarcon(earconName, panValue);
   }
 
@@ -130,15 +144,29 @@ class AudioArmerClass {
       return;
     }
 
-    // Cancel any ongoing speech
-    speechSynthesis.cancel();
+    try {
+      // Cancel any ongoing speech
+      speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
-    utterance.pitch = 1.0;
-    utterance.volume = 0.8;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      utterance.volume = 0.8;
 
-    speechSynthesis.speak(utterance);
+      // Add error handling for speech synthesis
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+      };
+
+      utterance.onend = () => {
+        console.log('Speech synthesis completed:', text);
+      };
+
+      console.log('Announcing text:', text);
+      speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error('Failed to announce text:', error);
+    }
   }
 
   isArmed(): boolean {

@@ -40,7 +40,11 @@ class HapticManagerClass {
     const pattern = this.patterns[patternName];
     
     try {
-      navigator.vibrate(pattern);
+      console.log(`Vibrating with pattern: ${patternName}`, pattern);
+      const success = navigator.vibrate(pattern);
+      if (!success) {
+        console.warn('Vibration call returned false');
+      }
     } catch (error) {
       console.error('Vibration failed:', error);
     }

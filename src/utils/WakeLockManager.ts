@@ -13,17 +13,28 @@ class WakeLockManagerClass {
       throw new Error('Wake Lock not supported');
     }
 
+    if (this.wakeLock && !this.wakeLock.released) {
+      console.log('Wake lock already active');
+      return;
+    }
+
     try {
+      console.log('Requesting wake lock...');
       this.wakeLock = await navigator.wakeLock.request('screen');
       
       this.wakeLock.addEventListener('release', () => {
         console.log('Wake lock released');
+        this.wakeLock = null;
       });
 
       // Re-acquire wake lock when page becomes visible
-      document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+      if (!document.addEventListener) {
+        console.warn('Document event listeners not supported');
+      } else {
+        document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+      }
       
-      console.log('Screen wake lock acquired');
+      console.log('Screen wake lock acquired successfully');
     } catch (error) {
       console.error('Failed to acquire wake lock:', error);
       throw error;
@@ -31,21 +42,34 @@ class WakeLockManagerClass {
   }
 
   release(): void {
-    if (this.wakeLock) {
-      this.wakeLock.release();
-      this.wakeLock = null;
+    if (this.wakeLock && !this.wakeLock.released) {
+      try {
+        this.wakeLock.release();
+        console.log('Wake lock manually released');
+      } catch (error) {
+        console.error('Failed to release wake lock:', error);
+      }
     }
 
-    document.removeEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+    this.wakeLock = null;
+
+    try {
+      document.removeEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+    } catch (error) {
+      console.warn('Failed to remove visibility change listener:', error);
+    }
   }
 
   private async handleVisibilityChange(): Promise<void> {
     if (this.wakeLock !== null && document.visibilityState === 'visible') {
       try {
+        console.log('Page became visible, re-acquiring wake lock...');
         await this.request();
       } catch (error) {
-        console.error('Failed to re-acquire wake lock:', error);
+        console.error('Failed to re-acquire wake lock on visibility change:', error);
       }
+    } else if (document.visibilityState === 'hidden') {
+      console.log('Page became hidden, wake lock may be released automatically');
     }
   }
 
