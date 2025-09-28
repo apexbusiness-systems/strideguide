@@ -120,11 +120,14 @@ export const EnhancedLostItemFinder: React.FC<Props> = ({
     return 'bg-secondary text-secondary-foreground';
   };
 
-  const getDistanceDescription = (distance: number) => {
-    if (distance < 0.2) return currentLang === 'fr' ? 'Très proche' : 'Very close';
-    if (distance < 0.4) return currentLang === 'fr' ? 'Proche' : 'Close';
-    if (distance < 0.7) return currentLang === 'fr' ? 'Moyen' : 'Medium';
-    return currentLang === 'fr' ? 'Loin' : 'Far';
+  const getDistanceDescription = (distance: 'very_close' | 'close' | 'medium' | 'far') => {
+    const descriptions = {
+      very_close: currentLang === 'fr' ? 'Très proche' : 'Very close',
+      close: currentLang === 'fr' ? 'Proche' : 'Close',
+      medium: currentLang === 'fr' ? 'Moyen' : 'Medium',
+      far: currentLang === 'fr' ? 'Loin' : 'Far'
+    };
+    return descriptions[distance];
   };
 
   const getDirectionDescription = (direction: 'left' | 'center' | 'right') => {
@@ -137,7 +140,7 @@ export const EnhancedLostItemFinder: React.FC<Props> = ({
   };
 
   // Show ML loading state
-  if (isMLLoading || !isInitialized) {
+  if (isMLLoading) {
     return (
       <Card className="w-full max-w-2xl">
         <CardContent className="p-8 text-center space-y-4">
@@ -250,7 +253,7 @@ export const EnhancedLostItemFinder: React.FC<Props> = ({
               </div>
               
               <Button 
-                onClick={stopCurrentMode}
+                onClick={stopSearching}
                 variant="destructive"
                 size="lg"
                 className="w-full"
@@ -285,7 +288,7 @@ export const EnhancedLostItemFinder: React.FC<Props> = ({
           {/* Search Mode Controls */}
           {mode === 'search' && (
             <Button 
-              onClick={stopCurrentMode}
+              onClick={stopSearching}
               variant="destructive"
               size="lg"
               className="w-full"
@@ -307,10 +310,10 @@ export const EnhancedLostItemFinder: React.FC<Props> = ({
           <div 
             className="absolute border-2 border-primary bg-primary/20 rounded"
             style={{
-              left: `${currentSearchResult.bbox[0] * 100}%`,
-              top: `${currentSearchResult.bbox[1] * 100}%`,
-              width: `${currentSearchResult.bbox[2] * 100}%`,
-              height: `${currentSearchResult.bbox[3] * 100}%`,
+              left: `${currentSearchResult.boundingBox.x * 100}%`,
+              top: `${currentSearchResult.boundingBox.y * 100}%`,
+              width: `${currentSearchResult.boundingBox.width * 100}%`,
+              height: `${currentSearchResult.boundingBox.height * 100}%`,
             }}
           />
         )}
@@ -356,7 +359,7 @@ export const EnhancedLostItemFinder: React.FC<Props> = ({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => deleteItem(item.id)}
+                      onClick={() => deleteLearnedItem(item.id)}
                       disabled={mode !== 'idle'}
                     >
                       <Trash2 className="h-4 w-4" />
