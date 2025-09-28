@@ -40,14 +40,12 @@ const Index = () => {
         setAudioArmed(true);
         console.log('Audio system armed successfully');
         toast({
-          title: t('audio.armed') || 'Audio Ready',
-          description: t('audio.armedDescription') || 'Audio features are now available.',
+          title: t('guidance.arming'),
         });
       } catch (error) {
         console.error('Failed to arm audio:', error);
         toast({
-          title: 'Audio Setup Failed',
-          description: 'Audio features may not work properly. Please try again.',
+          title: t('errors.audio'),
           variant: 'destructive',
         });
       }
@@ -63,30 +61,19 @@ const Index = () => {
       
       console.log(`Language changed to: ${newLang}`);
       
-      // Announce language change for screen readers
-      const announcement = newLang === 'en' ? 'Language changed to English' : 'Langue changée en français';
-      const announcer = document.createElement('div');
-      announcer.setAttribute('aria-live', 'polite');
-      announcer.setAttribute('aria-atomic', 'true');
-      announcer.style.position = 'absolute';
-      announcer.style.left = '-10000px';
-      announcer.style.width = '1px';
-      announcer.style.height = '1px';
-      announcer.style.overflow = 'hidden';
-      announcer.textContent = announcement;
-      document.body.appendChild(announcer);
+      // Announce language change via dedicated aria-live region
+      const announcer = document.getElementById('status-announcer');
+      if (announcer) {
+        announcer.textContent = t('lang.changed', { lang: newLang === 'en' ? 'English' : 'français' });
+      }
       
-      // Clean up announcer after screen reader processes it
-      setTimeout(() => {
-        if (document.body.contains(announcer)) {
-          document.body.removeChild(announcer);
-        }
-      }, 2000);
+      toast({
+        title: t('lang.changed', { lang: newLang === 'en' ? 'English' : 'français' }),
+      });
     } catch (error) {
       console.error('Failed to change language:', error);
       toast({
-        title: 'Language Change Failed',
-        description: 'Please try again.',
+        title: t('errors.generic'),
         variant: 'destructive',
       });
     }
@@ -107,11 +94,7 @@ const Index = () => {
             console.log('Wake lock acquired successfully');
           } catch (wakeLockError) {
             console.warn('Wake lock failed, continuing without it:', wakeLockError);
-            toast({
-              title: t('guidance.wakeLockFailed') || 'Screen Wake Failed',
-              description: t('guidance.wakeLockHelp') || 'Please adjust your device power settings to prevent screen dimming',
-              variant: 'destructive',
-            });
+            // Silent failure for wake lock as it's not critical
           }
         } else {
           console.log('Wake lock not supported on this device');
@@ -130,8 +113,7 @@ const Index = () => {
         }
         
         toast({
-          title: t('guidance.started') || 'Guidance Started',
-          description: t('guidance.stayAwake') || 'Screen will stay awake during guidance',
+          title: t('guidance.active'),
         });
       } else {
         console.log('Stopping guidance mode...');
@@ -157,14 +139,13 @@ const Index = () => {
         }
         
         toast({
-          title: t('guidance.stopped') || 'Guidance Stopped',
+          title: t('guidance.paused'),
         });
       }
     } catch (error) {
       console.error('Error in guidance toggle:', error);
       toast({
-        title: 'Guidance Error',
-        description: 'Failed to start/stop guidance. Please try again.',
+        title: t('errors.generic'),
         variant: 'destructive',
       });
     }
@@ -200,8 +181,7 @@ const Index = () => {
     } catch (error) {
       console.error('Error starting item finder:', error);
       toast({
-        title: 'Item Finder Error',
-        description: 'Failed to start item finder. Please try again.',
+        title: t('errors.generic'),
         variant: 'destructive',
       });
     }
@@ -290,10 +270,10 @@ const Index = () => {
                 size="sm"
                 onClick={toggleLanguage}
                 className="min-h-[44px] px-3"
-                aria-label={t('language.toggle')}
+                aria-label={t('lang.toggle')}
               >
                 <Languages className="h-4 w-4 mr-1" />
-                {currentLanguage.toUpperCase()}
+                {t('lang.current')}
               </Button>
             </div>
           </div>
@@ -380,11 +360,11 @@ const Index = () => {
             </div>
           )}
 
-          {/* Wake Lock Status */}
+          {/* Guidance Status */}
           {isGuidanceActive && (
             <div className="text-center">
               <Badge variant="secondary" className="text-xs">
-                {WakeLockManager.isActive() ? t('wake.active') : t('wake.inactive')}
+                {t('guidance.active')}
               </Badge>
             </div>
           )}
@@ -392,8 +372,8 @@ const Index = () => {
 
         {/* Footer */}
         <div className="text-center text-sm text-muted-foreground space-y-2 pt-4">
-          <p>{t('app.footer.builtin')} • {t('app.footer.privacy')} • {t('app.footer.offline')}</p>
-          <p className="text-xs">{t('app.footer.version')}</p>
+          <p>{t('footer.builtin')} • {t('footer.privacy')} • {t('footer.offline')}</p>
+          <p className="text-xs">{t('footer.version', { version: '1.0.0' })}</p>
         </div>
       </div>
     </div>

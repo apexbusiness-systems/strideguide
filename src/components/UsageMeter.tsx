@@ -5,12 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Clock, Crown, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 const UsageMeter = () => {
   const [usedMinutes, setUsedMinutes] = React.useState(45); // 45 minutes used today
   const [isPremium, setIsPremium] = React.useState(false);
-  const [language, setLanguage] = React.useState<'en' | 'fr'>('en');
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
 
   const dailyLimitMinutes = isPremium ? 480 : 120; // 8h vs 2h in minutes
   const remainingMinutes = dailyLimitMinutes - usedMinutes;
@@ -25,10 +26,8 @@ const UsageMeter = () => {
 
   const handleUpgrade = () => {
     toast({
-      title: language === 'en' ? "Upgrade to Premium" : "Passer à Premium",
-      description: language === 'en' 
-        ? "8 hours daily + night mode + free strap included!" 
-        : "8 heures quotidiennes + mode nuit + sangle gratuite incluse!",
+      title: t('plan.upgrade.title'),
+      description: t('plan.upgrade.perk'),
     });
   };
 
@@ -39,39 +38,10 @@ const UsageMeter = () => {
   const togglePlan = () => {
     setIsPremium(!isPremium);
     toast({
-      title: !isPremium 
-        ? (language === 'en' ? "Premium Activated" : "Premium Activé")
-        : (language === 'en' ? "Switched to Free" : "Retour au Gratuit"),
-      description: !isPremium 
-        ? (language === 'en' ? "All features unlocked!" : "Toutes les fonctionnalités débloquées!")
-        : (language === 'en' ? "Limited to 2h daily" : "Limité à 2h quotidiennes"),
+      title: !isPremium ? t('plan.demoPremium') : 'Demo: Free Plan',
     });
   };
 
-  const copy = {
-    en: {
-      remaining: `${formatTime(remainingMinutes)} remaining today`,
-      limitReached: 'Daily limit reached - Guidance paused',
-      upgradePrompt: 'Upgrade to Premium for 8h daily + night mode',
-      premiumActive: 'Premium Active',
-      freeStrap: 'Free strap included!',
-      upgrade: 'Upgrade Now',
-      simulate: 'Simulate +15min',
-      togglePlan: isPremium ? 'Demo: Switch to Free' : 'Demo: Activate Premium'
-    },
-    fr: {
-      remaining: `${formatTime(remainingMinutes)} restantes aujourd'hui`,
-      limitReached: 'Limite quotidienne atteinte - Guidage en pause',
-      upgradePrompt: 'Passez à Premium pour 8h quotidiennes + mode nuit',
-      premiumActive: 'Premium Actif',
-      freeStrap: 'Sangle gratuite incluse!',
-      upgrade: 'Passer à Premium',
-      simulate: 'Simuler +15min',
-      togglePlan: isPremium ? 'Démo: Passer au Gratuit' : 'Démo: Activer Premium'
-    }
-  };
-
-  const t = copy[language];
 
   return (
     <Card className={`w-full max-w-md mx-auto ${isLimitReached ? 'border-warning' : ''}`}>
@@ -81,31 +51,23 @@ const UsageMeter = () => {
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium">
-              {isPremium ? t.premiumActive : 'Free Plan'}
+              {isPremium ? t('plan.premium') : t('plan.free')}
             </span>
           </div>
           <div className="flex items-center gap-2">
             {isPremium && (
               <Badge variant="default" className="gap-1">
                 <Crown className="h-3 w-3" />
-                Premium
+                {t('plan.premium')}
               </Badge>
             )}
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
-              aria-label="Toggle language"
-            >
-              {language.toUpperCase()}
-            </Button>
           </div>
         </div>
 
         {/* Usage Progress */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span>Usage Today</span>
+            <span>{t('plan.usageToday')}</span>
             <span className={isLimitReached ? 'text-warning font-medium' : ''}>
               {formatTime(usedMinutes)} / {formatTime(dailyLimitMinutes)}
             </span>
@@ -116,11 +78,11 @@ const UsageMeter = () => {
           />
           {!isLimitReached ? (
             <p className="text-sm text-muted-foreground text-center">
-              {t.remaining}
+              {t('plan.remainingToday', { time: formatTime(remainingMinutes) })}
             </p>
           ) : (
             <p className="text-sm text-warning font-medium text-center">
-              {t.limitReached}
+              {t('plan.usedOverCap')}
             </p>
           )}
         </div>
@@ -129,16 +91,16 @@ const UsageMeter = () => {
         {!isPremium && (
           <div className="space-y-3 p-3 rounded-lg bg-accent/10 border border-accent/20">
             <div className="text-center space-y-1">
-              <p className="text-sm font-medium">{t.upgradePrompt}</p>
-              <p className="text-xs text-muted-foreground">{t.freeStrap}</p>
+              <p className="text-sm font-medium">{t('plan.upgrade.title')}</p>
+              <p className="text-xs text-muted-foreground">{t('plan.upgrade.perk')}</p>
             </div>
             <Button 
               className="w-full gap-2" 
               onClick={handleUpgrade}
-              aria-label={t.upgrade}
+              aria-label={t('plan.upgrade.cta')}
             >
               <Zap className="h-4 w-4" />
-              {t.upgrade}
+              {t('plan.upgrade.cta')}
             </Button>
           </div>
         )}
@@ -152,7 +114,7 @@ const UsageMeter = () => {
             onClick={simulateUsageIncrease}
             disabled={isLimitReached}
           >
-            {t.simulate}
+            {t('plan.simulate15')}
           </Button>
           <Button 
             variant="outline" 
@@ -160,7 +122,7 @@ const UsageMeter = () => {
             className="flex-1"
             onClick={togglePlan}
           >
-            {t.togglePlan}
+            {isPremium ? 'Demo: Free Plan' : t('plan.demoPremium')}
           </Button>
         </div>
       </CardContent>
