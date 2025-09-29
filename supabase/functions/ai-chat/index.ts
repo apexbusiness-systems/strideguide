@@ -12,6 +12,42 @@ serve(async (req) => {
 
   try {
     const { messages } = await req.json();
+    
+    // Input validation
+    if (!messages || !Array.isArray(messages)) {
+      return new Response(JSON.stringify({ 
+        error: "Invalid messages format",
+        code: "INVALID_INPUT" 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate each message
+    for (const msg of messages) {
+      if (!msg.role || !msg.content || typeof msg.content !== 'string') {
+        return new Response(JSON.stringify({ 
+          error: "Invalid message format",
+          code: "INVALID_MESSAGE" 
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
+      // Length validation
+      if (msg.content.length > 1000) {
+        return new Response(JSON.stringify({ 
+          error: "Message too long (max 1000 characters)",
+          code: "MESSAGE_TOO_LONG" 
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {

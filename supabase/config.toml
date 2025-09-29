@@ -3,6 +3,9 @@ project_id = "yrndifsbsmpvmpudglcc"
 [functions.ai-chat]
 verify_jwt = false
 
+[functions.validate-feature-access]
+verify_jwt = true
+
 [functions.stripe-webhook]
 verify_jwt = false
 
