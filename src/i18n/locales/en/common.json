@@ -10,7 +10,7 @@
   "app.badges.offline": "Works offline",
   "app.badges.privacy": "Privacy first",
   "lang.toggle": "EN / FR",
-  "lang.current": "EN",
+  
   "lang.changed": "Language changed to {lang}",
   "footer.builtin": "Built in Canada",
   "footer.privacy": "Privacy first",

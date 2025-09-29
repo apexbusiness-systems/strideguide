@@ -301,7 +301,7 @@ const Index = () => {
                 aria-label={t('lang.toggle', { defaultValue: 'EN / FR' })}
               >
                 <Languages className="h-4 w-4 mr-1" />
-                {t('lang.current', { defaultValue: currentLanguage.toUpperCase() })}
+                {currentLanguage.toUpperCase()}
               </Button>
             </div>
           </div>
