@@ -16,41 +16,17 @@ interface FeatureGateProps {
 }
 
 const featureConfig = {
-  advanced_ml: {
-    title: "Advanced ML Features",
-    description: "Access to premium machine learning models and enhanced processing capabilities",
+  hazard_notification_screen: {
+    title: "Dedicated Hazard/Notification Screen",
+    description: "Centralized view for alerts and system status with advanced monitoring",
     icon: Zap,
     requiredPlan: "Premium",
   },
-  white_label: {
-    title: "White Label Branding",
-    description: "Remove StrideGuide branding and customize with your own",
-    icon: Crown,
-    requiredPlan: "Enterprise",
-  },
-  priority_support: {
-    title: "Priority Support",
-    description: "Get faster response times and dedicated support channels",
+  enhanced_notifications: {
+    title: "Enhanced Notification System",
+    description: "Proactive, contextual alerts for premium users with advanced features",
     icon: Crown,
     requiredPlan: "Premium",
-  },
-  api_access: {
-    title: "API Access",
-    description: "Programmatic access to StrideGuide's capabilities via REST API",
-    icon: Zap,
-    requiredPlan: "Premium",
-  },
-  custom_features: {
-    title: "Custom Features",
-    description: "Access to custom feature development and enterprise integrations",
-    icon: Crown,
-    requiredPlan: "Enterprise",
-  },
-  unlimited_usage: {
-    title: "Unlimited Usage",
-    description: "No limits on API calls, users, or feature usage",
-    icon: Crown,
-    requiredPlan: "Enterprise",
   },
 };
 

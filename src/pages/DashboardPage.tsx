@@ -132,27 +132,15 @@ export default function DashboardPage({ user, onSignOut }: DashboardPageProps) {
                 
                 {/* Main App Access */}
                 <div className="md:col-span-2 lg:col-span-3">
-                  <FeatureGate
-                    feature="api_access"
-                    user={user}
-                    onUpgrade={() => {
-                      // Would redirect to pricing or subscription management
-                      toast({
-                        title: "Upgrade Required",
-                        description: "Please upgrade to access the main application features",
-                      });
-                    }}
-                  >
-                    <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-lg border">
-                      <h3 className="text-lg font-semibold mb-2">Access StrideGuide</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Launch the main StrideGuide application with your premium features
-                      </p>
-                      <Button asChild>
-                        <a href="/">Launch App</a>
-                      </Button>
-                    </div>
-                  </FeatureGate>
+                  <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-lg border">
+                    <h3 className="text-lg font-semibold mb-2">Access StrideGuide</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Launch the main StrideGuide application with all core features
+                    </p>
+                    <Button asChild>
+                      <a href="/app">Launch App</a>
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

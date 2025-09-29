@@ -80,11 +80,7 @@ export const useSubscription = (user: User | null): UseSubscriptionReturn => {
   const hasFeatureAccess = (featureName: string): boolean => {
     if (!user || !subscription) return false;
 
-    // For enterprise features, check the specific feature
-    if (featureName === 'white_label') return subscription.white_label;
-    if (featureName === 'priority_support') return subscription.priority_support;
-    
-    // For plan-based features
+    // For plan-based features - only gate specific premium features
     const planLevel = {
       'Free': 0,
       'Basic': 1,
@@ -93,10 +89,8 @@ export const useSubscription = (user: User | null): UseSubscriptionReturn => {
     }[subscription.plan_name] || 0;
 
     const featureRequirements = {
-      'advanced_ml': 2,
-      'api_access': 2,
-      'custom_features': 3,
-      'unlimited_usage': 3,
+      'hazard_notification_screen': 2,
+      'enhanced_notifications': 2,
     };
 
     const requiredLevel = featureRequirements[featureName as keyof typeof featureRequirements];
