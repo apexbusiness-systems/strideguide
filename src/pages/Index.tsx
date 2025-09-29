@@ -158,7 +158,7 @@ const Index: React.FC = () => {
     // SOSGuard is singleton, already initialized
     
     const unsubscribe = HealthManager.onHealthChange?.((status) => {
-      if (status.critical) {
+      if (status.overall === 'critical') {
         console.error('Critical system health issue:', status);
         addNotification({
           id: `health-${Date.now()}`,

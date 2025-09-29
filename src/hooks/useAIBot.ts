@@ -68,17 +68,19 @@ export const useAIBot = (user: User | null) => {
       // Simulate AI service initialization
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Test edge function availability (if AI chat function exists)
+      // Test AI chat function availability
       try {
-        const { error: functionError } = await supabase.functions.invoke('ai-chat', {
-          body: { test: true }
+        const { data: testData, error: functionError } = await supabase.functions.invoke('ai-chat', {
+          body: { messages: [{ role: 'user', content: 'test' }] }
         });
         
-        if (functionError && !functionError.message.includes('Not Found')) {
-          console.warn('AI function test warning:', functionError.message);
+        if (functionError) {
+          console.warn('AI chat function test failed:', functionError.message);
+        } else {
+          console.log('AI chat function test successful:', testData);
         }
       } catch (err) {
-        console.log('AI function not available, using local processing');
+        console.log('AI chat function not available:', err);
       }
 
       setState(prev => ({ 
@@ -202,13 +204,24 @@ export const useAIBot = (user: User | null) => {
     }));
 
     try {
-      // Simulate AI response (replace with actual AI call)
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call AI chat edge function
+      const { data, error } = await supabase.functions.invoke('ai-chat', {
+        body: { 
+          messages: [
+            ...state.messages.map(msg => ({ role: msg.role, content: msg.content })),
+            { role: 'user', content }
+          ]
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'AI service error');
+      }
       
       const botMessage: AIBotMessage = {
         id: `bot-${Date.now()}`,
         role: 'assistant',
-        content: `I understand you said: "${content}". How can I help you with that?`,
+        content: data.message || "I'm sorry, I couldn't process that request.",
         timestamp: new Date(),
       };
 
