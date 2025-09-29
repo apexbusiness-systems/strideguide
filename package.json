@@ -64,6 +64,7 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
+    "terser": "^5.44.0",
     "vaul": "^0.9.9",
     "workbox-precaching": "^7.3.0",
     "workbox-routing": "^7.3.0",

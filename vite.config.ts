@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     // Production hardening
-    minify: 'terser',
-    sourcemap: false,
+    minify: mode === 'production' ? 'terser' : false,
+    sourcemap: mode === 'development',
     rollupOptions: {
       output: {
         manualChunks: {
@@ -27,13 +27,15 @@ export default defineConfig(({ mode }) => ({
         }
       }
     },
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: true,
-        pure_funcs: mode === 'production' ? ['console.log', 'console.info'] : []
+    ...(mode === 'production' && {
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+          pure_funcs: ['console.log', 'console.info']
+        }
       }
-    }
+    })
   },
   define: {
     __DEV__: mode === 'development',
