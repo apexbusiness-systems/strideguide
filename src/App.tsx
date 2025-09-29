@@ -3,16 +3,62 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useI18nGuard } from "@/utils/i18nGuard";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import AuthPage from "./pages/AuthPage";
+import DashboardPage from "./pages/DashboardPage";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   // Run i18n guard in development to catch unresolved keys
   useI18nGuard();
+  
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setIsLoading(false);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleAuthSuccess = () => {
+    // Session will be updated via onAuthStateChange
+  };
+
+  const handleSignOut = () => {
+    setUser(null);
+    setSession(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
   
   return (
     <ErrorBoundary>
@@ -22,7 +68,30 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route 
+                path="/" 
+                element={
+                  user ? (
+                    <DashboardPage user={user} onSignOut={handleSignOut} />
+                  ) : (
+                    <Index />
+                  )
+                } 
+              />
+              <Route 
+                path="/auth" 
+                element={
+                  user ? (
+                    <DashboardPage user={user} onSignOut={handleSignOut} />
+                  ) : (
+                    <AuthPage onAuthSuccess={handleAuthSuccess} />
+                  )
+                } 
+              />
+              <Route 
+                path="/app" 
+                element={<Index />} 
+              />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
