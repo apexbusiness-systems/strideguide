@@ -1,264 +1,509 @@
-import React, { useState, useEffect } from 'react';
-import { Eye, Search, AlertTriangle, Settings, Languages } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { 
+  Mic, 
+  Navigation, 
+  Search, 
+  Settings, 
+  Shield, 
+  Languages, 
+  Phone,
+  Bell,
+  AlertTriangle,
+  Zap,
+  Bot,
+  Eye,
+  Menu,
+  MessageCircle
+} from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { User } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import Logo from '@/components/Logo';
-import UsageMeter from '@/components/UsageMeter';
+
+// Component imports
+import { Logo } from '@/components/Logo';
 import SettingsDashboard from '@/components/SettingsDashboard';
 import { EnhancedLostItemFinder } from '@/components/EnhancedLostItemFinder';
 import VisionPanel from '@/components/VisionPanel';
-import { PWAInstaller } from '@/components/PWAInstaller';
 import { SOSInterface } from '@/components/SOSInterface';
 import { OnboardingTutorial } from '@/components/OnboardingTutorial';
+import { PWAInstaller } from '@/components/PWAInstaller';
 import { WakeLockIndicator } from '@/components/WakeLockIndicator';
-import { AudioArmer } from '@/utils/AudioArmer';
-import { WakeLockManager } from '@/utils/WakeLockManager';
-import { BatteryGuard } from '@/utils/BatteryGuard';
-import { HealthManager } from '@/utils/HealthManager';
-import { SOSGuard } from '@/utils/SOSGuard';
-import { useTranslation } from 'react-i18next';
-import { assertHumanizedCopy } from '@/utils/i18nGuard';
+import UsageMeter from '@/components/UsageMeter';
+import { ActionPromptModal } from '@/components/modals/ActionPromptModal';
+import { FeatureGate } from '@/components/enterprise/FeatureGate';
+import { HazardNotificationScreen } from '@/components/premium/HazardNotificationScreen';
+import { EnhancedNotificationSystem } from '@/components/premium/EnhancedNotificationSystem';
 
-const Index = () => {
-  const [currentView, setCurrentView] = useState<'home' | 'guidance' | 'finder' | 'sos' | 'settings'>('home');
+// Hooks and utilities
+import { useAIBot } from '@/hooks/useAIBot';
+import { useSubscription } from '@/hooks/useSubscription';
+import { BatteryGuard } from '@/utils/BatteryGuard';
+import { SOSGuard } from '@/utils/SOSGuard';
+import { WakeLockManager } from '@/utils/WakeLockManager';
+import { AudioArmer } from '@/utils/AudioArmer';
+import { HealthManager } from '@/utils/HealthManager';
+
+// Types for enhanced notification system
+interface EnhancedNotification {
+  id: string;
+  type: 'critical' | 'warning' | 'info' | 'success';
+  title: string;
+  message: string;
+  timestamp: Date;
+  priority: 'high' | 'medium' | 'low';
+  category: 'safety' | 'navigation' | 'system' | 'social';
+  isContextual: boolean;
+  requiresAcknowledgment: boolean;
+  hasAudio: boolean;
+  location?: string;
+  actionable?: boolean;
+  dismissed?: boolean;
+  acknowledged?: boolean;
+}
+
+const Index: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const { toast } = useToast();
+  
+  // Authentication state
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState(null);
+  
+  // Core state
+  const [currentView, setCurrentView] = useState<'home' | 'guidance' | 'item-finder' | 'sos' | 'settings' | 'hazard-screen'>('home');
   const [isGuidanceActive, setIsGuidanceActive] = useState(false);
   const [audioArmed, setAudioArmed] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState<'en' | 'fr'>('en');
+  const [currentLanguage, setCurrentLanguage] = useState('en');
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const { toast } = useToast();
-  const { t, i18n } = useTranslation(['common', 'home']);
-
-  // Initialize security guards and check onboarding
-  useEffect(() => {
-    const hasSeenOnboarding = localStorage.getItem('strideguide_onboarding_complete');
-    if (!hasSeenOnboarding) {
-      setShowOnboarding(true);
+  
+  // Modal states
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    type: 'confirmation' | 'input' | 'hazard-report' | 'emergency-setup';
+    title: string;
+    description: string;
+    severity?: 'info' | 'warning' | 'critical';
+    confirmText?: string;
+    action?: (data?: any) => void;
+  } | null>(null);
+  
+  // Premium notification system state
+  const [notifications, setNotifications] = useState<EnhancedNotification[]>([
+    {
+      id: '1',
+      type: 'critical',
+      title: 'AI Bot Connection Issue',
+      message: 'Unable to connect to AI services after login. Retrying...',
+      timestamp: new Date(),
+      priority: 'high',
+      category: 'system',
+      isContextual: true,
+      requiresAcknowledgment: true,
+      hasAudio: true,
+      dismissed: false,
+      acknowledged: false,
     }
+  ]);
+  const [notificationSystemVisible, setNotificationSystemVisible] = useState(false);
+  const [notificationsMuted, setNotificationsMuted] = useState(false);
+  const [notificationsPaused, setNotificationsPaused] = useState(false);
+  
+  // Hooks
+  const aiBot = useAIBot(user);
+  const { subscription, hasFeatureAccess } = useSubscription(user);
+  
+  const isPremiumUser = hasFeatureAccess('enhanced_notifications');
 
-    // Initialize security guards
-    BatteryGuard.initialize();
-    // SOSGuard is already initialized as singleton
-    
-    // Subscribe to health changes
-    const unsubscribe = HealthManager.onHealthChange((status) => {
-      if (status.overall === 'critical') {
-        toast({
-          title: t('errors.systemCritical', { defaultValue: 'System critical error' }),
-          variant: 'destructive',
-        });
+  // Authentication setup
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        console.log('Auth state changed:', { event, user: !!session?.user });
+        
+        // Update AI bot status notification
+        if (session?.user && !aiBot.isConnected) {
+          addNotification({
+            id: `ai-bot-${Date.now()}`,
+            type: 'warning',
+            title: 'AI Assistant Initializing',
+            message: 'Setting up your AI assistant after login...',
+            timestamp: new Date(),
+            priority: 'medium',
+            category: 'system',
+            isContextual: true,
+            requiresAcknowledgment: false,
+            hasAudio: false,
+          });
+        }
       }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
     });
 
-    // Dev-only: Check for unresolved i18n keys
-    if (process.env.NODE_ENV === 'development') {
-      setTimeout(() => assertHumanizedCopy(), 1000);
+    return () => subscription.unsubscribe();
+  }, [aiBot.isConnected]);
+
+  // Initialize system guards and check onboarding
+  useEffect(() => {
+    BatteryGuard.initialize();
+    // SOSGuard is singleton, already initialized
+    
+    const unsubscribe = HealthManager.onHealthChange?.((status) => {
+      if (status.critical) {
+        console.error('Critical system health issue:', status);
+        addNotification({
+          id: `health-${Date.now()}`,
+          type: 'critical',
+          title: 'Critical System Error',
+          message: 'System health is critical. Please restart the application.',
+          timestamp: new Date(),
+          priority: 'high',
+          category: 'system',
+          isContextual: false,
+          requiresAcknowledgment: true,
+          hasAudio: true,
+        });
+      }
+    }) || (() => {});
+
+    const hasCompletedOnboarding = localStorage.getItem('onboarding-completed');
+    if (!hasCompletedOnboarding) {
+      setShowOnboarding(true);
     }
 
     return () => {
       unsubscribe();
     };
-  }, [toast, t]);
+  }, []);
 
-  // Initialize audio on first user interaction with error handling
-  const handleArmAudio = async () => {
+  // Monitor AI bot status
+  useEffect(() => {
+    if (aiBot.isConnected && user) {
+      // Remove AI bot error notifications and add success
+      setNotifications(prev => 
+        prev.filter(n => !n.message.includes('AI') && !n.message.includes('bot'))
+      );
+      
+      addNotification({
+        id: `ai-success-${Date.now()}`,
+        type: 'success',
+        title: 'AI Assistant Ready',
+        message: 'Your AI assistant is now connected and ready to help.',
+        timestamp: new Date(),
+        priority: 'low',
+        category: 'system',
+        isContextual: true,
+        requiresAcknowledgment: false,
+        hasAudio: false,
+      });
+    } else if (aiBot.error) {
+      addNotification({
+        id: `ai-error-${Date.now()}`,
+        type: 'critical',
+        title: 'AI Assistant Unavailable',
+        message: `Connection failed: ${aiBot.error}. Some features may be limited.`,
+        timestamp: new Date(),
+        priority: 'high',
+        category: 'system',
+        isContextual: true,
+        requiresAcknowledgment: true,
+        hasAudio: true,
+      });
+    }
+  }, [aiBot.isConnected, aiBot.error, user]);
+
+  // Notification management functions
+  const addNotification = useCallback((notification: Omit<EnhancedNotification, 'id'> & { id?: string }) => {
+    const newNotification: EnhancedNotification = {
+      ...notification,
+      id: notification.id || `notif-${Date.now()}`,
+    };
+    
+    setNotifications(prev => [newNotification, ...prev.slice(0, 19)]); // Keep max 20 notifications
+    
+    if (isPremiumUser && !notificationsPaused) {
+      setNotificationSystemVisible(true);
+    }
+  }, [isPremiumUser, notificationsPaused]);
+
+  const dismissNotification = useCallback((id: string) => {
+    setNotifications(prev => 
+      prev.map(n => n.id === id ? { ...n, dismissed: true } : n)
+    );
+  }, []);
+
+  const acknowledgeNotification = useCallback((id: string) => {
+    setNotifications(prev => 
+      prev.map(n => n.id === id ? { ...n, acknowledged: true } : n)
+    );
+  }, []);
+
+  // Modal helper functions
+  const showModal = useCallback((config: typeof modalConfig) => {
+    setModalConfig(config);
+    setShowActionModal(true);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setShowActionModal(false);
+    setModalConfig(null);
+  }, []);
+
+  // Enhanced interaction handlers with modals
+  const handleGuidanceToggle = useCallback(async () => {
     if (!audioArmed) {
-      try {
-        await AudioArmer.initialize();
-        setAudioArmed(true);
-        console.log('Audio system armed successfully');
-        toast({
-          title: t('guidance.arming', { defaultValue: 'Audio ready. I will guide you after a tap.' }),
-        });
-      } catch (error) {
-        console.error('Failed to arm audio:', error);
-        toast({
-          title: t('common:audio.tapToArm', { defaultValue: 'Tap once to allow sound' }),
-          variant: 'destructive',
-        });
-      }
-    }
-  };
-
-  // Toggle language with announcement and error handling
-  const toggleLanguage = () => {
-    try {
-      const newLang = currentLanguage === 'en' ? 'fr' : 'en';
-      setCurrentLanguage(newLang);
-      i18n.changeLanguage(newLang);
-      
-      console.log(`Language changed to: ${newLang}`);
-      
-      // Announce language change via dedicated aria-live region
-      const announcer = document.getElementById('status-announcer');
-      if (announcer) {
-        announcer.textContent = t('lang.changed', { lang: newLang === 'en' ? 'English' : 'français', defaultValue: 'Language changed to {lang}' });
-      }
-      
-      toast({
-        title: t('lang.changed', { lang: newLang === 'en' ? 'English' : 'français', defaultValue: 'Language changed to {lang}' }),
-      });
-    } catch (error) {
-      console.error('Failed to change language:', error);
-      toast({
-        title: t('errors.generic', { defaultValue: 'Something went wrong. Please try again.' }),
-        variant: 'destructive',
-      });
-    }
-  };
-
-  // Handle guidance toggle with comprehensive error handling
-  const handleGuidanceToggle = async () => {
-    try {
-      await handleArmAudio();
-      
-      if (!isGuidanceActive) {
-        console.log('Starting guidance mode...');
-        
-        // Check if wake lock is supported before attempting
-        if (WakeLockManager.isSupported()) {
+      showModal({
+        type: 'confirmation',
+        title: 'Enable Audio',
+        description: 'StrideGuide needs audio access to provide voice guidance. Allow audio access to continue?',
+        severity: 'info',
+        confirmText: 'Enable Audio',
+        action: async () => {
           try {
-            await WakeLockManager.request();
-            console.log('Wake lock acquired successfully');
-          } catch (wakeLockError) {
-            console.warn('Wake lock failed, continuing without it:', wakeLockError);
-            // Silent failure for wake lock as it's not critical
-          }
-        } else {
-          console.log('Wake lock not supported on this device');
-        }
-        
-        setIsGuidanceActive(true);
-        setCurrentView('guidance');
-        
-        // Play audio confirmation if available
-        if (audioArmed && AudioArmer.isArmed()) {
-          try {
-            AudioArmer.playEarcon('start');
-          } catch (audioError) {
-            console.warn('Failed to play start earcon:', audioError);
+            await AudioArmer.initialize();
+            setAudioArmed(true);
+            closeModal();
+            handleGuidanceToggle(); // Retry after audio is enabled
+          } catch (error) {
+            toast({
+              title: 'Audio Failed',
+              description: 'Unable to enable audio. Please check your device settings.',
+              variant: 'destructive',
+            });
           }
         }
-        
-        toast({
-          title: t('guidance.active', { defaultValue: 'Guidance active' }),
-        });
-      } else {
-        console.log('Stopping guidance mode...');
-        
-        // Release wake lock
-        try {
-          WakeLockManager.release();
-          console.log('Wake lock released');
-        } catch (error) {
-          console.warn('Failed to release wake lock:', error);
-        }
-        
-        setIsGuidanceActive(false);
-        setCurrentView('home');
-        
-        // Play audio confirmation if available
-        if (audioArmed && AudioArmer.isArmed()) {
+      });
+      return;
+    }
+
+    if (!isGuidanceActive) {
+      showModal({
+        type: 'confirmation',
+        title: 'Start Vision Guidance',
+        description: 'This will activate the camera and start real-time obstacle detection. Your device will stay awake during guidance.',
+        severity: 'info',
+        confirmText: 'Start Guidance',
+        action: async () => {
           try {
-            AudioArmer.playEarcon('stop');
-          } catch (audioError) {
-            console.warn('Failed to play stop earcon:', audioError);
+            if (WakeLockManager.isSupported()) {
+              await WakeLockManager.request();
+            }
+            setIsGuidanceActive(true);
+            setCurrentView('guidance');
+            closeModal();
+            
+            addNotification({
+              id: `guidance-start-${Date.now()}`,
+              type: 'info',
+              title: 'Guidance Active',
+              message: 'Vision guidance is now active. Camera is monitoring for obstacles.',
+              timestamp: new Date(),
+              priority: 'medium',
+              category: 'navigation',
+              isContextual: true,
+              requiresAcknowledgment: false,
+              hasAudio: true,
+            });
+          } catch (error) {
+            toast({
+              title: 'Guidance Failed',
+              description: 'Unable to start guidance. Please try again.',
+              variant: 'destructive',
+            });
           }
         }
-        
-        toast({
-          title: t('guidance.paused', { defaultValue: 'Guidance paused' }),
-        });
-      }
-    } catch (error) {
-      console.error('Error in guidance toggle:', error);
-      toast({
-        title: t('errors.generic', { defaultValue: 'Something went wrong. Please try again.' }),
-        variant: 'destructive',
       });
-    }
-  };
-
-  // Handle SOS activation
-  const handleSOSPress = () => {
-    setCurrentView('sos');
-  };
-
-  // Handle onboarding completion
-  const handleOnboardingComplete = () => {
-    localStorage.setItem('strideguide_onboarding_complete', 'true');
-    setShowOnboarding(false);
-  };
-
-  const handleOnboardingSkip = () => {
-    localStorage.setItem('strideguide_onboarding_complete', 'true');
-    setShowOnboarding(false);
-  };
-
-  // Replay tutorial from settings
-  const replayTutorial = () => {
-    setShowOnboarding(true);
-  };
-
-  // Handle find item with audio arming
-  const handleFindItem = async () => {
-    try {
-      console.log('Starting lost item finder...');
-      await handleArmAudio();
-      setCurrentView('finder');
-    } catch (error) {
-      console.error('Error starting item finder:', error);
-      toast({
-        title: t('errors.generic', { defaultValue: 'Something went wrong. Please try again.' }),
-        variant: 'destructive',
-      });
-    }
-  };
-
-  // Handle settings navigation
-  const handleSettings = () => {
-    try {
-      console.log('Opening settings...');
-      setCurrentView('settings');
-    } catch (error) {
-      console.error('Error opening settings:', error);
-    }
-  };
-
-  // Safe navigation back to home
-  const handleBackToHome = () => {
-    try {
-      console.log('Navigating back to home...');
-      
-      // Clean up any active states
-      if (isGuidanceActive) {
-        try {
-          WakeLockManager.release();
-          setIsGuidanceActive(false);
-        } catch (error) {
-          console.warn('Failed to clean up guidance state:', error);
-        }
-      }
-      
+    } else {
+      WakeLockManager.release();
+      setIsGuidanceActive(false);
       setCurrentView('home');
-    } catch (error) {
-      console.error('Error navigating to home:', error);
-      // Force reset to home even if there's an error
-      setCurrentView('home');
+      
+      addNotification({
+        id: `guidance-stop-${Date.now()}`,
+        type: 'info',
+        title: 'Guidance Stopped',
+        message: 'Vision guidance has been deactivated.',
+        timestamp: new Date(),
+        priority: 'low',
+        category: 'navigation',
+        isContextual: true,
+        requiresAcknowledgment: false,
+        hasAudio: false,
+      });
     }
-  };
+  }, [audioArmed, isGuidanceActive, showModal, closeModal, addNotification, toast]);
+
+  const handleSOSPress = useCallback(() => {
+    showModal({
+      type: 'confirmation',
+      title: 'Emergency SOS',
+      description: 'This will immediately contact your emergency contacts and share your location. Continue only in case of real emergency.',
+      severity: 'critical',
+      confirmText: 'Send SOS',
+      action: () => {
+        setCurrentView('sos');
+        closeModal();
+        
+        addNotification({
+          id: `sos-${Date.now()}`,
+          type: 'critical',
+          title: 'SOS Activated',
+          message: 'Emergency contacts have been notified and location shared.',
+          timestamp: new Date(),
+          priority: 'high',
+          category: 'safety',
+          isContextual: false,
+          requiresAcknowledgment: true,
+          hasAudio: true,
+        });
+      }
+    });
+  }, [showModal, closeModal, addNotification]);
+
+  const handleItemFinder = useCallback(() => {
+    showModal({
+      type: 'input',
+      title: 'Find Lost Item',
+      description: 'What item are you looking for? Describe it briefly.',
+      severity: 'info',
+      confirmText: 'Start Search',
+      action: (data: { value: string }) => {
+        setCurrentView('item-finder');
+        closeModal();
+        
+        addNotification({
+          id: `search-${Date.now()}`,
+          type: 'info',
+          title: 'Item Search Started',
+          message: `Searching for: ${data.value}. Point your camera around the area.`,
+          timestamp: new Date(),
+          priority: 'medium',
+          category: 'navigation',
+          isContextual: true,
+          requiresAcknowledgment: false,
+          hasAudio: true,
+        });
+      }
+    });
+  }, [showModal, closeModal, addNotification]);
+
+  const handleQuickActions = useCallback(() => {
+    // Show AI chat interface for premium users
+    if (isPremiumUser && aiBot.isConnected) {
+      showModal({
+        type: 'input',
+        title: 'AI Assistant',
+        description: 'Ask your AI assistant for help with navigation, safety tips, or general questions.',
+        severity: 'info',
+        confirmText: 'Send Message',
+        action: (data: { value: string }) => {
+          aiBot.sendMessage(data.value);
+          closeModal();
+          
+          addNotification({
+            id: `ai-message-${Date.now()}`,
+            type: 'info',
+            title: 'Message Sent',
+            message: 'Your AI assistant is processing your request...',
+            timestamp: new Date(),
+            priority: 'low',
+            category: 'system',
+            isContextual: true,
+            requiresAcknowledgment: false,
+            hasAudio: false,
+          });
+        }
+      });
+    } else {
+      // Standard quick action menu for free users
+      showModal({
+        type: 'confirmation',
+        title: 'Quick Actions',
+        description: 'Access frequently used features and shortcuts.',
+        severity: 'info',
+        confirmText: 'Continue',
+        action: () => {
+          closeModal();
+          // Could show a menu or specific action
+        }
+      });
+    }
+  }, [isPremiumUser, aiBot, showModal, closeModal, addNotification]);
+
+  // Other handlers
+  const toggleLanguage = useCallback(() => {
+    const newLang = currentLanguage === 'en' ? 'fr' : 'en';
+    setCurrentLanguage(newLang);
+    i18n.changeLanguage(newLang);
+    
+    addNotification({
+      id: `lang-${Date.now()}`,
+      type: 'info',
+      title: 'Language Changed',
+      message: `Interface language changed to ${newLang === 'en' ? 'English' : 'Français'}`,
+      timestamp: new Date(),
+      priority: 'low',
+      category: 'system',
+      isContextual: false,
+      requiresAcknowledgment: false,
+      hasAudio: false,
+    });
+  }, [currentLanguage, i18n, addNotification]);
+
+  const handleBackToHome = useCallback(() => {
+    if (isGuidanceActive) {
+      WakeLockManager.release();
+      setIsGuidanceActive(false);
+    }
+    setCurrentView('home');
+  }, [isGuidanceActive]);
+
+  const handleOnboardingComplete = useCallback(() => {
+    localStorage.setItem('onboarding-completed', 'true');
+    setShowOnboarding(false);
+  }, []);
+
+  const handleOnboardingSkip = useCallback(() => {
+    localStorage.setItem('onboarding-completed', 'true');
+    setShowOnboarding(false);
+  }, []);
 
   // Render current view
   const renderCurrentView = () => {
     switch (currentView) {
       case 'guidance':
         return <VisionPanel onBack={handleBackToHome} />;
-      case 'finder':
+      case 'item-finder':
         return <EnhancedLostItemFinder onBack={handleBackToHome} />;
       case 'sos':
         return <SOSInterface onBack={handleBackToHome} />;
       case 'settings':
-        return <SettingsDashboard onBack={handleBackToHome} replayTutorial={replayTutorial} />;
+        return <SettingsDashboard onBack={handleBackToHome} replayTutorial={() => setShowOnboarding(true)} />;
+      case 'hazard-screen':
+        return (
+          <FeatureGate
+            feature="hazard_notification_screen"
+            user={user}
+            showUpgrade={true}
+            onUpgrade={() => {
+              toast({
+                title: "Premium Feature",
+                description: "Upgrade to Premium to access the Hazard Notification Screen",
+              });
+            }}
+          >
+            <HazardNotificationScreen onBack={handleBackToHome} />
+          </FeatureGate>
+        );
       default:
         return null;
     }
@@ -278,121 +523,237 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-background">
         {renderCurrentView()}
+        {/* Premium notification system overlay */}
+        <FeatureGate
+          feature="enhanced_notifications"
+          user={user}
+          showUpgrade={false}
+        >
+          <EnhancedNotificationSystem
+            isVisible={notificationSystemVisible}
+            notifications={notifications.filter(n => !n.dismissed)}
+            onNotificationDismiss={dismissNotification}
+            onNotificationAcknowledge={acknowledgeNotification}
+            onSystemMute={() => setNotificationsMuted(!notificationsMuted)}
+            onSystemPause={() => setNotificationsPaused(!notificationsPaused)}
+            isMuted={notificationsMuted}
+            isPaused={notificationsPaused}
+            isPremium={isPremiumUser}
+          />
+        </FeatureGate>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-6" onClick={handleArmAudio}>
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-md mx-auto space-y-8">
-        {/* Header with Logo and Language Toggle */}
+        {/* Header with Logo and Controls */}
         <div className="text-center space-y-4">
           <div className="flex justify-between items-start">
-            <div className="flex-1" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setNotificationSystemVisible(!notificationSystemVisible)}
+              className="min-h-[44px] px-3"
+              aria-label="Notifications"
+            >
+              <Bell className="h-4 w-4" />
+              {notifications.filter(n => !n.dismissed && !n.acknowledged).length > 0 && (
+                <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 text-xs">
+                  {notifications.filter(n => !n.dismissed && !n.acknowledged).length}
+                </Badge>
+              )}
+            </Button>
+            
             <div className="flex justify-center flex-1">
               <Logo variant="wordmark" className="h-16 w-auto" />
             </div>
-            <div className="flex-1 flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={toggleLanguage}
-                className="min-h-[44px] px-3"
-                aria-label={t('lang.toggle', { defaultValue: 'EN / FR' })}
-              >
-                <Languages className="h-4 w-4 mr-1" />
-                {currentLanguage.toUpperCase()}
-              </Button>
-            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleLanguage}
+              className="min-h-[44px] px-3"
+              aria-label="Toggle Language"
+            >
+              <Languages className="h-4 w-4 mr-1" />
+              {currentLanguage.toUpperCase()}
+            </Button>
           </div>
           
           <p className="text-lg text-muted-foreground max-w-sm mx-auto leading-relaxed">
-            {t('app.tagline', { defaultValue: 'Your visual guidance assistant, in your pocket.' })}
+            {t('app.tagline', 'Your visual guidance assistant, in your pocket.')}
           </p>
           
           <div className="flex justify-center gap-2 flex-wrap">
-            <Badge variant="secondary">{t('app.badges.bilingual', { defaultValue: 'English • French' })}</Badge>
-            <Badge variant="secondary">{t('app.badges.offline', { defaultValue: 'Works offline' })}</Badge>
-            <Badge variant="secondary">{t('app.badges.privacy', { defaultValue: 'Privacy first' })}</Badge>
+            <Badge variant="secondary">English • French</Badge>
+            <Badge variant="secondary">Works offline</Badge>
+            <Badge variant="secondary">Privacy first</Badge>
+            {isPremiumUser && (
+              <Badge variant="default" className="gap-1">
+                <Zap className="h-3 w-3" />
+                Premium
+              </Badge>
+            )}
           </div>
           
-          {/* Usage Meter */}
           <UsageMeter />
         </div>
 
-        {/* Main Controls - Maximum 5 Big Buttons */}
-        <div className="space-y-4">
-          {/* Primary Action: Start/Stop Guidance */}
+        {/* AI Bot Status */}
+        {user && (
+          <Card className={`transition-all duration-300 ${
+            aiBot.isConnected ? 'border-green-500 bg-green-500/5' : 
+            aiBot.error ? 'border-destructive bg-destructive/5' : 
+            'border-warning bg-warning/5'
+          }`}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Bot className={`h-5 w-5 ${
+                  aiBot.isConnected ? 'text-green-500' : 
+                  aiBot.error ? 'text-destructive' : 
+                  'text-warning'
+                }`} />
+                <div className="flex-1">
+                  <p className="font-medium text-sm">
+                    AI Assistant: {
+                      aiBot.isConnected ? 'Connected' :
+                      aiBot.isLoading ? 'Connecting...' :
+                      'Connection Failed'
+                    }
+                  </p>
+                  {aiBot.error && (
+                    <p className="text-xs text-muted-foreground">{aiBot.error}</p>
+                  )}
+                </div>
+                {aiBot.error && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={aiBot.retryConnection}
+                    disabled={aiBot.isLoading}
+                  >
+                    Retry
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Main Actions - Modal-based Interface */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Primary: Vision Guidance */}
           <Button
             onClick={handleGuidanceToggle}
-            className={`w-full min-h-[60px] text-lg font-semibold ${
+            className={`h-24 flex-col gap-2 text-base font-semibold ${
               isGuidanceActive 
                 ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground' 
                 : 'bg-primary hover:bg-primary/90 text-primary-foreground'
             }`}
-            aria-label={isGuidanceActive ? t('home:guidance.stop', { defaultValue: 'Stop Guidance' }) : t('home:guidance.start', { defaultValue: 'Start Guidance' })}
-            role="button"
           >
-            <Eye className="mr-3 h-6 w-6" />
-            {isGuidanceActive ? t('home:guidance.stop', { defaultValue: 'Stop Guidance' }) : t('home:guidance.start', { defaultValue: 'Start Guidance' })}
+            <Eye className="h-6 w-6" />
+            {isGuidanceActive ? 'Stop Guidance' : 'Start Guidance'}
           </Button>
 
-          {/* Find Lost Item */}
+          {/* Item Finder */}
           <Button
-            onClick={handleFindItem}
+            onClick={handleItemFinder}
             variant="outline"
-            className="w-full min-h-[60px] text-lg font-semibold"
-            aria-label={t('home:finder.title', { defaultValue: 'Lost Item Finder' })}
-            role="button"
+            className="h-24 flex-col gap-2 text-base font-semibold"
           >
-            <Search className="mr-3 h-6 w-6" />
-            {t('home:finder.title', { defaultValue: 'Lost Item Finder' })}
+            <Search className="h-6 w-6" />
+            Find Item
           </Button>
 
           {/* Emergency SOS */}
           <Button
             onClick={handleSOSPress}
             variant="destructive"
-            className="w-full min-h-[60px] text-lg font-semibold"
-            aria-label={t('home:sos.title', { defaultValue: 'SOS (hold)' })}
-            role="button"
+            className="h-24 flex-col gap-2 text-base font-semibold"
           >
-            <AlertTriangle className="mr-3 h-6 w-6" />
-            {t('home:sos.title', { defaultValue: 'SOS (hold)' })}
+            <AlertTriangle className="h-6 w-6" />
+            Emergency SOS
           </Button>
 
-          {/* Settings */}
+          {/* Quick Actions / AI Chat */}
           <Button
-            onClick={handleSettings}
+            onClick={handleQuickActions}
             variant="outline"
-            className="w-full min-h-[60px] text-lg font-semibold"
-            aria-label={t('common:settings.title', { defaultValue: 'Settings' })}
-            role="button"
+            className="h-24 flex-col gap-2 text-base font-semibold"
           >
-            <Settings className="mr-3 h-6 w-6" />
-            {t('common:settings.title', { defaultValue: 'Settings' })}
+            {isPremiumUser && aiBot.isConnected ? (
+              <>
+                <MessageCircle className="h-6 w-6" />
+                AI Assistant
+              </>
+            ) : (
+              <>
+                <Menu className="h-6 w-6" />
+                Quick Actions
+              </>
+            )}
           </Button>
         </div>
 
-        {/* PWA Install Prompt */}
+        {/* Secondary Actions */}
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            onClick={() => setCurrentView('settings')}
+            variant="outline"
+            className="h-16 flex-col gap-1"
+          >
+            <Settings className="h-5 w-5" />
+            <span className="text-sm">Settings</span>
+          </Button>
+
+          <FeatureGate
+            feature="hazard_notification_screen"
+            user={user}
+            showUpgrade={false}
+            fallback={
+              <Button
+                variant="outline"
+                className="h-16 flex-col gap-1 opacity-60"
+                disabled
+              >
+                <Shield className="h-5 w-5" />
+                <span className="text-sm">Safety Center</span>
+                <Badge variant="outline" className="text-xs mt-1">Premium</Badge>
+              </Button>
+            }
+          >
+            <Button
+              onClick={() => setCurrentView('hazard-screen')}
+              variant="outline"
+              className="h-16 flex-col gap-1"
+            >
+              <Shield className="h-5 w-5" />
+              <span className="text-sm">Safety Center</span>
+              {isPremiumUser && (
+                <Badge variant="secondary" className="text-xs mt-1">Premium</Badge>
+              )}
+            </Button>
+          </FeatureGate>
+        </div>
+
         <PWAInstaller />
 
         {/* Status Indicators */}
         <div className="space-y-2">
-          {/* Audio Status */}
           {!audioArmed && (
             <div className="text-center">
               <Badge variant="outline" className="text-xs">
-                {t('common:audio.tapToArm', { defaultValue: 'Tap once to allow sound' })}
+                Tap any button to enable audio
               </Badge>
             </div>
           )}
 
-          {/* Guidance Status & Wake Lock */}
           {isGuidanceActive && (
             <div className="text-center space-y-2">
               <Badge variant="secondary" className="text-xs">
-                {t('guidance.active', { defaultValue: 'Guidance active' })}
+                Guidance active
               </Badge>
               <WakeLockIndicator />
             </div>
@@ -401,8 +762,8 @@ const Index = () => {
 
         {/* Footer */}
         <div className="text-center text-sm text-muted-foreground space-y-2 pt-4">
-          <p>{t('footer.builtin', { defaultValue: 'Built in Canada' })} • {t('footer.privacy', { defaultValue: 'Privacy first' })} • {t('footer.offline', { defaultValue: 'Works offline' })}</p>
-          <p className="text-xs">{t('footer.version', { version: '1.0.0', defaultValue: 'Version {version}' })}</p>
+          <p>Built in Canada • Privacy first • Works offline</p>
+          <p className="text-xs">Version 1.0.0</p>
         </div>
 
         {/* Aria-live region for status announcements */}
@@ -413,6 +774,40 @@ const Index = () => {
           className="sr-only"
         />
       </div>
+
+      {/* Action Modal */}
+      {showActionModal && modalConfig && (
+        <ActionPromptModal
+          isOpen={showActionModal}
+          onClose={closeModal}
+          onConfirm={modalConfig.action || (() => {})}
+          type={modalConfig.type}
+          title={modalConfig.title}
+          description={modalConfig.description}
+          severity={modalConfig.severity}
+          confirmText={modalConfig.confirmText}
+          isPremium={isPremiumUser}
+        />
+      )}
+
+      {/* Premium Enhanced Notification System */}
+      <FeatureGate
+        feature="enhanced_notifications"
+        user={user}
+        showUpgrade={false}
+      >
+        <EnhancedNotificationSystem
+          isVisible={notificationSystemVisible}
+          notifications={notifications.filter(n => !n.dismissed)}
+          onNotificationDismiss={dismissNotification}
+          onNotificationAcknowledge={acknowledgeNotification}
+          onSystemMute={() => setNotificationsMuted(!notificationsMuted)}
+          onSystemPause={() => setNotificationsPaused(!notificationsPaused)}
+          isMuted={notificationsMuted}
+          isPaused={notificationsPaused}
+          isPremium={isPremiumUser}
+        />
+      </FeatureGate>
     </div>
   );
 };
