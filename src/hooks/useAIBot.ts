@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/ProductionLogger';
 
 interface AIBotMessage {
   id: string;
@@ -39,12 +40,12 @@ export const useAIBot = (user: User | null) => {
   // Bot initialization with comprehensive error handling
   const initializeBot = useCallback(async () => {
     if (!user || initializationRef.current) {
-      console.log('AI Bot: Skipping initialization - no user or already initializing');
+      logger.debug('AI Bot: Skipping initialization', { hasUser: !!user, initializing: initializationRef.current });
       return;
     }
 
     initializationRef.current = true;
-    console.log('AI Bot: Starting initialization for user:', user.id);
+    logger.info('AI Bot: Starting initialization', { userId: user.id });
 
     setState(prev => ({ 
       ...prev, 
@@ -75,12 +76,12 @@ export const useAIBot = (user: User | null) => {
         });
         
         if (functionError) {
-          console.warn('AI chat function test failed:', functionError.message);
+          logger.warn('AI chat function test failed', { error: functionError.message });
         } else {
-          console.log('AI chat function test successful:', testData);
+          logger.debug('AI chat function test successful');
         }
       } catch (err) {
-        console.log('AI chat function not available:', err);
+        logger.debug('AI chat function not available', { error: err });
       }
 
       setState(prev => ({ 
@@ -91,7 +92,7 @@ export const useAIBot = (user: User | null) => {
         connectionAttempts: 0
       }));
 
-      console.log('AI Bot: Successfully initialized');
+      logger.info('AI Bot: Successfully initialized');
       
       toast({
         title: "AI Assistant Ready",
@@ -100,7 +101,7 @@ export const useAIBot = (user: User | null) => {
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('AI Bot initialization failed:', errorMessage);
+      logger.error('AI Bot initialization failed', { error: errorMessage });
       
       setState(prev => ({ 
         ...prev, 
@@ -111,12 +112,13 @@ export const useAIBot = (user: User | null) => {
 
       // Attempt reconnection if within limits
       if (state.connectionAttempts < MAX_RECONNECTION_ATTEMPTS) {
-        console.log(`AI Bot: Scheduling reconnection attempt ${state.connectionAttempts + 1}`);
+        logger.info('AI Bot: Scheduling reconnection', { attempt: state.connectionAttempts + 1 });
         reconnectionTimeoutRef.current = setTimeout(() => {
           initializationRef.current = false;
           initializeBot();
         }, RECONNECTION_DELAY * state.connectionAttempts);
       } else {
+        logger.error('AI Bot: Max reconnection attempts reached');
         toast({
           title: "AI Assistant Unavailable",
           description: "Unable to connect to AI services. Some features may be limited.",
@@ -131,10 +133,10 @@ export const useAIBot = (user: User | null) => {
   // Initialize bot when user changes or component mounts
   useEffect(() => {
     if (user && !state.isConnected && !state.isLoading) {
-      console.log('AI Bot: User authenticated, initializing bot');
+      logger.debug('AI Bot: User authenticated, initializing bot');
       initializeBot();
     } else if (!user) {
-      console.log('AI Bot: User signed out, disconnecting bot');
+      logger.debug('AI Bot: User signed out, disconnecting bot');
       setState({
         isActive: false,
         isConnected: false,
@@ -156,11 +158,11 @@ export const useAIBot = (user: User | null) => {
 
   // Monitor authentication state changes
   useEffect(() => {
-    console.log('AI Bot state change:', {
+    logger.debug('AI Bot state change', {
       userExists: !!user,
       isConnected: state.isConnected,
       isLoading: state.isLoading,
-      error: state.error,
+      hasError: !!state.error,
       attempts: state.connectionAttempts
     });
   }, [user, state]);
@@ -176,17 +178,17 @@ export const useAIBot = (user: User | null) => {
     }
 
     setState(prev => ({ ...prev, isActive: true }));
-    console.log('AI Bot: Activated');
+    logger.info('AI Bot: Activated');
   }, [state.isConnected, toast]);
 
   const deactivateBot = useCallback(() => {
     setState(prev => ({ ...prev, isActive: false }));
-    console.log('AI Bot: Deactivated');
+    logger.info('AI Bot: Deactivated');
   }, []);
 
   const sendMessage = useCallback(async (content: string) => {
     if (!state.isConnected || !user) {
-      console.error('AI Bot: Cannot send message - not connected or no user');
+      logger.warn('AI Bot: Cannot send message', { connected: state.isConnected, hasUser: !!user });
       return;
     }
 
@@ -232,7 +234,7 @@ export const useAIBot = (user: User | null) => {
       }));
 
     } catch (error) {
-      console.error('AI Bot: Message failed:', error);
+      logger.error('AI Bot: Message failed', { error });
       setState(prev => ({ ...prev, isLoading: false }));
       
       toast({
@@ -241,7 +243,7 @@ export const useAIBot = (user: User | null) => {
         variant: "destructive",
       });
     }
-  }, [state.isConnected, user, toast]);
+  }, [state.isConnected, user, state.messages, toast]);
 
   const retryConnection = useCallback(() => {
     setState(prev => ({ ...prev, connectionAttempts: 0, error: null }));

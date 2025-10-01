@@ -124,7 +124,6 @@ const Index: React.FC = () => {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        console.log('Auth state changed:', { event, user: !!session?.user });
         
         // Update AI bot status notification
         if (session?.user && !aiBot.isConnected) {
@@ -159,7 +158,6 @@ const Index: React.FC = () => {
     
     const unsubscribe = HealthManager.onHealthChange?.((status) => {
       if (status.overall === 'critical') {
-        console.error('Critical system health issue:', status);
         addNotification({
           id: `health-${Date.now()}`,
           type: 'critical',

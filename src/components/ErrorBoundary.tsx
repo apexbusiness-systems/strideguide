@@ -4,6 +4,7 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCcw } from 'lucide-react';
+import { logger } from '@/utils/ProductionLogger';
 
 interface Props {
   children: ReactNode;
@@ -28,20 +29,17 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error details for debugging
-    console.error('ErrorBoundary caught an error:', error);
-    console.error('Error info:', errorInfo);
+    // Log error with secure production logger
+    logger.error('ErrorBoundary caught an error', {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack
+    });
     
     this.setState({
       error,
       errorInfo
     });
-
-    // Report to error tracking service in production
-    if (process.env.NODE_ENV === 'production') {
-      // Would integrate with error reporting service
-      console.log('Error reported to monitoring service');
-    }
   }
 
   handleReset = () => {

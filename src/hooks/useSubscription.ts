@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/utils/ProductionLogger";
 
 interface SubscriptionData {
   id: string;
@@ -47,7 +48,7 @@ export const useSubscription = (user: User | null): UseSubscriptionReturn => {
       });
 
       if (error) {
-        console.error("Error loading subscription:", error);
+        logger.error("Error loading subscription", { error: error.message });
         return;
       }
 
@@ -71,7 +72,7 @@ export const useSubscription = (user: User | null): UseSubscriptionReturn => {
         });
       }
     } catch (error) {
-      console.error("Error loading subscription:", error);
+      logger.error("Error loading subscription", { error });
     } finally {
       setIsLoading(false);
     }
@@ -116,14 +117,14 @@ export const useSubscription = (user: User | null): UseSubscriptionReturn => {
         .gte('created_at', startOfMonth.toISOString());
 
       if (error) {
-        console.error("Error checking usage:", error);
+        logger.error("Error checking usage", { error: error.message });
         return false;
       }
 
       const currentUsage = count || 0;
       return currentUsage < subscription.max_api_calls;
     } catch (error) {
-      console.error("Error checking usage limit:", error);
+      logger.error("Error checking usage limit", { error });
       return false;
     }
   };
@@ -148,7 +149,7 @@ export const useSubscription = (user: User | null): UseSubscriptionReturn => {
           response_size_bytes: 2048, // Mock response size
         });
     } catch (error) {
-      console.error("Error tracking API usage:", error);
+      logger.error("Error tracking API usage", { error, endpoint, method });
     }
   };
 
