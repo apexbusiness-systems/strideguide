@@ -22,56 +22,57 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* StrideGuide Brand Colors - Light Mode */
-    --background: 0 0% 100%; /* Surface Light: #FFFFFF */
-    --foreground: 215 25% 6%; /* Text Primary: #0B0F14 */
+    /* StrideGuide Landing Brand Colors - Light Mode */
+    --background: 210 40% 98%; /* Surface: #F8FAFC */
+    --foreground: 220 13% 9%; /* Ink: #111827 */
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 6%;
+    --card-foreground: 220 13% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 6%;
+    --popover-foreground: 220 13% 9%;
 
-    --primary: 238 66% 37%; /* Primary Indigo 800: #3730A3 */
+    --primary: 238 61% 41%; /* Accent Indigo: #3730A3 */
     --primary-foreground: 0 0% 100%;
 
-    --primary-dark: 243 87% 20%; /* Primary Dark Indigo 950: #1E1B4B */
+    --secondary: 220 13% 91%; /* Outline: #E5E7EB */
+    --secondary-foreground: 220 13% 9%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 215 25% 6%;
+    --muted: 220 13% 91%;
+    --muted-foreground: 220 9% 46%; /* Neutral: #6B7280 */
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-
-    --accent: 24 95% 53%; /* Accent Safety Orange: #F97316 */
-    --accent-foreground: 215 25% 6%;
+    --accent: 238 61% 41%; /* Accent Indigo: #3730A3 */
+    --accent-foreground: 0 0% 100%;
 
     --success: 142 76% 36%; /* Success: #16A34A */
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%; /* Warning Amber: #F59E0B */
-    --warning-foreground: 215 25% 6%;
+    --warning-foreground: 220 13% 9%;
 
-    --destructive: 0 74% 50%; /* Critical Red 600: #DC2626 */
+    --destructive: 0 72% 51%; /* SOS Red: #DC2626 */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 238 66% 37%;
+    --border: 220 13% 91%; /* Outline: #E5E7EB */
+    --input: 220 13% 91%;
+    --ring: 238 61% 41%;
 
     --radius: 0.75rem;
 
-    /* Text tokens */
-    --text-inverse: 210 40% 98%; /* Text Inverse: #F8FAFC */
+    /* Landing page specific tokens */
+    --surface: 210 40% 98%; /* #F8FAFC */
+    --ink: 220 13% 9%; /* #111827 */
+    --neutral: 220 9% 46%; /* #6B7280 */
+    --outline: 220 13% 91%; /* #E5E7EB */
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 215 25% 6%;
-    --sidebar-primary: 238 66% 37%;
+    --sidebar-foreground: 220 13% 9%;
+    --sidebar-primary: 238 61% 41%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 215 25% 6%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 238 66% 37%;
+    --sidebar-accent-foreground: 220 13% 9%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 238 61% 41%;
   }
 
   .dark {

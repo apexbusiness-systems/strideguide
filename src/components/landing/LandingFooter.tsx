@@ -1,0 +1,77 @@
+// @stride/landing-footer v1
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Globe } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+export const LandingFooter: React.FC = () => {
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'fr' : 'en';
+    i18n.changeLanguage(newLang);
+    document.documentElement.lang = newLang;
+  };
+
+  const links = [
+    { label: t('footer.privacy'), href: '/privacy' },
+    { label: t('footer.terms'), href: '/terms' },
+    { label: t('footer.contact'), href: '/contact' },
+    { label: t('footer.accessibility'), href: '/accessibility' },
+  ];
+
+  return (
+    <footer className="border-t border-border bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+          {/* Brand */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-bold text-foreground">StrideGuide</h3>
+            <p className="text-sm text-muted-foreground max-w-xs">
+              {t('hero.sub')}
+            </p>
+          </div>
+
+          {/* Links */}
+          <nav className="space-y-3" aria-label="Footer navigation">
+            <h4 className="text-sm font-semibold text-foreground">Quick Links</h4>
+            <ul className="space-y-2">
+              {links.map((link, idx) => (
+                <li key={idx}>
+                  <a
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Language */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-foreground">Language</h4>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleLanguage}
+              className="gap-2"
+              aria-label={`Switch to ${i18n.language === 'en' ? 'French' : 'English'}`}
+            >
+              <Globe className="w-4 h-4" aria-hidden="true" />
+              <span>{i18n.language === 'en' ? 'Français' : 'English'}</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Copyright */}
+        <div className="mt-8 pt-8 border-t border-border">
+          <p className="text-sm text-muted-foreground text-center">
+            {t('footer.copyright')}
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+};

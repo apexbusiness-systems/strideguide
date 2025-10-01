@@ -9,9 +9,12 @@ import { supabase } from "@/integrations/supabase/client";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useI18nGuard } from "@/utils/i18nGuard";
 import Index from "./pages/Index";
+import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
+import PricingPage from "./pages/PricingPage";
+import HelpPage from "./pages/HelpPage";
 
 const queryClient = new QueryClient();
 
@@ -68,16 +71,8 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route 
-                path="/" 
-                element={
-                  user ? (
-                    <DashboardPage user={user} onSignOut={handleSignOut} />
-                  ) : (
-                    <Index />
-                  )
-                } 
-              />
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/app" element={<Index />} />
               <Route 
                 path="/auth" 
                 element={
@@ -89,9 +84,17 @@ const App = () => {
                 } 
               />
               <Route 
-                path="/app" 
-                element={<Index />} 
+                path="/dashboard" 
+                element={
+                  user ? (
+                    <DashboardPage user={user} onSignOut={handleSignOut} />
+                  ) : (
+                    <AuthPage onAuthSuccess={handleAuthSuccess} />
+                  )
+                } 
               />
+              <Route path="/pricing" element={<PricingPage onBack={() => window.history.back()} />} />
+              <Route path="/help" element={<HelpPage onBack={() => window.history.back()} />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
