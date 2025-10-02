@@ -24,7 +24,7 @@ export const WhyStrideGuide: React.FC = () => {
               {t('landing.whyTitle')}
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Built specifically for seniors and blind users who need reliable, privacy-first navigation assistance that works anywhere, anytime—even without an internet connection.
+              Most navigation apps need internet and send your location to a server. This one doesn't. It runs entirely on your phone and tells you what's in front of you before you walk into it.
             </p>
           </div>
 
