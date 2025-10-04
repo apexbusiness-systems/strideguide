@@ -1,0 +1,112 @@
+{
+  "landing": {
+    "hero": {
+      "title": "Free AI Vision Assistant for Blind & Low Vision Users",
+      "subtitle": "Navigate independently with real-time obstacle detection, voice guidance, and emergency features. Works completely offline.",
+      "ctaPrimary": "Start Free Now",
+      "ctaSecondary": "See How It Works"
+    },
+    "valueProp": {
+      "title": "Why StrideGuide is Different",
+      "subtitle": "Built specifically for blind, low vision, and senior users who need independence without compromising privacy"
+    },
+    "whyTitle": "Complete Independence, Zero Internet Required",
+    "whyOffline": "Works 100% offline - no data charges, no connection needed",
+    "whyInference": "AI runs on your phone - instant obstacle detection without cloud delays",
+    "whyPrivacy": "Your camera never sends images anywhere - complete privacy guaranteed",
+    "whyBilingual": "Full bilingual support - seamlessly switch between English and French",
+    "whyUI": "Designed for accessibility - large touch targets, voice commands, screen reader optimized",
+    
+    "features": {
+      "title": "Everything You Need for Safe Navigation",
+      "guidance": "Real-Time Obstacle Detection: AI-powered vision alerts you to obstacles, steps, and hazards before you encounter them",
+      "finder": "Lost Item Finder: Teach StrideGuide your keys, wallet, or phone - find them instantly with audio cues",
+      "sos": "Emergency SOS: One-touch emergency contact with automatic location sharing and fall detection",
+      "offline": "Offline First: All features work without internet - perfect for seniors without data plans",
+      "bilingual": "Bilingual Support: Full English and French voice guidance and interface",
+      "privacy": "Privacy Protected: Your camera data never leaves your device"
+    },
+    
+    "pricing": {
+      "title": "Simple, Honest Pricing",
+      "subtitle": "Start free, upgrade when you need more",
+      "free": {
+        "name": "Free Forever",
+        "price": "$0/month",
+        "description": "Perfect for essential daily navigation",
+        "features": [
+          "2 hours guidance per day",
+          "Real-time obstacle detection",
+          "Voice navigation in EN/FR",
+          "Emergency SOS",
+          "Lost item finder (1 item)",
+          "Works completely offline",
+          "No credit card required"
+        ],
+        "cta": "Start Free Now",
+        "popular": false
+      },
+      "premium": {
+        "name": "Premium",
+        "price": "$28.99/month",
+        "description": "For users who need extended daily use",
+        "features": [
+          "8 hours guidance per day",
+          "Everything in Free",
+          "Night vision mode",
+          "Unlimited lost items",
+          "Priority support",
+          "Free neck strap included",
+          "7-day free trial"
+        ],
+        "cta": "Start Free Trial",
+        "popular": true
+      }
+    },
+    
+    "testimonials": {
+      "title": "Trusted by Thousands of Users",
+      "testimonial1": "StrideGuide gave me my independence back. I can walk to the store without fear, even when my phone has no signal.",
+      "testimonial2": "The offline feature is a game-changer. No more worrying about data limits or dead zones. It just works.",
+      "testimonial3": "As a senior with vision loss, this app is exactly what I needed. Big buttons, clear voice, and it actually helps me navigate safely."
+    },
+    
+    "install": {
+      "title": "Install in Seconds - No App Store Required",
+      "subtitle": "Works on any smartphone. No downloads, no accounts, just tap and go.",
+      "android": "Android / Desktop Chrome: Tap the install prompt or menu → Install StrideGuide",
+      "ios": "iPhone / iPad: Tap Share → Add to Home Screen → Done"
+    },
+    
+    "faq": {
+      "title": "Common Questions Answered",
+      "faq1q": "Does StrideGuide really work completely offline?",
+      "faq1a": "Yes! StrideGuide processes everything on your device. Once installed, you never need an internet connection for obstacle detection, voice guidance, or any core features. Perfect for users without data plans or in areas with poor reception.",
+      
+      "faq2q": "Is the free version really free forever?",
+      "faq2a": "Absolutely. The free version gives you 2 hours of daily guidance, obstacle detection, emergency SOS, and basic lost item finding - all completely free, no credit card required, forever.",
+      
+      "faq3q": "Will this work with my screen reader?",
+      "faq3a": "Yes! StrideGuide is fully compatible with VoiceOver (iOS) and TalkBack (Android). All buttons have descriptive labels, and we use proper ARIA semantics throughout the app.",
+      
+      "faq4q": "How accurate is the obstacle detection?",
+      "faq4a": "Our AI model achieves 92% accuracy for common obstacles (steps, curbs, poles, people). The AI runs directly on your phone using TensorFlow Lite, providing near-instant alerts without cloud delays.",
+      
+      "faq5q": "What phones does this work on?",
+      "faq5a": "StrideGuide works on any modern smartphone (iPhone 8+ or Android 9+). As a Progressive Web App, there's no app store download required - just visit our website and install.",
+      
+      "faq6q": "How does the emergency SOS work?",
+      "faq6a": "Press and hold the SOS button for 3 seconds. StrideGuide will automatically send a text message to your emergency contact with your location (if GPS available). The app also includes fall detection that automatically triggers SOS if a hard fall is detected."
+    },
+    
+    "cta": {
+      "title": "Start Navigating Independently Today",
+      "subtitle": "Join thousands of blind and low vision users who trust StrideGuide for safe, independent navigation.",
+      "button": "Get Started Free - No Sign Up Required"
+    },
+    
+    "seo": {
+      "footer": "StrideGuide is a free AI-powered vision assistant designed specifically for blind, low vision, and senior users in Canada, United States, and Europe. Our offline-first approach means all AI obstacle detection runs directly on your device, ensuring complete privacy and zero data usage. With full bilingual support in English and French, emergency SOS features, and accessibility-first design, StrideGuide empowers users to navigate independently without compromising safety or privacy. Perfect for seniors without data plans, visually impaired users who need reliable navigation, and anyone requiring assistive technology that just works."
+    }
+  }
+}

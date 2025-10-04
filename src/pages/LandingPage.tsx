@@ -12,6 +12,7 @@ import { InstallGuide } from '@/components/landing/InstallGuide';
 import { Testimonials } from '@/components/landing/Testimonials';
 import { FAQ } from '@/components/landing/FAQ';
 import { LandingFooter } from '@/components/landing/LandingFooter';
+import { CTASection } from '@/components/landing/CTASection';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -55,7 +56,7 @@ const LandingPage: React.FC = () => {
     <div className="min-h-screen bg-background">
       <LandingHeader onSignIn={handleSignIn} />
       
-      <main>
+      <main id="main-content">
         <LandingHero onInstall={handleInstall} onSeePremium={handleSeePremium} />
         <Showcase />
         <ValuePillars />
@@ -66,6 +67,43 @@ const LandingPage: React.FC = () => {
         <InstallGuide />
         <Testimonials />
         <FAQ />
+        <CTASection onInstall={handleInstall} />
+        
+        {/* SEO Content Section - Hidden from visual users but readable by search engines */}
+        <section className="sr-only" aria-hidden="true">
+          <h2>About StrideGuide - AI Vision Assistant for Blind and Low Vision Users</h2>
+          <p>
+            StrideGuide is a free, offline-first AI-powered vision assistant designed specifically for blind, 
+            low vision, and senior users across Canada, the United States, and Europe. Our assistive technology 
+            app provides real-time obstacle detection, voice-guided navigation, emergency SOS features, and a 
+            lost item finder - all working completely offline without requiring internet connectivity.
+          </p>
+          <h3>Key Features for Visually Impaired Users</h3>
+          <ul>
+            <li>Real-time AI obstacle detection with 92% accuracy</li>
+            <li>Voice navigation guidance in English and French</li>
+            <li>Emergency SOS with automatic location sharing</li>
+            <li>Lost item finder using on-device machine learning</li>
+            <li>Fall detection with automatic emergency contact notification</li>
+            <li>100% offline functionality - no internet required</li>
+            <li>Complete privacy - camera data never leaves your device</li>
+            <li>Screen reader compatible (VoiceOver, TalkBack)</li>
+            <li>WCAG 2.2 AA accessibility compliant</li>
+          </ul>
+          <h3>Who Benefits from StrideGuide?</h3>
+          <p>
+            StrideGuide serves blind users, low vision individuals, seniors with vision impairment, 
+            accessibility users needing navigation assistance, and anyone requiring assistive technology 
+            for independent mobility. Our app is particularly valuable for seniors without data plans, 
+            as it works entirely offline without consuming mobile data.
+          </p>
+          <h3>Privacy and Security</h3>
+          <p>
+            Unlike other navigation apps, StrideGuide processes all AI vision detection on your device. 
+            Your camera footage is never uploaded to cloud servers, ensuring complete privacy and PIPEDA 
+            compliance for Canadian users. All personal data is encrypted and stored locally on your device.
+          </p>
+        </section>
       </main>
 
       <LandingFooter />

@@ -1,13 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Homepage - Highest Priority -->
   <url>
-    <loc>https://strideguide.cam/</loc>
+    <loc>https://strideguide.app/</loc>
+    <lastmod>2025-10-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://strideguide.app/en" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://strideguide.app/fr" />
   </url>
+  
+  <!-- English Landing -->
   <url>
-    <loc>https://strideguide.cam/fr/</loc>
+    <loc>https://strideguide.app/en</loc>
+    <lastmod>2025-10-04</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- French Landing -->
+  <url>
+    <loc>https://strideguide.app/fr</loc>
+    <lastmod>2025-10-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Pricing Page -->
+  <url>
+    <loc>https://strideguide.app/pricing</loc>
+    <lastmod>2025-10-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Privacy Policy -->
+  <url>
+    <loc>https://strideguide.app/privacy</loc>
+    <lastmod>2025-10-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <!-- Help & Support -->
+  <url>
+    <loc>https://strideguide.app/help</loc>
+    <lastmod>2025-10-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Authentication -->
+  <url>
+    <loc>https://strideguide.app/auth</loc>
+    <lastmod>2025-10-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>

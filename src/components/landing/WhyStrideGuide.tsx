@@ -15,16 +15,16 @@ export const WhyStrideGuide: React.FC = () => {
   ];
 
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background" aria-labelledby="why-strideguide">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left: Copy */}
           <div className="space-y-6">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
-              {t('landing.whyTitle')}
+            <h2 id="why-strideguide" className="text-3xl sm:text-4xl font-bold text-foreground">
+              Complete Independence, Zero Internet Required
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Most navigation apps need internet and send your location to a server. This one doesn't. It runs entirely on your phone and tells you what's in front of you before you walk into it.
+              Most navigation apps need constant internet and send your location to servers. StrideGuide is different - it runs 100% on your device with complete offline functionality. Your camera data never leaves your phone, ensuring total privacy while providing instant obstacle detection without cloud delays.
             </p>
           </div>
 

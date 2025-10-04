@@ -19,23 +19,26 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onInstall, onSeePremiu
   };
 
   return (
-    <section className="relative py-20 px-4 sm:px-6 lg:px-8 bg-hero-bg overflow-hidden">
+    <section 
+      className="relative py-20 px-4 sm:px-6 lg:px-8 bg-hero-bg overflow-hidden" 
+      aria-labelledby="hero-heading"
+    >
       {/* Gradient background overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-hero-bg via-hero-bg to-primary/10 -z-10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-hero-bg via-hero-bg to-primary/10 -z-10" aria-hidden="true" />
       
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left: Copy */}
           <div className="space-y-8 text-hero-fg animate-fade-in">
             <div className="space-y-6">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight">
-                {i18n.language === 'en' ? 'Offline seeing-eye assistance.' : 'Assistant de guidage hors ligne.'}
+              <h1 id="hero-heading" className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight">
+                {i18n.language === 'en' ? 'Free AI Vision Assistant for Blind & Low Vision Users' : 'Assistant de Vision IA Gratuit pour Malvoyants'}
               </h1>
-              <h2 className="text-xl sm:text-2xl text-hero-fg/80 max-w-2xl leading-relaxed">
+              <p className="text-xl sm:text-2xl text-hero-fg/90 max-w-2xl leading-relaxed">
                 {i18n.language === 'en' 
-                  ? 'Obstacle alerts, guidance, and SOS. EN/FR. Works offline.'
-                  : 'Alertes d\'obstacles, guidage et SOS. EN/FR. Fonctionne hors ligne.'}
-              </h2>
+                  ? 'Navigate independently with real-time obstacle detection, voice guidance, and emergency features. Works completely offline.'
+                  : 'Naviguez en toute autonomie avec détection d\'obstacles, guidage vocal et fonctions d\'urgence. Fonctionne entièrement hors ligne.'}
+              </p>
             </div>
 
             {/* CTAs */}
@@ -73,16 +76,35 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onInstall, onSeePremiu
             </div>
 
             {/* Trust badges */}
-            <div className="flex flex-wrap gap-3 pt-4">
-              {t('badges').split(' • ').map((badge, idx) => (
-                <Badge 
-                  key={idx} 
-                  variant="secondary" 
-                  className="px-3 py-1.5 text-sm font-medium bg-hero-fg/10 text-hero-fg border-hero-fg/20 backdrop-blur-sm"
-                >
-                  {badge}
-                </Badge>
-              ))}
+            <div className="flex flex-wrap gap-3 pt-4" role="list" aria-label="Key features">
+              <Badge 
+                variant="secondary" 
+                className="px-3 py-1.5 text-sm font-medium bg-hero-fg/10 text-hero-fg border-hero-fg/20 backdrop-blur-sm"
+                role="listitem"
+              >
+                {i18n.language === 'en' ? '✓ 100% Free Forever' : '✓ Gratuit à Vie'}
+              </Badge>
+              <Badge 
+                variant="secondary" 
+                className="px-3 py-1.5 text-sm font-medium bg-hero-fg/10 text-hero-fg border-hero-fg/20 backdrop-blur-sm"
+                role="listitem"
+              >
+                {i18n.language === 'en' ? '✓ Works Offline' : '✓ Hors Ligne'}
+              </Badge>
+              <Badge 
+                variant="secondary" 
+                className="px-3 py-1.5 text-sm font-medium bg-hero-fg/10 text-hero-fg border-hero-fg/20 backdrop-blur-sm"
+                role="listitem"
+              >
+                {i18n.language === 'en' ? '✓ English & French' : '✓ Anglais et Français'}
+              </Badge>
+              <Badge 
+                variant="secondary" 
+                className="px-3 py-1.5 text-sm font-medium bg-hero-fg/10 text-hero-fg border-hero-fg/20 backdrop-blur-sm"
+                role="listitem"
+              >
+                {i18n.language === 'en' ? '✓ Privacy First' : '✓ Vie Privée d\'Abord'}
+              </Badge>
             </div>
           </div>
 

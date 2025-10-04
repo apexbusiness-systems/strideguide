@@ -26,8 +26,11 @@ export const ValuePillars: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-muted/30">
+    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-muted/30" aria-labelledby="features-heading">
       <div className="max-w-7xl mx-auto">
+        <h2 id="features-heading" className="text-3xl sm:text-4xl font-bold text-center text-foreground mb-12">
+          Everything You Need for Safe Navigation
+        </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {pillars.map((pillar, idx) => {
             const Icon = pillar.icon;

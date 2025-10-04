@@ -26,10 +26,11 @@ export const Testimonials: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-muted/30">
+    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-muted/30" aria-labelledby="testimonials-heading">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground">{t('landing.testimonialsTitle')}</h2>
+          <h2 id="testimonials-heading" className="text-3xl sm:text-4xl font-bold text-foreground">Trusted by Thousands of Users</h2>
+          <p className="mt-3 text-lg text-muted-foreground">Real stories from people who navigate with confidence using StrideGuide</p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">

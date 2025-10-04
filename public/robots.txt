@@ -1,3 +1,22 @@
+# @stride/robots.txt v2 - SEO optimized
 User-agent: *
 Allow: /
-Sitemap: https://strideguide.cam/sitemap.xml
+Allow: /en
+Allow: /fr
+Allow: /pricing
+Allow: /auth
+Allow: /dashboard
+Allow: /help
+Allow: /privacy
+
+# Disallow admin and internal routes
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_/*
+Disallow: /test/
+
+# Sitemap location
+Sitemap: https://strideguide.app/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1

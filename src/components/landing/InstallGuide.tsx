@@ -21,12 +21,12 @@ export const InstallGuide: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-background">
+    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-background" aria-labelledby="install-heading">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-10 space-y-3">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground">{t('landing.installTitle')}</h2>
-          <p className="text-base text-muted-foreground">
-            Install StrideGuide as a native app on your device in seconds.
+          <h2 id="install-heading" className="text-3xl sm:text-4xl font-bold text-foreground">Install in Seconds - No App Store Required</h2>
+          <p className="text-lg text-muted-foreground">
+            Works on any smartphone. No downloads from app stores, no accounts needed - just tap and start navigating safely.
           </p>
         </div>
 

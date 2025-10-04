@@ -21,10 +21,11 @@ export const FAQ: React.FC = () => {
   ];
 
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background" aria-labelledby="faq-heading">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground">{t('landing.faqTitle')}</h2>
+          <h2 id="faq-heading" className="text-3xl sm:text-4xl font-bold text-foreground">Common Questions Answered</h2>
+          <p className="mt-4 text-lg text-muted-foreground">Everything you need to know about StrideGuide</p>
         </div>
 
         <Accordion type="single" collapsible className="space-y-3">
