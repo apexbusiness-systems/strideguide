@@ -67,47 +67,49 @@ const App = () => {
   }
   
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <ConsentModal />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Showcase />} />
-              <Route path="/landing" element={<LandingPage />} />
-              <Route path="/app" element={<Index />} />
-              <Route 
-                path="/auth" 
-                element={
-                  user ? (
-                    <DashboardPage user={user} onSignOut={handleSignOut} />
-                  ) : (
-                    <AuthPage onAuthSuccess={handleAuthSuccess} />
-                  )
-                } 
-              />
-              <Route 
-                path="/dashboard" 
-                element={
-                  user ? (
-                    <DashboardPage user={user} onSignOut={handleSignOut} />
-                  ) : (
-                    <AuthPage onAuthSuccess={handleAuthSuccess} />
-                  )
-                } 
-              />
-              <Route path="/pricing" element={<PricingPage onBack={() => window.history.back()} />} />
-              <Route path="/help" element={<HelpPage onBack={() => window.history.back()} />} />
-              <Route path="/privacy" element={<PrivacyPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <div className="min-h-screen bg-neutral-950 text-white">
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <ConsentModal />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Showcase />} />
+                <Route path="/landing" element={<LandingPage />} />
+                <Route path="/app" element={<Index />} />
+                <Route 
+                  path="/auth" 
+                  element={
+                    user ? (
+                      <DashboardPage user={user} onSignOut={handleSignOut} />
+                    ) : (
+                      <AuthPage onAuthSuccess={handleAuthSuccess} />
+                    )
+                  } 
+                />
+                <Route 
+                  path="/dashboard" 
+                  element={
+                    user ? (
+                      <DashboardPage user={user} onSignOut={handleSignOut} />
+                    ) : (
+                      <AuthPage onAuthSuccess={handleAuthSuccess} />
+                    )
+                  } 
+                />
+                <Route path="/pricing" element={<PricingPage onBack={() => window.history.back()} />} />
+                <Route path="/help" element={<HelpPage onBack={() => window.history.back()} />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
+    </div>
   );
 };
 
