@@ -75,8 +75,8 @@ const App = () => {
           <ConsentModal />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Showcase />} />
-              <Route path="/landing" element={<LandingPage />} />
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/landing" element={<Showcase />} />
               <Route path="/app" element={<Index />} />
               <Route 
                 path="/auth" 
