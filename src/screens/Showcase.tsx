@@ -8,25 +8,25 @@ export default function Showcase() {
 
   return (
     <section className="mx-auto max-w-4xl px-4 py-10">
-      <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('see.title')}</h2>
+      <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('seeInterface')}</h2>
       <div className="mt-4 grid gap-6 md:grid-cols-2">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="grid grid-cols-2 gap-3">
             <button className="h-14 rounded-2xl bg-slate-900 text-white font-semibold focus:outline-none focus-visible:ring-2">
-              {t('see.start')}
+              {t('startGuidance')}
             </button>
             <button className="h-14 rounded-2xl border border-slate-300 font-semibold focus:outline-none focus-visible:ring-2">
-              {t('see.find')}
+              {t('findItem')}
             </button>
             <button className="h-14 rounded-2xl border border-red-300 text-red-700 font-semibold focus:outline-none focus-visible:ring-2">
-              {t('see.sos')}
+              {t('emergencySOS')}
             </button>
             <button className="h-14 rounded-2xl border border-slate-300 font-semibold focus:outline-none focus-visible:ring-2">
-              {t('see.settings')}
+              {t('settings')}
             </button>
           </div>
           <p className="mt-4 text-sm text-slate-600">
-            {t('see.caption')}
+            {t('guidanceCardBody')}
           </p>
         </div>
         <AuthGate />
