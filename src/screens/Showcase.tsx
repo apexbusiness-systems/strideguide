@@ -5,9 +5,18 @@ import AuthGate from "../components/AuthGate";
 
 export default function Showcase() {
   const [isAuthed, setIsAuthed] = React.useState(false);
+  const [devBypass, setDevBypass] = React.useState(() => 
+    localStorage.getItem('stride-dev-bypass') === 'true'
+  );
+
+  const toggleDevBypass = () => {
+    const newValue = !devBypass;
+    setDevBypass(newValue);
+    localStorage.setItem('stride-dev-bypass', String(newValue));
+  };
 
   const startFlow = () => {
-    if (!isAuthed) {
+    if (!isAuthed && !devBypass) {
       document.getElementById("auth-block")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return; // click 1 -> reveals sign-in
     }
@@ -16,6 +25,19 @@ export default function Showcase() {
 
   return (
     <main className="mx-auto max-w-5xl p-4 md:p-6 text-white">
+      {/* Dev bypass toggle */}
+      <div className="mb-4 flex items-center gap-3 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
+        <button
+          onClick={toggleDevBypass}
+          className="px-4 py-2 rounded-lg bg-yellow-500 text-black font-semibold text-sm hover:bg-yellow-400 transition"
+        >
+          DEV BYPASS: {devBypass ? 'ON ✓' : 'OFF'}
+        </button>
+        <span className="text-xs text-yellow-200">
+          {devBypass ? 'Auth check disabled - clicking Start Guidance goes directly to /guidance' : 'Auth check enabled - normal flow'}
+        </span>
+      </div>
+
       <Hero onStart={startFlow} PrimaryCTA={PrimaryCTA} />
 
       {/* Secondary (below the fold) */}
