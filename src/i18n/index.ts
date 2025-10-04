@@ -15,7 +15,9 @@ const resources = {
     guidanceCardTitle: "Guidance",
     guidanceCardBody: "Clear audio cues to navigate safely.",
     findItemCardTitle: "Find Item",
-    findItemCardBody: "Teach 12 frames to locate keys or wallet."
+    findItemCardBody: "Teach 12 frames to locate keys or wallet.",
+    ctaPrimary: "Start Guidance",
+    tagline: "On-device vision. Private. Safe."
   }},
   fr: { translation: {
     appName: "Stride Guide",
@@ -30,7 +32,9 @@ const resources = {
     guidanceCardTitle: "Guidage",
     guidanceCardBody: "Indications audio claires pour se déplacer en sécurité.",
     findItemCardTitle: "Trouver un objet",
-    findItemCardBody: "Enseignez 12 images pour localiser des clés ou un porte-monnaie."
+    findItemCardBody: "Enseignez 12 images pour localiser des clés ou un porte-monnaie.",
+    ctaPrimary: "Démarrer l'assistance",
+    tagline: "Vision sur l'appareil. Privé. Sûr."
   }},
 };
 
