@@ -1,130 +1,174 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @stride/validate-feature-access v2 - Production-hardened authorization
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+// Rate limiting configuration
+const RATE_LIMIT_CONFIG: Record<string, { maxRequests: number; windowMinutes: number }> = {
+  "premium_features": { maxRequests: 100, windowMinutes: 1 },
+  "ai_chat": { maxRequests: 50, windowMinutes: 1 },
+  "default": { maxRequests: 200, windowMinutes: 1 }
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const requestId = crypto.randomUUID();
+  console.log(`[${requestId}] Feature access validation request`);
+
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ 
-        error: "Authentication required",
-        hasAccess: false 
-      }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Extract JWT token
-    const token = authHeader.replace('Bearer ', '');
+    const { featureName } = await req.json();
     
-    // Verify user authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
+    if (!featureName || typeof featureName !== "string") {
       return new Response(JSON.stringify({ 
-        error: "Invalid authentication",
-        hasAccess: false 
-      }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const { feature } = await req.json();
-    
-    if (!feature || typeof feature !== 'string') {
-      return new Response(JSON.stringify({ 
-        error: "Feature name required",
-        hasAccess: false 
+        error: "Invalid feature name",
+        code: "INVALID_INPUT" 
       }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    // Check user subscription and feature access
-    const { data: subscription, error: subError } = await supabase
-      .from('user_subscriptions')
-      .select(`
-        plan_id,
-        status,
-        subscription_plans (
-          name,
-          features
-        )
-      `)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .single();
-
-    if (subError || !subscription) {
-      // User has no active subscription - only basic features
-      const basicFeatures = [
-        'voice_guidance',
-        'emergency_contacts',
-        'basic_navigation',
-        'lost_item_finder_basic'
-      ];
-      
+    
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.warn(`[${requestId}] No authorization header`);
       return new Response(JSON.stringify({ 
-        hasAccess: basicFeatures.includes(feature),
-        plan: 'free',
-        features: basicFeatures
+        hasAccess: false,
+        reason: "Not authenticated",
+        code: "AUTH_REQUIRED" 
       }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error(`[${requestId}] Missing environment variables`);
+      return new Response(JSON.stringify({ error: "Service misconfigured" }), { 
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    
+    // Authenticate user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      console.warn(`[${requestId}] User authentication failed:`, userError?.message);
+      return new Response(JSON.stringify({ 
+        hasAccess: false,
+        reason: "Authentication failed",
+        code: "AUTH_FAILED" 
+      }), {
+        status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Check if feature is included in user's plan
-    const planData = subscription.subscription_plans as any;
-    const planFeatures = planData?.features || [];
-    const hasAccess = planFeatures.includes(feature);
+    // Rate limiting check
+    const rateLimitConfig = RATE_LIMIT_CONFIG[featureName] || RATE_LIMIT_CONFIG.default;
+    const { data: rateLimitCheck, error: rateLimitError } = await supabase
+      .rpc("check_rate_limit", {
+        _user_id: user.id,
+        _endpoint: `feature_${featureName}`,
+        _max_requests: rateLimitConfig.maxRequests,
+        _window_minutes: rateLimitConfig.windowMinutes
+      });
+      
+    if (rateLimitError) {
+      console.error(`[${requestId}] Rate limit check error:`, rateLimitError);
+    } else if (!rateLimitCheck) {
+      console.warn(`[${requestId}] Rate limit exceeded for user ${user.id}, feature ${featureName}`);
+      
+      // Log rate limit violation
+      await supabase.from("security_audit_log").insert({
+        user_id: user.id,
+        event_type: "rate_limit_exceeded",
+        severity: "warning",
+        event_data: { 
+          feature: featureName,
+          limit: rateLimitConfig.maxRequests,
+          window: rateLimitConfig.windowMinutes
+        }
+      });
+      
+      return new Response(JSON.stringify({ 
+        hasAccess: false,
+        reason: "Rate limit exceeded",
+        code: "RATE_LIMITED",
+        retryAfter: rateLimitConfig.windowMinutes * 60
+      }), {
+        status: 429,
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Retry-After": String(rateLimitConfig.windowMinutes * 60)
+        },
+      });
+    }
 
-    // Additional premium feature checks
-    const premiumFeatures: Record<string, string[]> = {
-      'enhanced_notifications': ['Premium', 'Enterprise'],
-      'contextual_menu': ['Premium', 'Enterprise'],
-      'advanced_hazard_detection': ['Premium', 'Enterprise'],
-      'ai_powered_assistance': ['Premium', 'Enterprise'],
-      'priority_support': ['Premium', 'Enterprise'],
-      'white_label': ['Enterprise'],
-      'advanced_analytics': ['Enterprise'],
-      'custom_branding': ['Enterprise']
-    };
+    // Check feature access using database function
+    const { data: hasAccess, error: accessError } = await supabase
+      .rpc("user_has_feature_access", {
+        user_uuid: user.id,
+        feature_name: featureName
+      });
+      
+    if (accessError) {
+      console.error(`[${requestId}] Feature access check error:`, accessError);
+      return new Response(JSON.stringify({ 
+        error: "Access check failed",
+        code: "CHECK_FAILED" 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    const planName = planData?.name;
-    const requiresUpgrade = premiumFeatures[feature] && 
-                           !premiumFeatures[feature].includes(planName);
+    // Get user's plan level for additional context
+    const { data: planLevel } = await supabase
+      .rpc("get_active_plan_level", { user_uuid: user.id });
+
+    console.log(`[${requestId}] User ${user.id} access to ${featureName}: ${hasAccess}, plan level: ${planLevel}`);
+
+    // Log access attempt for premium features
+    if (featureName.includes("premium") || featureName.includes("enterprise")) {
+      await supabase.from("security_audit_log").insert({
+        user_id: user.id,
+        event_type: hasAccess ? "feature_access_granted" : "feature_access_denied",
+        severity: "info",
+        event_data: { 
+          feature: featureName,
+          plan_level: planLevel
+        }
+      });
+    }
 
     return new Response(JSON.stringify({ 
-      hasAccess: hasAccess && !requiresUpgrade,
-      plan: planName,
-      features: planFeatures,
-      requiresUpgrade: requiresUpgrade,
-      upgradeRequired: requiresUpgrade ? premiumFeatures[feature][0] : null
+      hasAccess: hasAccess || false,
+      planLevel: planLevel || 0,
+      userId: user.id
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
-  } catch (error) {
-    console.error("Feature validation error:", error);
+  } catch (error: any) {
+    console.error(`[${requestId}] Validation error:`, error);
     return new Response(JSON.stringify({ 
-      error: "Feature validation failed",
-      hasAccess: false 
+      error: error.message,
+      code: "INTERNAL_ERROR" 
     }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
