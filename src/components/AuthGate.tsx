@@ -1,21 +1,18 @@
-// @stride/auth-gate v3 — high-contrast accessible
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+import React from "react";
 
-export default function AuthGate() {
-  const { t } = useTranslation();
-  const signIn = () => { (window as any).auth?.signIn?.() ?? (location.href = '/auth'); };
+type Props = { isAuthed: boolean; onSignIn?: () => void; children: React.ReactNode };
 
+export default function AuthGate({ isAuthed, onSignIn, children }: Props) {
+  if (isAuthed) return <>{children}</>;
   return (
-    <section className="rounded-2xl border border-gray-200 bg-white p-4 text-center">
-      <h3 className="text-lg font-semibold">{t('authRequiredTitle')}</h3>
-      <p className="mt-1 mb-3 text-sm opacity-80">{t('authRequiredBody')}</p>
+    <section aria-labelledby="auth-title" className="bg-white text-black border border-neutral-300 rounded-2xl p-4 md:p-6">
+      <h2 id="auth-title" className="text-base font-semibold">Authentication Required</h2>
+      <p className="mt-1 text-sm text-neutral-700">Please sign in to access this feature.</p>
       <button
-        onClick={signIn}
-        className="w-full min-h-[52px] rounded-2xl bg-black text-white font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 shadow-sm"
-        aria-label={t('signIn')}
-      >
-        {t('signIn')}
+        onClick={onSignIn}
+        className="mt-4 w-full md:w-auto rounded-2xl px-5 py-3 border border-black bg-black text-white
+                 focus:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-black">
+        Sign in
       </button>
     </section>
   );
