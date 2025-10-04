@@ -1,5 +1,11 @@
 {
-  "_v": "v1",
+  "_v": "v4",
+  "see.title": "Voir l'interface",
+  "see.caption": "StrideGuide propose des commandes claires, traitement hors ligne et SOS d'urgence.",
+  "see.btn.start": "Démarrer l'assistance",
+  "see.btn.find": "Trouver un objet",
+  "see.btn.sos": "SOS d'urgence",
+  "see.btn.settings": "Réglages",
   "hero.title": "Marchez en confiance. Hors ligne et en toute confidentialité.",
   "hero.sub": "Votre assistant de guidage visuel au quotidien. Fonctionne sans données, en français et en anglais.",
   "badge.langs": "Anglais • Français",

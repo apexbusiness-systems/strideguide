@@ -1,4 +1,4 @@
-// @stride/i18n v1 — idempotent
+// @stride/i18n v4 — idempotent
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import en from './locales/en/common.json';

@@ -1,5 +1,11 @@
 {
-  "_v": "v1",
+  "_v": "v4",
+  "see.title": "See the interface",
+  "see.caption": "StrideGuide shows clear controls, offline processing, and Emergency SOS.",
+  "see.btn.start": "Start Guidance",
+  "see.btn.find": "Find Item",
+  "see.btn.sos": "Emergency SOS",
+  "see.btn.settings": "Settings",
   "hero.title": "Your phone describes what's ahead. No internet needed.",
   "hero.sub": "Point your camera forward. Hear warnings about obstacles, curbs, and hazards. Works completely offline.",
   "badge.langs": "English • French",
