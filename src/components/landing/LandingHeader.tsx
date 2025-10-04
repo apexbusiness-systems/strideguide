@@ -19,11 +19,11 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({ onSignIn }) => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2" aria-label="StrideGuide home">
+          <a href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80" aria-label="StrideGuide home">
             <Logo className="h-10 w-auto" />
             <span className="sr-only">StrideGuide</span>
           </a>
@@ -42,7 +42,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({ onSignIn }) => {
             <Button
               onClick={onSignIn}
               size="lg"
-              className="min-h-[44px] px-6 font-semibold bg-foreground text-background hover:bg-foreground/90"
+              className="min-h-[44px] px-6 font-semibold"
               aria-label={t('auth.signin')}
             >
               {t('auth.signin')}
