@@ -1,4 +1,4 @@
-// @stride/auth-gate v1 — idempotent
+// @stride/auth-gate v3 — high-contrast accessible
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -12,8 +12,7 @@ export default function AuthGate() {
       <p className="mt-1 mb-3 text-sm opacity-80">{t('auth.requiredBody')}</p>
       <button
         onClick={signIn}
-        className="w-full min-h-[52px] rounded-2xl bg-black text-white font-semibold
-                   focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 shadow-sm"
+        className="w-full min-h-[52px] rounded-2xl bg-black text-white font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 shadow-sm"
         aria-label={t('auth.signin')}
       >
         {t('auth.signin')}

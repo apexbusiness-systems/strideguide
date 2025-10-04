@@ -1,4 +1,4 @@
-// @stride/showcase v1 — idempotent
+// @stride/showcase v2 — coded accessible UI
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import AuthGate from '@/components/AuthGate';
@@ -13,16 +13,16 @@ export default function Showcase() {
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="grid grid-cols-2 gap-3">
             <button className="h-14 rounded-2xl bg-slate-900 text-white font-semibold focus:outline-none focus-visible:ring-2">
-              {t('see.btn.start')}
+              {t('see.start')}
             </button>
             <button className="h-14 rounded-2xl border border-slate-300 font-semibold focus:outline-none focus-visible:ring-2">
-              {t('see.btn.find')}
+              {t('see.find')}
             </button>
             <button className="h-14 rounded-2xl border border-red-300 text-red-700 font-semibold focus:outline-none focus-visible:ring-2">
-              {t('see.btn.sos')}
+              {t('see.sos')}
             </button>
             <button className="h-14 rounded-2xl border border-slate-300 font-semibold focus:outline-none focus-visible:ring-2">
-              {t('see.btn.settings')}
+              {t('see.settings')}
             </button>
           </div>
           <p className="mt-4 text-sm text-slate-600">
