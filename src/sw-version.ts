@@ -1,2 +1,2 @@
-// @stride/sw-version v4 – cache-bust flag
-export const SW_VERSION = 'sg-2025-10-04-d';
+// @stride/sw-version v5 – performance optimizations
+export const SW_VERSION = 'sg-2025-10-04-perf-v3';

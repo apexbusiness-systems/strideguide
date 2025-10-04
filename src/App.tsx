@@ -3,23 +3,51 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useI18nGuard } from "@/utils/i18nGuard";
-import Index from "./pages/Index";
-import LandingPage from "./pages/LandingPage";
-import NotFound from "./pages/NotFound";
-import Showcase from "./screens/Showcase";
-import AuthPage from "./pages/AuthPage";
-import PrivacyPage from "./pages/PrivacyPage";
 import ConsentModal from "./components/ConsentModal";
-import DashboardPage from "./pages/DashboardPage";
-import PricingPage from "./pages/PricingPage";
-import HelpPage from "./pages/HelpPage";
 
-const queryClient = new QueryClient();
+// Lazy load pages for code splitting and performance
+const Index = lazy(() => import("./pages/Index"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Showcase = lazy(() => import("./screens/Showcase"));
+const AuthPage = lazy(() => import("./pages/AuthPage"));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const PricingPage = lazy(() => import("./pages/PricingPage"));
+const HelpPage = lazy(() => import("./pages/HelpPage"));
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="flex flex-col items-center gap-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <p className="text-sm text-muted-foreground">Loading...</p>
+    </div>
+  </div>
+);
+
+// Optimized QueryClient with production settings
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes (formerly cacheTime)
+      retry: 3,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    },
+    mutations: {
+      retry: 2,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+    },
+  },
+});
 
 const App = () => {
   // Run i18n guard in development to catch unresolved keys
@@ -74,36 +102,38 @@ const App = () => {
           <Sonner />
           <ConsentModal />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/landing" element={<Showcase />} />
-              <Route path="/app" element={<Index />} />
-              <Route 
-                path="/auth" 
-                element={
-                  user ? (
-                    <DashboardPage user={user} onSignOut={handleSignOut} />
-                  ) : (
-                    <AuthPage onAuthSuccess={handleAuthSuccess} />
-                  )
-                } 
-              />
-              <Route 
-                path="/dashboard" 
-                element={
-                  user ? (
-                    <DashboardPage user={user} onSignOut={handleSignOut} />
-                  ) : (
-                    <AuthPage onAuthSuccess={handleAuthSuccess} />
-                  )
-                } 
-              />
-              <Route path="/pricing" element={<PricingPage onBack={() => window.history.back()} />} />
-              <Route path="/help" element={<HelpPage onBack={() => window.history.back()} />} />
-              <Route path="/privacy" element={<PrivacyPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/landing" element={<Showcase />} />
+                <Route path="/app" element={<Index />} />
+                <Route 
+                  path="/auth" 
+                  element={
+                    user ? (
+                      <DashboardPage user={user} onSignOut={handleSignOut} />
+                    ) : (
+                      <AuthPage onAuthSuccess={handleAuthSuccess} />
+                    )
+                  } 
+                />
+                <Route 
+                  path="/dashboard" 
+                  element={
+                    user ? (
+                      <DashboardPage user={user} onSignOut={handleSignOut} />
+                    ) : (
+                      <AuthPage onAuthSuccess={handleAuthSuccess} />
+                    )
+                  } 
+                />
+                <Route path="/pricing" element={<PricingPage onBack={() => window.history.back()} />} />
+                <Route path="/help" element={<HelpPage onBack={() => window.history.back()} />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>

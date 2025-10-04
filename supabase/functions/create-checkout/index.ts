@@ -13,6 +13,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const startTime = Date.now();
   const requestId = crypto.randomUUID();
   console.log(`[${requestId}] Create checkout request`);
 
@@ -196,13 +197,19 @@ serve(async (req) => {
       }
     });
 
-    console.log(`[${requestId}] Checkout session created: ${session.id}`);
+    const duration = Date.now() - startTime;
+    console.log(`[${requestId}] Checkout session created: ${session.id} (${duration}ms)`);
 
     return new Response(JSON.stringify({ 
       url: session.url,
       sessionId: session.id
     }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { 
+        ...corsHeaders, 
+        "Content-Type": "application/json",
+        "X-Request-ID": requestId,
+        "X-Response-Time": `${duration}ms`
+      },
     });
     
   } catch (error: any) {

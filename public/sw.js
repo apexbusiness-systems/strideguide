@@ -1,8 +1,10 @@
-// StrideGuide Service Worker - Security Hardened
-// Version 2.0 - Allowlist-based caching with deny-by-default fetch
+// StrideGuide Service Worker - Security Hardened & Performance Optimized
+// Version 3.0 - Allowlist-based caching with deny-by-default fetch + Stale-While-Revalidate
 
-const CACHE_NAME = 'stride-guide-v2';
-const CACHE_VERSION = 2;
+const CACHE_NAME = 'stride-guide-v3';
+const CACHE_VERSION = 3;
+const MAX_CACHE_SIZE = 100; // Maximum cached items
+const CACHE_EXPIRY_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
 // Allowlisted paths for caching (deny-by-default security)
 const ALLOWED_CACHE_PATHS = [
@@ -141,7 +143,7 @@ self.addEventListener('fetch', (event) => {
         })
     );
   } else {
-    // Cache-first strategy for static assets
+    // Stale-While-Revalidate strategy for static assets (performance optimized)
     event.respondWith(
       caches.open(CACHE_NAME).then(async (cache) => {
         try {
@@ -150,40 +152,87 @@ self.addEventListener('fetch', (event) => {
           cacheKey.search = '';
           const cachedResponse = await cache.match(cacheKey.href);
           
+          // Check if cached response is expired
+          const fetchPromise = fetch(request, { cache: 'no-store' })
+            .then(async (networkResponse) => {
+              // Only cache successful responses
+              if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+                // Clone and cache response
+                const responseToCache = networkResponse.clone();
+                
+                // Add timestamp header for expiry tracking
+                const headers = new Headers(responseToCache.headers);
+                headers.append('sw-cache-time', Date.now().toString());
+                
+                const responseWithTimestamp = new Response(responseToCache.body, {
+                  status: responseToCache.status,
+                  statusText: responseToCache.statusText,
+                  headers: headers
+                });
+                
+                await cache.put(cacheKey.href, responseWithTimestamp);
+                
+                // Enforce cache size limit
+                const keys = await cache.keys();
+                if (keys.length > MAX_CACHE_SIZE) {
+                  await cache.delete(keys[0]);
+                }
+              }
+              
+              return networkResponse;
+            })
+            .catch((error) => {
+              console.error('[SW] Network fetch failed:', pathname, error);
+              return null;
+            });
+          
           if (cachedResponse) {
-            console.log('[SW] Cache hit:', pathname);
+            // Check cache age
+            const cacheTime = cachedResponse.headers.get('sw-cache-time');
+            const age = cacheTime ? Date.now() - parseInt(cacheTime) : Infinity;
+            
+            if (age < CACHE_EXPIRY_MS) {
+              // Return cached response immediately, update in background
+              console.log('[SW] Cache hit (stale-while-revalidate):', pathname);
+              fetchPromise; // Update cache in background
+              return cachedResponse;
+            } else {
+              console.log('[SW] Cache expired, fetching fresh:', pathname);
+            }
+          }
+          
+          // Wait for network response if no valid cache
+          const networkResponse = await fetchPromise;
+          if (networkResponse) {
+            return networkResponse;
+          }
+          
+          // Fallback to stale cache if network failed
+          if (cachedResponse) {
+            console.log('[SW] Serving stale cache (network failed):', pathname);
             return cachedResponse;
-          }
-          
-          // Fetch from network
-          console.log('[SW] Cache miss, fetching:', pathname);
-          const networkResponse = await fetch(request, { cache: 'no-store' });
-          
-          // Only cache successful responses
-          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-            // Clone and cache response
-            const responseToCache = networkResponse.clone();
-            await cache.put(cacheKey.href, responseToCache);
-            console.log('[SW] Cached new resource:', pathname);
-          }
-          
-          return networkResponse;
-          
-        } catch (error) {
-          console.error('[SW] Fetch failed for:', pathname, error);
-          
-          // Try to serve from cache as fallback
-          const fallbackResponse = await cache.match(request, { ignoreSearch: true });
-          if (fallbackResponse) {
-            console.log('[SW] Serving fallback from cache:', pathname);
-            return fallbackResponse;
           }
           
           // If no cache and network failed, return error
           return new Response('Network error and no cached version available', {
             status: 503,
-            statusText: 'Service Unavailable'
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'text/plain' }
           });
+          
+        } catch (error) {
+          console.error('[SW] Cache error:', pathname, error);
+          
+          // Try direct fetch as last resort
+          try {
+            return await fetch(request);
+          } catch (fetchError) {
+            return new Response('Service temporarily unavailable', {
+              status: 503,
+              statusText: 'Service Unavailable',
+              headers: { 'Content-Type': 'text/plain' }
+            });
+          }
         }
       })
     );

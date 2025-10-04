@@ -19,6 +19,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const startTime = Date.now();
   const requestId = crypto.randomUUID();
   console.log(`[${requestId}] Feature access validation request`);
 
@@ -141,7 +142,8 @@ serve(async (req) => {
     const { data: planLevel } = await supabase
       .rpc("get_active_plan_level", { user_uuid: user.id });
 
-    console.log(`[${requestId}] User ${user.id} access to ${featureName}: ${hasAccess}, plan level: ${planLevel}`);
+    const duration = Date.now() - startTime;
+    console.log(`[${requestId}] User ${user.id} access to ${featureName}: ${hasAccess}, plan level: ${planLevel} (${duration}ms)`);
 
     // Log access attempt for premium features
     if (featureName.includes("premium") || featureName.includes("enterprise")) {
@@ -151,7 +153,8 @@ serve(async (req) => {
         severity: "info",
         event_data: { 
           feature: featureName,
-          plan_level: planLevel
+          plan_level: planLevel,
+          response_time_ms: duration
         }
       });
     }
@@ -161,7 +164,12 @@ serve(async (req) => {
       planLevel: planLevel || 0,
       userId: user.id
     }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { 
+        ...corsHeaders, 
+        "Content-Type": "application/json",
+        "X-Request-ID": requestId,
+        "X-Response-Time": `${duration}ms`
+      },
     });
 
   } catch (error: any) {
