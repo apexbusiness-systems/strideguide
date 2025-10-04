@@ -3,6 +3,7 @@ import { initReactI18next } from "react-i18next";
 
 const resources = {
   en: { translation: {
+    auth: { signin: "Sign In", signout: "Sign Out" },
     appName: "Stride Guide",
     seeInterface: "See the interface",
     startGuidance: "Start Guidance",
@@ -20,6 +21,7 @@ const resources = {
     tagline: "On-device vision. Private. Safe."
   }},
   fr: { translation: {
+    auth: { signin: "Se connecter", signout: "Se déconnecter" },
     appName: "Stride Guide",
     seeInterface: "Voir l'interface",
     startGuidance: "Démarrer l'assistance",
