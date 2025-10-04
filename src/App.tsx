@@ -10,6 +10,9 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [devBypass, setDevBypass] = useState(() => 
+    localStorage.getItem('stride-dev-bypass') === 'true'
+  );
 
   useEffect(() => {
     // Set up auth state listener
@@ -29,6 +32,15 @@ export default function App() {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  // Listen for dev bypass changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setDevBypass(localStorage.getItem('stride-dev-bypass') === 'true');
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const handleSignOut = () => {
@@ -52,7 +64,7 @@ export default function App() {
           <Route 
             path="/dashboard" 
             element={
-              user ? (
+              (user || devBypass) ? (
                 <DashboardPage user={user} onSignOut={handleSignOut} />
               ) : (
                 <Navigate to="/" replace />
