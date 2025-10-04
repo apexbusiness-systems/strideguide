@@ -1,4 +1,8 @@
 {
+  "auth": {
+    "signin": "Sign In",
+    "signout": "Sign Out"
+  },
   "app": {
     "name": "StrideGuide",
     "tagline": "Your seeing‑eye assistant in your pocket.",

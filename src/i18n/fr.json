@@ -1,4 +1,8 @@
 {
+  "auth": {
+    "signin": "Se connecter",
+    "signout": "Se déconnecter"
+  },
   "app.title": "StrideGuide",
   "app.tagline": "Votre assistant de guidage visuel, dans votre poche.",
   "app.badges.bilingual": "Anglais • Français",
