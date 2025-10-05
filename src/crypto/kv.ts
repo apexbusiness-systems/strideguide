@@ -317,4 +317,8 @@ class EncryptedKVClass {
   }
 }
 
+// Singleton instance
 export const EncryptedKV = new EncryptedKVClass();
+
+// Named export for creating new instances
+export { EncryptedKVClass };

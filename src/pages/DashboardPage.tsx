@@ -27,17 +27,31 @@ export default function DashboardPage({ user, onSignOut }: DashboardPageProps) {
 
   const checkUserRole = async () => {
     try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (!error && data) {
-        setUserRole(data.role);
+      // Server-side admin authorization check
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session.session?.access_token) {
+        setUserRole('user');
+        return;
       }
+
+      const { data, error } = await supabase.functions.invoke('check-admin-access', {
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`
+        }
+      });
+
+      if (error) {
+        console.error('Error checking admin access:', error);
+        setUserRole('user');
+        return;
+      }
+
+      // Set role based on server-side validation
+      setUserRole(data?.isAdmin ? 'admin' : 'user');
     } catch (error) {
-      console.error("Error checking user role:", error);
+      console.error('Admin check failed:', error);
+      setUserRole('user');
     }
   };
 

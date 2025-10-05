@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { PolicyManager } from '@/utils/PolicyManager';
 import { useToast } from '@/hooks/use-toast';
+import { EncryptedKVClass } from '@/crypto/kv';
 
 export interface RecordingSegment {
   id: string;
@@ -255,12 +256,17 @@ export const useEmergencyRecording = () => {
     };
   }, [settings.voiceActivation, isInitialized, startRecording]);
 
-  // Load stored sessions
-  const loadStoredSessions = useCallback(() => {
+  // Load stored sessions from encrypted storage
+  const loadStoredSessions = useCallback(async () => {
     try {
-      const stored = localStorage.getItem('erm_sessions');
-      if (stored) {
-        const parsedSessions = JSON.parse(stored);
+      const kv = new EncryptedKVClass();
+      await kv.initialize();
+      const data = await kv.retrieve('sessions');
+      
+      if (data) {
+        const decoder = new TextDecoder();
+        const jsonStr = decoder.decode(data);
+        const parsedSessions = JSON.parse(jsonStr) as RecordingSession[];
         setSessions(parsedSessions);
         
         // Calculate storage used
@@ -274,13 +280,24 @@ export const useEmergencyRecording = () => {
     }
   }, []);
 
-  // Store session
-  const storeSession = useCallback((session: RecordingSession) => {
+  // Store session in encrypted storage
+  const storeSession = useCallback(async (session: RecordingSession) => {
     try {
-      const stored = localStorage.getItem('erm_sessions');
-      const sessions = stored ? JSON.parse(stored) : [];
+      const kv = new EncryptedKVClass();
+      await kv.initialize();
+      const currentData = await kv.retrieve('sessions');
+      let sessions: RecordingSession[] = [];
+      
+      if (currentData) {
+        const decoder = new TextDecoder();
+        const jsonStr = decoder.decode(currentData);
+        sessions = JSON.parse(jsonStr);
+      }
+      
       sessions.push(session);
-      localStorage.setItem('erm_sessions', JSON.stringify(sessions));
+      const encoder = new TextEncoder();
+      const data = encoder.encode(JSON.stringify(sessions));
+      await kv.store('sessions', data);
     } catch (error) {
       console.error('Failed to store session:', error);
     }

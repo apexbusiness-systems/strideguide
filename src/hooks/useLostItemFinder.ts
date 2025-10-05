@@ -92,15 +92,18 @@ class OfflineMLProcessor {
   }
 }
 
-// Encrypted local storage for learned items
+// Encrypted local storage for learned items using AES-GCM
+import { EncryptedKVClass } from '@/crypto/kv';
+
 class EncryptedStorage {
-  private static readonly STORAGE_KEY = 'strideguide_learned_items';
+  private static kv = new EncryptedKVClass();
   
   static async saveItems(items: LearnedItem[]): Promise<void> {
     try {
-      // In production, this would use device keychain/keystore encryption
-      const encryptedData = btoa(JSON.stringify(items));
-      localStorage.setItem(this.STORAGE_KEY, encryptedData);
+      await this.kv.initialize();
+      const encoder = new TextEncoder();
+      const data = encoder.encode(JSON.stringify(items));
+      await this.kv.store('items', data);
     } catch (error) {
       console.error('Failed to save learned items:', error);
     }
@@ -108,11 +111,12 @@ class EncryptedStorage {
   
   static async loadItems(): Promise<LearnedItem[]> {
     try {
-      const encryptedData = localStorage.getItem(this.STORAGE_KEY);
-      if (!encryptedData) return [];
-      
-      const decryptedData = atob(encryptedData);
-      return JSON.parse(decryptedData);
+      await this.kv.initialize();
+      const data = await this.kv.retrieve('items');
+      if (!data) return [];
+      const decoder = new TextDecoder();
+      const jsonStr = decoder.decode(data);
+      return JSON.parse(jsonStr);
     } catch (error) {
       console.error('Failed to load learned items:', error);
       return [];
@@ -120,7 +124,8 @@ class EncryptedStorage {
   }
   
   static async clearItems(): Promise<void> {
-    localStorage.removeItem(this.STORAGE_KEY);
+    await this.kv.initialize();
+    await this.kv.delete('items');
   }
 }
 

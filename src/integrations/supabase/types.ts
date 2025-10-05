@@ -348,6 +348,39 @@ export type Database = {
         }
         Relationships: []
       }
+      security_audit_log: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          severity: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          severity: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          severity?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       subscription_plans: {
         Row: {
           created_at: string | null
@@ -613,6 +646,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          _endpoint: string
+          _max_requests: number
+          _user_id: string
+          _window_minutes: number
+        }
+        Returns: boolean
+      }
+      get_active_plan_level: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       get_user_subscription: {
         Args: { user_uuid: string }
         Returns: {
@@ -626,6 +672,10 @@ export type Database = {
           stripe_subscription_id: string
           white_label: boolean
         }[]
+      }
+      is_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
       }
       is_org_admin: {
         Args: { org_id: string }
