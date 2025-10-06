@@ -3,6 +3,7 @@ import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/utils/ProductionLogger";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
 
 interface SubscriptionData {
   id: string;
@@ -27,6 +28,7 @@ interface UseSubscriptionReturn {
 
 export const useSubscription = (user: User | null): UseSubscriptionReturn => {
   const { toast } = useToast();
+  const { isAdmin } = useAdminAccess(user);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -81,6 +83,9 @@ export const useSubscription = (user: User | null): UseSubscriptionReturn => {
   const hasFeatureAccess = (featureName: string): boolean => {
     if (!user || !subscription) return false;
 
+    // Admins have access to all features
+    if (isAdmin) return true;
+
     // For plan-based features - only gate specific premium features
     const planLevel = {
       'Free': 0,
@@ -100,6 +105,9 @@ export const useSubscription = (user: User | null): UseSubscriptionReturn => {
 
   const checkUsageLimit = async (endpoint: string): Promise<boolean> => {
     if (!user || !subscription) return false;
+
+    // Admins have unlimited access
+    if (isAdmin) return true;
 
     // Unlimited plans (-1) always have access
     if (subscription.max_api_calls === -1) return true;

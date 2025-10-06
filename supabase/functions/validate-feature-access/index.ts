@@ -120,30 +120,44 @@ serve(async (req) => {
       });
     }
 
-    // Check feature access using database function
-    const { data: hasAccess, error: accessError } = await supabase
-      .rpc("user_has_feature_access", {
-        user_uuid: user.id,
-        feature_name: featureName
-      });
-      
-    if (accessError) {
-      console.error(`[${requestId}] Feature access check error:`, accessError);
-      return new Response(JSON.stringify({ 
-        error: "Access check failed",
-        code: "CHECK_FAILED" 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Check if user is admin first - admins have access to all features
+    const { data: isAdminData } = await supabase
+      .rpc('is_admin', { _user_id: user.id });
+
+    let hasAccess = false;
+
+    if (isAdminData === true) {
+      // Admins bypass subscription checks
+      hasAccess = true;
+      console.log(`[${requestId}] Admin user ${user.id} granted access to ${featureName}`);
+    } else {
+      // Check feature access using database function
+      const { data: hasFeatureAccess, error: accessError } = await supabase
+        .rpc("user_has_feature_access", {
+          user_uuid: user.id,
+          feature_name: featureName
+        });
+        
+      if (accessError) {
+        console.error(`[${requestId}] Feature access check error:`, accessError);
+        return new Response(JSON.stringify({ 
+          error: "Access check failed",
+          code: "CHECK_FAILED" 
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      hasAccess = hasFeatureAccess || false;
     }
 
     // Get user's plan level for additional context
     const { data: planLevel } = await supabase
-      .rpc("get_active_plan_level", { user_uuid: user.id });
+      .rpc("get_active_plan_level", { _user_id: user.id });
 
     const duration = Date.now() - startTime;
-    console.log(`[${requestId}] User ${user.id} access to ${featureName}: ${hasAccess}, plan level: ${planLevel} (${duration}ms)`);
+    console.log(`[${requestId}] User ${user.id} access to ${featureName}: ${hasAccess}, plan level: ${planLevel}, is_admin: ${isAdminData} (${duration}ms)`);
 
     // Log access attempt for premium features
     if (featureName.includes("premium") || featureName.includes("enterprise")) {
@@ -154,15 +168,17 @@ serve(async (req) => {
         event_data: { 
           feature: featureName,
           plan_level: planLevel,
+          is_admin: isAdminData === true,
           response_time_ms: duration
         }
       });
     }
 
     return new Response(JSON.stringify({ 
-      hasAccess: hasAccess || false,
+      hasAccess,
       planLevel: planLevel || 0,
-      userId: user.id
+      userId: user.id,
+      isAdmin: isAdminData === true
     }), {
       headers: { 
         ...corsHeaders, 
