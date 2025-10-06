@@ -9,6 +9,16 @@ export interface RuntimeConfig {
   enablePayments: boolean;
   enableNewAuth: boolean;
   enableWebhooks: boolean;
+  ui?: {
+    enablePWAInstallChip?: boolean;
+    enableIOSA2HSHelper?: boolean;
+  };
+  finder?: {
+    mode?: 'phash' | 'phash+keypoints';
+  };
+  a11y?: {
+    auditVersion?: string;
+  };
   version?: string;
   updated?: string;
 }
@@ -17,6 +27,16 @@ const DEFAULT_CONFIG: RuntimeConfig = {
   enablePayments: false,
   enableNewAuth: false,
   enableWebhooks: false,
+  ui: {
+    enablePWAInstallChip: true,
+    enableIOSA2HSHelper: true,
+  },
+  finder: {
+    mode: 'phash+keypoints',
+  },
+  a11y: {
+    auditVersion: '1.0.0',
+  },
 };
 
 let cachedConfig: RuntimeConfig = DEFAULT_CONFIG;
@@ -55,6 +75,16 @@ export async function loadRuntimeConfig(): Promise<RuntimeConfig> {
         enablePayments: Boolean(config.enablePayments),
         enableNewAuth: Boolean(config.enableNewAuth),
         enableWebhooks: Boolean(config.enableWebhooks),
+        ui: {
+          enablePWAInstallChip: config.ui?.enablePWAInstallChip ?? true,
+          enableIOSA2HSHelper: config.ui?.enableIOSA2HSHelper ?? true,
+        },
+        finder: {
+          mode: config.finder?.mode ?? 'phash+keypoints',
+        },
+        a11y: {
+          auditVersion: config.a11y?.auditVersion ?? '1.0.0',
+        },
         version: config.version,
         updated: config.updated,
       };

@@ -16,7 +16,8 @@ import {
   Bot,
   Eye,
   Menu,
-  MessageCircle
+  MessageCircle,
+  Globe
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { User } from '@supabase/supabase-js';
@@ -601,10 +602,22 @@ const Index: React.FC = () => {
           <UsageMeter />
         </div>
 
-        {/* T-A: Install Prompt Chip - positioned above main actions */}
-        <div className="flex justify-center">
+        {/* Top Bar: Install Chip + Language Toggle (≤5 controls) */}
+        <div className="flex items-center justify-between gap-4 mb-4">
           <InstallPromptChip />
+          <Button
+            onClick={() => setCurrentLanguage(currentLanguage === 'en' ? 'fr' : 'en')}
+            variant="ghost"
+            size="sm"
+            className="min-h-[44px] min-w-[44px]"
+            aria-label={currentLanguage === 'en' ? 'Passer au français' : 'Switch to English'}
+          >
+            <Globe className="h-5 w-5" />
+            <span className="ml-2 hidden sm:inline">{currentLanguage === 'en' ? 'FR' : 'EN'}</span>
+          </Button>
         </div>
+        
+        <IOSInstallSheet />
 
         {/* AI Bot Status */}
         {user && (

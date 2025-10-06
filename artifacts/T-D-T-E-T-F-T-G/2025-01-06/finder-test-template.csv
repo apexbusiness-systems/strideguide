@@ -1,0 +1,25 @@
+Item,Trial,Distance_Placed_m,Found_Within_2m,Confidence_Score,Audio_Cue_Correct,Time_to_Find_sec,Notes
+Keys,1,0.5,,,,,
+Keys,2,1.0,,,,,
+Keys,3,1.5,,,,,
+Keys,4,2.0,,,,,
+Keys,5,0.8,,,,,
+Wallet,1,0.5,,,,,
+Wallet,2,1.0,,,,,
+Wallet,3,1.5,,,,,
+Wallet,4,2.0,,,,,
+Wallet,5,0.8,,,,,
+Bottle,1,0.5,,,,,
+Bottle,2,1.0,,,,,
+Bottle,3,1.5,,,,,
+Bottle,4,2.0,,,,,
+Bottle,5,0.8,,,,,
+
+# Instructions:
+# - Found_Within_2m: Y/N
+# - Confidence_Score: 0.00-1.00 from UI
+# - Audio_Cue_Correct: Y/N (did it say correct direction + distance?)
+# - Time_to_Find_sec: Seconds from search start to "found" confirmation
+# - Notes: Any observations (lighting, angle, false positives, etc.)
+#
+# Pass Criteria: ≥12/15 trials (80%) with Found_Within_2m = Y

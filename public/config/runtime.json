@@ -2,6 +2,16 @@
   "enablePayments": false,
   "enableNewAuth": false,
   "enableWebhooks": false,
+  "ui": {
+    "enablePWAInstallChip": true,
+    "enableIOSA2HSHelper": true
+  },
+  "finder": {
+    "mode": "phash+keypoints"
+  },
+  "a11y": {
+    "auditVersion": "1.0.0"
+  },
   "version": "1.0.0",
-  "updated": "2025-01-01T00:00:00Z"
+  "updated": "2025-01-06T00:00:00Z"
 }
