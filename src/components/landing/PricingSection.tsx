@@ -15,15 +15,15 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onInstall, onUpg
 
   const plans = [
     {
-      name: 'Free Forever',
-      description: 'Perfect for essential daily navigation',
-      cta: 'Start Free Now',
+      name: 'Free Core',
+      description: 'Limited features after trial ends',
+      cta: 'Start Free Trial',
       action: onInstall,
       variant: 'outline' as const,
       features: [
-        '2 hours guidance per day',
-        'Real-time obstacle detection',
-        'Voice navigation in EN/FR',
+        '14-day free trial (all features)',
+        'After trial: 1 hour guidance/day',
+        'Basic obstacle detection',
         'Emergency SOS',
         'Lost item finder (1 item)',
         'Works completely offline',
@@ -32,18 +32,19 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onInstall, onUpg
     },
     {
       name: 'Premium',
-      description: 'For users who need extended daily use',
-      cta: 'Start 7-Day Free Trial',
+      description: 'Full access for extended daily use',
+      cta: 'Start 14-Day Free Trial',
       action: onUpgrade,
       variant: 'default' as const,
       popular: true,
       features: [
+        '14-day free trial included',
         '8 hours guidance per day',
-        'Everything in Free',
         'Night vision mode',
         'Unlimited lost items',
         'Priority support',
-        'Free neck strap included'
+        'Free neck strap included',
+        'Cancel anytime'
       ],
     },
   ];

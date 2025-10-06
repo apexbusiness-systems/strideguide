@@ -12,6 +12,21 @@
   "a11y": {
     "auditVersion": "1.0.0"
   },
+  "marketing": {
+    "badge_free_en": "Free trial",
+    "badge_free_fr": "Essai gratuit"
+  },
+  "pricing": {
+    "trial": {
+      "enabled": true,
+      "days": 14
+    }
+  },
+  "features": {
+    "free_core": {
+      "enabled": true
+    }
+  },
   "version": "1.0.0",
   "updated": "2025-01-06T00:00:00Z"
 }

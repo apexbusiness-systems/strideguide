@@ -70,6 +70,11 @@ export const LandingFooter: React.FC = () => {
           <p className="text-sm text-muted-foreground text-center">
             © 2025 StrideGuide. Built in Canada for blind, low vision, and senior users worldwide.
           </p>
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            {i18n.language === 'en' 
+              ? 'Pricing may change. Trials convert to paid unless cancelled.' 
+              : 'Les tarifs peuvent changer. L\'essai devient payant sauf annulation.'}
+          </p>
         </div>
       </div>
     </footer>

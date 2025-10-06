@@ -29,37 +29,37 @@
     
     "pricing": {
       "title": "Simple, Honest Pricing",
-      "subtitle": "Start free, upgrade when you need more",
+      "subtitle": "Start free trial, choose your plan after",
       "free": {
-        "name": "Free Forever",
+        "name": "Free Core",
         "price": "$0/month",
-        "description": "Perfect for essential daily navigation",
+        "description": "Limited features after trial ends",
         "features": [
-          "2 hours guidance per day",
-          "Real-time obstacle detection",
-          "Voice navigation in EN/FR",
+          "14-day free trial (all features)",
+          "After trial: 1 hour guidance/day",
+          "Basic obstacle detection",
           "Emergency SOS",
           "Lost item finder (1 item)",
           "Works completely offline",
           "No credit card required"
         ],
-        "cta": "Start Free Now",
+        "cta": "Start Free Trial",
         "popular": false
       },
       "premium": {
         "name": "Premium",
         "price": "$28.99/month",
-        "description": "For users who need extended daily use",
+        "description": "Full access for extended daily use",
         "features": [
+          "14-day free trial included",
           "8 hours guidance per day",
-          "Everything in Free",
           "Night vision mode",
           "Unlimited lost items",
           "Priority support",
           "Free neck strap included",
-          "7-day free trial"
+          "Cancel anytime"
         ],
-        "cta": "Start Free Trial",
+        "cta": "Start 14-Day Free Trial",
         "popular": true
       }
     },
@@ -83,8 +83,8 @@
       "faq1q": "Does StrideGuide really work completely offline?",
       "faq1a": "Yes! StrideGuide processes everything on your device. Once installed, you never need an internet connection for obstacle detection, voice guidance, or any core features. Perfect for users without data plans or in areas with poor reception.",
       
-      "faq2q": "Is the free version really free forever?",
-      "faq2a": "Absolutely. The free version gives you 2 hours of daily guidance, obstacle detection, emergency SOS, and basic lost item finding - all completely free, no credit card required, forever.",
+      "faq2q": "Is there a free version?",
+      "faq2a": "We offer a free trial so you can test everything. After the trial, choose a paid plan or switch to limited Free Core features.",
       
       "faq3q": "Will this work with my screen reader?",
       "faq3a": "Yes! StrideGuide is fully compatible with VoiceOver (iOS) and TalkBack (Android). All buttons have descriptive labels, and we use proper ARIA semantics throughout the app.",
