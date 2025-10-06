@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { SEOHead } from '@/components/SEOHead';
 
 export default function PrivacyPage() {
   const { t, i18n } = useTranslation();
@@ -11,6 +12,11 @@ export default function PrivacyPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Privacy Policy - StrideGuide | PIPEDA Compliant Vision Assistant"
+        description="StrideGuide privacy policy. 100% offline, no camera images leave your device, no location tracking. PIPEDA compliant privacy for Canadian blind and low vision users."
+        canonical="https://strideguide.app/privacy"
+      />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Button
           variant="ghost"

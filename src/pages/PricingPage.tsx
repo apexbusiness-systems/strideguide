@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
+import { SEOHead } from '@/components/SEOHead';
 
 interface PricingPageProps {
   onBack: () => void;
@@ -73,6 +74,11 @@ Thanks!`);
 
   return (
     <div className="min-h-screen bg-background p-6">
+      <SEOHead
+        title="Pricing - StrideGuide | Free & Pro Plans for Vision Assistance"
+        description="Choose your plan: Free plan with 2 hours daily guidance or Pro plan with 8 hours, priority support, and free neck strap. Affordable vision assistance for blind and low vision users."
+        canonical="https://strideguide.app/pricing"
+      />
       <div className="max-w-md mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">

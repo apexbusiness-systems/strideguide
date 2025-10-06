@@ -3,6 +3,7 @@ import { ArrowLeft, Shield, Wifi, Volume2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslation } from 'react-i18next';
+import { SEOHead } from '@/components/SEOHead';
 
 interface HelpPageProps {
   onBack: () => void;
@@ -40,6 +41,11 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
 
   return (
     <div className="min-h-screen bg-background p-6">
+      <SEOHead
+        title="Help & Support - StrideGuide | Vision Assistant Guide"
+        description="Get help with StrideGuide's offline vision assistance features. Learn about privacy, offline mode, audio guidance, and accessibility features for blind and low vision users."
+        canonical="https://strideguide.app/help"
+      />
       <div className="max-w-md mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">

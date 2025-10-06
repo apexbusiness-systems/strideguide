@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SEOHead } from '@/components/SEOHead';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingHero } from '@/components/landing/LandingHero';
 import Showcase from '@/screens/Showcase';
@@ -54,6 +55,11 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="StrideGuide - AI Vision Assistant for Blind & Low Vision Users | Free Offline Navigation"
+        description="Free offline AI seeing-eye assistant for blind, low vision, and senior users in Canada. Real-time obstacle detection, voice guidance, and emergency SOS. Works without internet. English & French."
+        canonical="https://strideguide.app/"
+      />
       <LandingHeader onSignIn={handleSignIn} />
       
       <main id="main-content">
