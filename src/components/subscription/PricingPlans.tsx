@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Crown, Zap, Building } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { telemetry } from "@/utils/Telemetry";
 
 interface SubscriptionPlan {
   id: string;
@@ -41,6 +43,7 @@ const planColors = {
 export const PricingPlans = ({ currentPlan, onSelectPlan }: PricingPlansProps) => {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { isPaymentsEnabled } = useFeatureFlags();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isYearly, setIsYearly] = useState(false);
@@ -81,6 +84,17 @@ export const PricingPlans = ({ currentPlan, onSelectPlan }: PricingPlansProps) =
   };
 
   const handleSelectPlan = (planId: string) => {
+    // Gate payments behind feature flag
+    if (!isPaymentsEnabled) {
+      toast({
+        title: "Payments Disabled",
+        description: "Payment processing is currently disabled. Please contact support.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    telemetry.track('checkout_open', { planId, isYearly });
     setSelectedPlan(planId);
     onSelectPlan(planId, isYearly);
   };

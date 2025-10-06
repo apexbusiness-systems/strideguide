@@ -1,0 +1,7 @@
+{
+  "enablePayments": false,
+  "enableNewAuth": false,
+  "enableWebhooks": false,
+  "version": "1.0.0",
+  "updated": "2025-01-01T00:00:00Z"
+}

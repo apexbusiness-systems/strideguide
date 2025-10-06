@@ -9,6 +9,8 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { PricingPlans } from "./PricingPlans";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { telemetry } from "@/utils/Telemetry";
 
 interface SubscriptionManagerProps {
   user: User;
@@ -16,6 +18,7 @@ interface SubscriptionManagerProps {
 
 export const SubscriptionManager = ({ user }: SubscriptionManagerProps) => {
   const { toast } = useToast();
+  const { isPaymentsEnabled } = useFeatureFlags();
   const { subscription, isLoading, refreshSubscription } = useSubscription(user);
   const [showPricing, setShowPricing] = useState(false);
   const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
@@ -53,29 +56,41 @@ export const SubscriptionManager = ({ user }: SubscriptionManagerProps) => {
   };
 
   const handleSelectPlan = async (planId: string, isYearly: boolean) => {
+    // Gate payments behind feature flag
+    if (!isPaymentsEnabled) {
+      toast({
+        title: "Payments Disabled",
+        description: "Payment processing is currently disabled. Please contact support.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsCreatingCheckout(true);
 
     try {
-      const successUrl = `${window.location.origin}/dashboard?checkout=success`;
-      const cancelUrl = `${window.location.origin}/dashboard?checkout=cancelled`;
+      await telemetry.trackWithLatency('checkout_open', async () => {
+        const successUrl = `${window.location.origin}/dashboard?checkout=success`;
+        const cancelUrl = `${window.location.origin}/dashboard?checkout=cancelled`;
 
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          planId,
-          isYearly,
-          successUrl,
-          cancelUrl,
-          idempotencyKey: `checkout-${user.id}-${Date.now()}`,
-        },
-      });
+        const { data, error } = await supabase.functions.invoke('create-checkout', {
+          body: {
+            planId,
+            isYearly,
+            successUrl,
+            cancelUrl,
+            idempotencyKey: `checkout-${user.id}-${Date.now()}`,
+          },
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL returned');
-      }
+        if (data?.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error('No checkout URL returned');
+        }
+      }, { planId, isYearly });
     } catch (error) {
       console.error("Error creating checkout:", error);
       toast({
@@ -89,20 +104,32 @@ export const SubscriptionManager = ({ user }: SubscriptionManagerProps) => {
   };
 
   const openCustomerPortal = async () => {
-    try {
-      const returnUrl = `${window.location.origin}/dashboard`;
-
-      const { data, error } = await supabase.functions.invoke('customer-portal', {
-        body: { returnUrl },
+    // Gate payments behind feature flag
+    if (!isPaymentsEnabled) {
+      toast({
+        title: "Payments Disabled",
+        description: "Payment management is currently disabled. Please contact support.",
+        variant: "destructive",
       });
+      return;
+    }
 
-      if (error) throw error;
+    try {
+      await telemetry.trackWithLatency('portal_open', async () => {
+        const returnUrl = `${window.location.origin}/dashboard`;
 
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error('No portal URL returned');
-      }
+        const { data, error } = await supabase.functions.invoke('customer-portal', {
+          body: { returnUrl },
+        });
+
+        if (error) throw error;
+
+        if (data?.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error('No portal URL returned');
+        }
+      });
     } catch (error) {
       console.error("Error opening customer portal:", error);
       toast({

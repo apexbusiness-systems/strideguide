@@ -16,6 +16,9 @@ import "./utils/AudioArmer";
 // Initialize performance monitoring
 import "./utils/PerformanceMonitor";
 
+// Load runtime config before app boot
+import { loadRuntimeConfig } from "./config/runtime";
+
 // Service Worker registration (disabled in preview/dev, enabled in production)
 const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost';
 const isPreview = window.location.hostname.includes('.lovable.app');
@@ -68,5 +71,13 @@ if (document.readyState === 'loading') {
   preloadCritical();
 }
 
-// i18n is now synchronously initialized
-createRoot(document.getElementById("root")!).render(<App />);
+// Load runtime config, then boot app
+// Config load is non-blocking; defaults used if fetch fails
+loadRuntimeConfig()
+  .catch(err => {
+    console.warn('[App] Runtime config load failed, using defaults:', err);
+  })
+  .finally(() => {
+    // i18n is now synchronously initialized
+    createRoot(document.getElementById("root")!).render(<App />);
+  });

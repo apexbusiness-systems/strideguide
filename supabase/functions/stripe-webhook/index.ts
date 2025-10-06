@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.11.0?target=deno";
 
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { loadRuntimeConfig } from "./config.ts";
 
 serve(async (req) => {
   const origin = req.headers.get("origin");
@@ -15,6 +16,19 @@ serve(async (req) => {
 
   const requestId = crypto.randomUUID();
   console.log(`[${requestId}] Webhook received`);
+
+  // Load runtime config from app origin
+  const appOrigin = origin || "https://strideguide.lovable.app";
+  const config = await loadRuntimeConfig(appOrigin);
+  
+  // Gate webhook processing behind feature flag
+  if (!config.enableWebhooks) {
+    console.log(`[${requestId}] Webhooks disabled by runtime config`);
+    return new Response(JSON.stringify({ received: true, status: "disabled" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
+  }
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
