@@ -9,6 +9,18 @@ import { useToast } from '@/hooks/use-toast';
 import { BatteryGuard } from '@/utils/BatteryGuard';
 import { HealthManager } from '@/utils/HealthManager';
 import { useJourneyTrace } from '@/hooks/useJourneyTrace';
+import { DataWipeManager } from '@/utils/DataWipeManager';
+import { telemetry } from '@/utils/Telemetry';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   Settings, 
   Smartphone, 
@@ -18,7 +30,8 @@ import {
   Eye, 
   Shield,
   Thermometer,
-  Battery
+  Battery,
+  AlertTriangle
 } from 'lucide-react';
 
 interface SettingsDashboardProps {
@@ -35,6 +48,10 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({ onBack, replayTut
   const [largeTargets, setLargeTargets] = React.useState(true);
   const [healthStatus, setHealthStatus] = React.useState(HealthManager.getStatus());
   const [batteryInfo, setBatteryInfo] = React.useState(BatteryGuard.getBatteryInfo());
+  const [showClearDialog, setShowClearDialog] = React.useState(false);
+  const [showFinalConfirm, setShowFinalConfirm] = React.useState(false);
+  const [remoteRowCount, setRemoteRowCount] = React.useState(0);
+  const [isClearing, setIsClearing] = React.useState(false);
   const { toast } = useToast();
   
   const journeyTrace = useJourneyTrace('settings_save', { component: 'SettingsDashboard' });
@@ -60,6 +77,80 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({ onBack, replayTut
     battery: batteryInfo.level ? `${Math.round(batteryInfo.level * 100)}%` : 'Unknown',
     performance: healthStatus.overall === 'healthy' ? 'Optimal' : 'Degraded',
     storageUsed: '2.1 GB'
+  };
+
+  const handleClearAllData = async () => {
+    telemetry.track('settings_clear_all_clicked');
+    
+    // Get remote row count
+    const count = await DataWipeManager.getRemoteRowCount();
+    setRemoteRowCount(count);
+    
+    if (count > 0) {
+      setShowFinalConfirm(true);
+    } else {
+      setShowClearDialog(false);
+      await executeClearAll();
+    }
+  };
+
+  const executeClearAll = async () => {
+    setIsClearing(true);
+    telemetry.track('settings_clear_all_confirmed', { remote_rows: remoteRowCount });
+    
+    try {
+      const startTime = performance.now();
+      const result = await DataWipeManager.wipeAllData();
+      const duration = Math.round(performance.now() - startTime);
+      
+      if (result.success) {
+        telemetry.track('settings_clear_all_completed', {
+          duration_ms: duration,
+          local_cleared: result.localCleared,
+          remote_deleted: result.remoteDeleted,
+          details: result.details,
+        });
+        
+        toast({
+          title: 'All data cleared',
+          description: `Removed ${result.localCleared} local stores and ${result.remoteDeleted} remote records.`,
+        });
+        
+        // Reset UI state
+        setLowEndMode(false);
+        setWinterMode(false);
+        setCloudDescribe(false);
+        setTelemetryOptIn(false);
+        setHighContrast(false);
+        setLargeTargets(true);
+      } else {
+        telemetry.track('settings_clear_all_failed', {
+          errors: result.errors,
+          partial_local: result.localCleared,
+          partial_remote: result.remoteDeleted,
+        });
+        
+        toast({
+          title: 'Clear partially failed',
+          description: `Cleared ${result.localCleared} local stores, ${result.remoteDeleted} remote records. ${result.errors.length} errors occurred.`,
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      telemetry.track('settings_clear_all_failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      
+      toast({
+        title: 'Clear failed',
+        description: 'An unexpected error occurred. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsClearing(false);
+      setShowClearDialog(false);
+      setShowFinalConfirm(false);
+    }
   };
 
   return (
@@ -236,25 +327,18 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({ onBack, replayTut
 
             <div className="space-y-3 pt-4">
               <Button
-                variant="outline"
+                variant="destructive"
                 className="w-full"
-                onClick={async () => {
-                  try {
-                    const startTime = performance.now();
-                    const { EncryptedKV } = await import('@/crypto/kv');
-                    await EncryptedKV.deleteAll();
-                    const duration = Math.round(performance.now() - startTime);
-                    journeyTrace.complete({ action: 'delete_all', duration_ms: duration });
-                    toast({ title: 'All encrypted data deleted' });
-                  } catch (error) {
-                    console.error('Delete failed:', error);
-                    journeyTrace.fail('Delete operation failed');
-                    toast({ title: 'Delete failed', variant: 'destructive' });
-                  }
-                }}
+                onClick={() => setShowClearDialog(true)}
+                aria-label="Clear all data from device and account"
               >
-                Delete All Stored Data
+                <AlertTriangle className="h-4 w-4 mr-2" />
+                Clear all data
               </Button>
+              
+              <p className="text-xs text-muted-foreground text-center">
+                Removes learned items and settings from this device and your account
+              </p>
               
               <Button
                 variant="outline"
@@ -324,15 +408,62 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({ onBack, replayTut
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="space-y-3">
-          <Button variant="outline" className="w-full">
-            Export Usage Data
-          </Button>
-          <Button variant="outline" className="w-full">
-            Reset to Defaults
-          </Button>
-        </div>
+        {/* Confirmation Dialogs */}
+        <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Clear all data?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will remove all learned items, settings, and usage data from:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>This device (local storage, cache)</li>
+                  <li>Your account (cloud database)</li>
+                </ul>
+                <p className="mt-3 font-semibold">This action cannot be undone.</p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleClearAllData}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={showFinalConfirm} onOpenChange={setShowFinalConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                Final Confirmation
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                <p className="mb-2">
+                  You have <strong>{remoteRowCount} records</strong> in your account that will be permanently deleted.
+                </p>
+                <p className="text-sm">
+                  Are you absolutely sure you want to proceed?
+                </p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setShowClearDialog(false)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={executeClearAll}
+                disabled={isClearing}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isClearing ? 'Clearing...' : 'Yes, delete everything'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );
