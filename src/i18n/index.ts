@@ -8,17 +8,20 @@ import enHome from "./locales/en/home.json";
 import frHome from "./locales/fr/home.json";
 import enLegacy from "./en.json";
 import frLegacy from "./fr.json";
+import enLanding from "./landing-en.json";
 
 // Merge legacy flat keys with new namespaced structure
 const resources = {
   en: { 
     common: enCommon,
     home: enHome,
+    landing: (enLanding as any).landing,
     translation: enLegacy // Legacy support
   },
   fr: { 
     common: frCommon,
     home: frHome,
+    landing: (enLanding as any).landing, // fallback to EN until FR landing is ready
     translation: frLegacy // Legacy support
   },
 };
@@ -30,7 +33,7 @@ export const i18nReady = i18next
     resources,
     lng: "en",
     fallbackLng: "en",
-    ns: ["common", "home", "translation"],
+    ns: ["common", "home", "landing", "translation"],
     defaultNS: "common",
     keySeparator: ".",
     nsSeparator: ":",
