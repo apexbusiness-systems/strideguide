@@ -37,7 +37,12 @@ export const i18nReady = i18next
     defaultNS: "common",
     keySeparator: ".",
     nsSeparator: ":",
-    debug: false, // Disable debug in production
+    debug: true, // Enable debug to catch missing keys
+    saveMissing: true,
+    parseMissingKeyHandler: (key) => {
+      console.error('[i18n] ❌ MISSING KEY:', key);
+      return key; // Return the key so we can see it in UI
+    },
     interpolation: { escapeValue: false },
     react: { 
       useSuspense: false // Prevent blocking during init

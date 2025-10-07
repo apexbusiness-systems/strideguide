@@ -88,16 +88,22 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Helper to check if request is to Supabase
+function isSupabaseRequest(request) {
+  const url = new URL(request.url);
+  return url.origin.includes('supabase.co') || 
+         url.origin.includes('supabase.in') ||
+         url.pathname.includes('/auth/');
+}
+
 // Fetch event - secure allowlist-based caching
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   
   // 🔒 BYPASS: Allow Supabase Auth & API requests (all domains) - NEVER cache or intercept
-  if (url.origin.includes('supabase.co') || 
-      url.origin.includes('supabase.in') ||
-      url.pathname.includes('/auth/')) {
-    console.log('[SW] Bypassing Supabase request:', url.href);
+  if (isSupabaseRequest(request)) {
+    console.log('[SW] ✅ BYPASS Supabase fetch:', request.method, url.href);
     return; // Let browser handle directly - no SW interference
   }
   
