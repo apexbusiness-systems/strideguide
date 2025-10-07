@@ -5,7 +5,8 @@ import AuthGate from "../components/AuthGate";
 import PrimaryCTA from "../components/PrimaryCTA";
 
 export default function Showcase() {
-  const { t } = useTranslation();
+  const { t: tCommon } = useTranslation('common');
+  const { t: tLanding } = useTranslation('landing');
   const [isAuthed] = React.useState(false);
 
   const SecBtn: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, className = "", ...rest }) => (
@@ -30,14 +31,14 @@ export default function Showcase() {
           <h1 className="text-xl font-bold text-foreground">Stride Guide</h1>
           <div className="hidden md:block ml-auto w-[240px]">
             <PrimaryCTA onClick={() => { /* wire real action */ }}>
-              {t("ctaPrimary")}
+              {tLanding("hero.ctaPrimary")}
             </PrimaryCTA>
           </div>
         </div>
-        <p className="mt-2 text-sm text-muted-foreground">{t("tagline")}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{tCommon("app.tagline")}</p>
         <div className="md:hidden mt-3">
           <PrimaryCTA onClick={() => { /* wire real action */ }}>
-            {t("ctaPrimary")}
+            {tLanding("hero.ctaPrimary")}
           </PrimaryCTA>
         </div>
       </header>
@@ -49,7 +50,7 @@ export default function Showcase() {
         {/* PRIMARY CTA — full width, first */}
         <div className="mb-3">
           <PrimaryCTA onClick={() => { /* start guidance */ }}>
-            {t("ctaPrimary")}
+            {tLanding("hero.ctaPrimary")}
           </PrimaryCTA>
         </div>
 
