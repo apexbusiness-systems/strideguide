@@ -9,17 +9,17 @@ export const Testimonials: React.FC = () => {
 
   const testimonials = [
     {
-      quote: t('landing.testimonial1'),
+      quote: 'StrideGuide gave me my independence back. I can walk to the store without fear, even when my phone has no signal.',
       author: 'Marie D.',
       location: 'Montreal, QC',
     },
     {
-      quote: t('landing.testimonial2'),
+      quote: 'The offline feature is a game-changer. No more worrying about data limits or dead zones. It just works.',
       author: 'James T.',
       location: 'Toronto, ON',
     },
     {
-      quote: t('landing.testimonial3'),
+      quote: 'As a senior with vision loss, this app is exactly what I needed. Big buttons, clear voice, and it actually helps me navigate safely.',
       author: 'Sophie L.',
       location: 'Vancouver, BC',
     },

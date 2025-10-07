@@ -7,11 +7,11 @@ export const WhyStrideGuide: React.FC = () => {
   const { t } = useTranslation();
 
   const benefits = [
-    t('landing.whyOffline'),
-    t('landing.whyInference'),
-    t('landing.whyPrivacy'),
-    t('landing.whyBilingual'),
-    t('landing.whyUI'),
+    'Works 100% offline - no data charges, no connection needed',
+    'AI runs on your phone - instant obstacle detection without cloud delays',
+    'Your camera never sends images anywhere - complete privacy guaranteed',
+    'Full bilingual support - seamlessly switch between English and French',
+    'Designed for accessibility - large touch targets, voice commands, screen reader optimized',
   ];
 
   return (

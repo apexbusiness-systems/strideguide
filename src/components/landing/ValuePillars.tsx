@@ -10,18 +10,18 @@ export const ValuePillars: React.FC = () => {
   const pillars = [
     {
       icon: Navigation,
-      title: t('features.guidance').split(':')[0],
-      description: t('features.guidance').split(':')[1]?.trim() || '',
+      title: 'Real-Time Obstacle Detection',
+      description: 'AI-powered vision alerts you to obstacles, steps, and hazards before you encounter them',
     },
     {
       icon: Search,
-      title: t('features.finder').split(':')[0],
-      description: t('features.finder').split(':')[1]?.trim() || '',
+      title: 'Lost Item Finder',
+      description: 'Teach StrideGuide your keys, wallet, or phone - find them instantly with audio cues',
     },
     {
       icon: Phone,
-      title: t('features.sos').split(':')[0],
-      description: t('features.sos').split(':')[1]?.trim() || '',
+      title: 'Emergency SOS',
+      description: 'One-touch emergency contact with automatic location sharing and fall detection',
     },
   ];
 

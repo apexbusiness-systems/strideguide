@@ -11,12 +11,12 @@ export const InstallGuide: React.FC = () => {
     {
       icon: Smartphone,
       platform: 'Android / Desktop',
-      instruction: t('landing.installAndroid'),
+      instruction: 'Tap the install prompt or menu → Install StrideGuide',
     },
     {
       icon: Share2,
       platform: 'iPhone / iPad',
-      instruction: t('landing.installIOS'),
+      instruction: 'Tap Share → Add to Home Screen → Done',
     },
   ];
 
