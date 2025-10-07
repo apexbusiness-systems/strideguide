@@ -4,7 +4,7 @@
  */
 
 class BatteryGuardClass {
-  private battery: any = null;
+  private battery: BatteryManager | null = null;
   private batterySupported = 'getBattery' in navigator;
   private lowBatteryThreshold = 0.15; // 15%
   private hasAlerted = false;
@@ -18,7 +18,10 @@ class BatteryGuardClass {
     }
 
     try {
-      this.battery = await (navigator as any).getBattery();
+      const nav = navigator as Navigator & { getBattery?: () => Promise<BatteryManager> };
+      if (nav.getBattery) {
+        this.battery = await nav.getBattery();
+      }
       
       // Set up battery event listeners
       this.battery.addEventListener('levelchange', this.handleLevelChange.bind(this));
@@ -38,7 +41,7 @@ class BatteryGuardClass {
   }
 
   private handleChargingChange(): void {
-    if (this.battery.charging && this.isLowPowerMode) {
+    if (this.battery && this.battery.charging && this.isLowPowerMode) {
       console.log('Device charging, exiting low power mode');
       this.setLowPowerMode(false);
       this.hasAlerted = false; // Reset alert flag when charging

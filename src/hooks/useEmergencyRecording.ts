@@ -44,7 +44,7 @@ export const useEmergencyRecording = () => {
     voiceActivation: true,
     tripleVolumePress: true
   });
-  const [policy, setPolicy] = useState<any | null>(null);
+  const [policy, setPolicy] = useState<{ audioAllowed: boolean; requiresBeep: boolean; region: string; consentModalRequired: boolean } | null>(null);
   const [storageUsed, setStorageUsed] = useState(0);
   const [sessions, setSessions] = useState<RecordingSession[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
