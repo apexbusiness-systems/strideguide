@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useI18nGuard } from "@/utils/i18nGuard";
 import ConsentModal from "./components/ConsentModal";
+import { DEV_CONFIG } from "@/config/dev";
 
 // Lazy load pages for code splitting and performance
 const Index = lazy(() => import("./pages/Index"));
@@ -58,6 +59,13 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // DEV BYPASS: Skip auth entirely if enabled
+    if (DEV_CONFIG.BYPASS_AUTH) {
+      setUser(DEV_CONFIG.MOCK_USER as any);
+      setIsLoading(false);
+      return;
+    }
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
