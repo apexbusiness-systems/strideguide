@@ -1,0 +1,24 @@
+{
+  "USE_SAMSUNG_PWA": true,
+  "version": "1.0.0",
+  "comment": "Set USE_SAMSUNG_PWA to false to switch to standard Android adaptive icons",
+  "current_assets": {
+    "android_chrome_192": "/android-chrome-192x192.png",
+    "android_chrome_512": "/android-chrome-512x512.png",
+    "maskable_512": "/maskable_icon_512.png",
+    "apple_touch_icon": "/apple-touch-icon.png",
+    "favicon_32": "/favicon-32x32.png",
+    "favicon_16": "/favicon-16x16.png"
+  },
+  "source_mapping": {
+    "samsung_mode": {
+      "android_chrome_192": "ic_launcher_foreground.png (108dp adaptive layer)",
+      "android_chrome_512": "galaxy_store_icon_512.png",
+      "maskable_512": "maskable_512.png (Samsung One UI safe zone)",
+      "apple_touch_icon": "master_1024.png (iOS rounded corners)"
+    },
+    "standard_mode": {
+      "note": "When USE_SAMSUNG_PWA=false, regenerate from Android adaptive foreground or master icon"
+    }
+  }
+}
