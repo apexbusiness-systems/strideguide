@@ -1,2 +1,2 @@
-// @stride/sw-version v6 – 2025-10-05 baseline freeze
-export const SW_VERSION = 'sg-2025-10-05-baseline-v4';
+// @stride/sw-version v7 – Auth bypass fix
+export const SW_VERSION = 'sg-2025-10-06-auth-bypass-v4';

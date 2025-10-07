@@ -1,8 +1,8 @@
 // StrideGuide Service Worker - Security Hardened & Performance Optimized
 // Version 3.0 - Allowlist-based caching with deny-by-default fetch + Stale-While-Revalidate
 
-const CACHE_NAME = 'stride-guide-v3';
-const CACHE_VERSION = 3;
+const CACHE_NAME = 'stride-guide-v4';
+const CACHE_VERSION = 4;
 const MAX_CACHE_SIZE = 100; // Maximum cached items
 const CACHE_EXPIRY_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
@@ -93,9 +93,15 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   
-  // CRITICAL: Never cache Supabase auth requests - bypass SW entirely
-  if (url.hostname.includes('supabase.co')) {
+  // 🔒 BYPASS: Allow Supabase Auth & API requests (all domains)
+  if (url.origin.includes('supabase.co') || url.origin.includes('supabase.in')) {
     return; // Let browser handle directly - no SW interference
+  }
+  
+  // Bypass external domains (Stripe, etc.)
+  const BYPASS_ORIGINS = ['stripe.com', 'ionos.ca'];
+  if (BYPASS_ORIGINS.some(domain => url.origin.includes(domain))) {
+    return; // Let browser handle directly
   }
   
   // Only handle same-origin requests for everything else
