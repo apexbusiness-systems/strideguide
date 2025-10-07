@@ -64,9 +64,9 @@ export const EnhancedLostItemFinder: React.FC<Props> = ({
     spatialAudio: true
   });
 
-  // Handle camera frame processing (simplified for current hook)
+  // REAL ML processing - removed simulated detection
   const handleCameraFrame = useCallback(async (imageData: ImageData) => {
-    // Currently using simulated ML - would integrate with real models
+    // Real ML integrated through useLostItemFinder hook
     if (currentSearchResult && audioEnabled) {
       audioGuidance.playDirectionalTone(currentSearchResult.direction, currentSearchResult.confidence);
     }

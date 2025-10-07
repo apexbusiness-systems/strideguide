@@ -5,7 +5,11 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { pipeline, env, Pipeline } from '@huggingface/transformers';
+import { pipeline, env } from '@huggingface/transformers';
+import { SAFETY } from '../config/safety';
+import { cocoToHazard, laneOf, distanceOf, type HazardType, type Lane, type Distance } from '../ml/hazardMap';
+import { cosineSim } from '../ml/vector';
+import { tObserve } from '../telemetry/metrics';
 
 // Configure for production
 env.allowLocalModels = false;
@@ -13,22 +17,23 @@ env.allowRemoteModels = true;
 env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.0/dist/';
 env.backends.onnx.wasm.numThreads = 1;
 
-export interface DetectionResult {
-  label: string;
+export interface Detection {
+  bbox: [number, number, number, number]; // x,y,w,h in px
   score: number;
-  box: { xmin: number; ymin: number; xmax: number; ymax: number };
+  className: string;
+  hazard: HazardType;
+  lane: Lane;
+  distance: Distance;
 }
 
-export interface EmbeddingResult {
-  embedding: Float32Array;
-  confidence: number;
-}
-
-export interface SearchResult {
-  confidence: number;
-  distance: number;
-  direction: 'left' | 'center' | 'right';
-  bbox?: [number, number, number, number];
+export interface ItemHit {
+  bbox: [number, number, number, number];
+  score: number;
+  className: string;
+  hazard: HazardType;
+  lane: Lane;
+  distance: Distance;
+  similarity: number;
 }
 
 export function useMLInference() {
@@ -39,6 +44,7 @@ export function useMLInference() {
   const detectorRef = useRef<any>(null);
   const embedderRef = useRef<any>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const busyRef = useRef(0);
 
   useEffect(() => {
     let mounted = true;
@@ -93,13 +99,13 @@ export function useMLInference() {
     };
   }, []);
 
-  const detectObjects = useCallback(async (imageData: ImageData): Promise<DetectionResult[]> => {
+  const detectObjects = useCallback(async (imageData: ImageData): Promise<Detection[]> => {
     if (!isInitialized || !canvasRef.current || !detectorRef.current) {
       throw new Error('ML models not ready - cannot detect');
     }
 
     try {
-      const startTime = performance.now();
+      const t0 = performance.now();
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d')!;
       
@@ -107,26 +113,43 @@ export function useMLInference() {
       canvas.height = imageData.height;
       ctx.putImageData(imageData, 0, 0);
 
-      // REAL object detection
+      // REAL object detection with DETR
       const detections = await detectorRef.current(canvas, {
-        threshold: 0.5,
+        threshold: SAFETY.MIN_DETR_SCORE,
         percentage: true,
       });
 
-      const inferenceTime = performance.now() - startTime;
+      const inferenceTime = performance.now() - t0;
+      tObserve('detect_ms', inferenceTime);
       
       console.log(`[useMLInference] ✓ Detected ${detections.length} objects (${inferenceTime.toFixed(1)}ms)`);
 
-      const results: DetectionResult[] = detections.map((det: any) => ({
-        label: det.label,
-        score: det.score,
-        box: {
-          xmin: Math.round(det.box.xmin * imageData.width / 100),
-          ymin: Math.round(det.box.ymin * imageData.height / 100),
-          xmax: Math.round(det.box.xmax * imageData.width / 100),
-          ymax: Math.round(det.box.ymax * imageData.height / 100),
-        }
-      }));
+      const frameArea = imageData.width * imageData.height;
+
+      const results: Detection[] = detections.map((det: any) => {
+        const xmin = Math.round(det.box.xmin * imageData.width / 100);
+        const ymin = Math.round(det.box.ymin * imageData.height / 100);
+        const xmax = Math.round(det.box.xmax * imageData.width / 100);
+        const ymax = Math.round(det.box.ymax * imageData.height / 100);
+        
+        const x = xmin;
+        const y = ymin;
+        const w = xmax - xmin;
+        const h = ymax - ymin;
+        
+        const hazard = cocoToHazard(det.label);
+        const lane = laneOf(x + w/2, imageData.width, SAFETY.CENTER_LANE_BAND);
+        const distance = distanceOf(w*h, frameArea, SAFETY.NEAR_AREA_RATIO, SAFETY.MID_AREA_RATIO);
+
+        return {
+          bbox: [x, y, w, h],
+          score: det.score,
+          className: det.label,
+          hazard,
+          lane,
+          distance
+        };
+      });
 
       return results;
     } catch (err) {
@@ -135,26 +158,31 @@ export function useMLInference() {
     }
   }, [isInitialized]);
 
-  const generateEmbedding = useCallback(async (imageData: ImageData): Promise<EmbeddingResult> => {
+  const generateEmbedding = useCallback(async (
+    source: ImageData | ImageBitmap | HTMLCanvasElement
+  ): Promise<Float32Array> => {
     if (!isInitialized || !canvasRef.current || !embedderRef.current) {
       throw new Error('ML models not ready - cannot generate embedding');
     }
 
     try {
-      const startTime = performance.now();
+      const t0 = performance.now();
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d')!;
       
       canvas.width = 384;
       canvas.height = 384;
       
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = imageData.width;
-      tempCanvas.height = imageData.height;
-      const tempCtx = tempCanvas.getContext('2d')!;
-      tempCtx.putImageData(imageData, 0, 0);
-      
-      ctx.drawImage(tempCanvas, 0, 0, 384, 384);
+      if (source instanceof ImageData) {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = source.width;
+        tempCanvas.height = source.height;
+        const tempCtx = tempCanvas.getContext('2d')!;
+        tempCtx.putImageData(source, 0, 0);
+        ctx.drawImage(tempCanvas, 0, 0, 384, 384);
+      } else {
+        ctx.drawImage(source, 0, 0, 384, 384);
+      }
 
       // REAL embedding generation
       const result = await embedderRef.current(canvas, {
@@ -164,16 +192,12 @@ export function useMLInference() {
 
       const embedding = new Float32Array(result.data);
       
-      const magnitude = Math.sqrt(
-        Array.from(embedding).reduce((sum, val) => sum + val * val, 0)
-      );
-      const confidence = Math.min(magnitude / 10, 1.0);
-
-      const inferenceTime = performance.now() - startTime;
+      const inferenceTime = performance.now() - t0;
+      tObserve('embed_ms', inferenceTime);
       
       console.log(`[useMLInference] ✓ Generated ${embedding.length}D embedding (${inferenceTime.toFixed(1)}ms)`);
 
-      return { embedding, confidence };
+      return embedding;
     } catch (err) {
       console.error('[useMLInference] CRITICAL: Embedding FAILED:', err);
       throw err;
@@ -182,46 +206,66 @@ export function useMLInference() {
 
   const searchForItem = useCallback(async (
     imageData: ImageData,
-    targetEmbeddings: number[][]
-  ): Promise<SearchResult | null> => {
-    if (!targetEmbeddings.length) return null;
+    targetEmbedding: Float32Array
+  ): Promise<ItemHit | null> => {
+    if (busyRef.current >= SAFETY.MAX_CONCURRENT_INFER) return null;
+    busyRef.current++;
 
     try {
-      const current = await generateEmbedding(imageData);
-      
-      let bestMatch = { similarity: -1, index: -1 };
-      
-      for (let i = 0; i < targetEmbeddings.length; i++) {
-        const similarity = cosineSimilarity(
-          Array.from(current.embedding),
-          targetEmbeddings[i]
-        );
+      const t0 = performance.now();
+      const dets = await detectObjects(imageData);
+      const candidates = dets
+        .sort((a,b) => b.score - a.score)
+        .slice(0, SAFETY.TOPK_ITEM_CANDIDATES);
+
+      if (!candidates.length) {
+        busyRef.current--;
+        return null;
+      }
+
+      // Crop each DETR bbox, embed, cosine-match
+      const sourceCanvas = document.createElement('canvas');
+      sourceCanvas.width = imageData.width;
+      sourceCanvas.height = imageData.height;
+      sourceCanvas.getContext('2d')!.putImageData(imageData, 0, 0);
+
+      const cropCanvas = document.createElement('canvas');
+      const cropCtx = cropCanvas.getContext('2d', { willReadFrequently: true })!;
+
+      let best: ItemHit | null = null;
+
+      for (const c of candidates) {
+        const [x, y, w, h] = c.bbox;
+        if (w < 8 || h < 8) continue;
+
+        cropCanvas.width = w;
+        cropCanvas.height = h;
+        cropCtx.drawImage(sourceCanvas, x, y, w, h, 0, 0, w, h);
+
+        const emb = await generateEmbedding(cropCanvas);
+        const sim = cosineSim(targetEmbedding, emb);
         
-        if (similarity > bestMatch.similarity) {
-          bestMatch = { similarity, index: i };
+        if (sim >= SAFETY.MIN_ITEM_COSINE) {
+          const hit: ItemHit = { ...c, similarity: sim };
+          if (!best || sim > best.similarity) best = hit;
         }
       }
 
-      if (bestMatch.similarity < 0.6) return null;
-
-      const centerX = Math.random();
-      const distance = Math.max(0.1, 1 - bestMatch.similarity);
+      const searchTime = performance.now() - t0;
+      tObserve('search_ms', searchTime);
       
-      let direction: 'left' | 'center' | 'right' = 'center';
-      if (centerX < 0.3) direction = 'left';
-      else if (centerX > 0.7) direction = 'right';
+      if (best) {
+        console.log(`[useMLInference] ✓ Item found: ${best.className} (${(best.similarity*100).toFixed(1)}% match)`);
+      }
 
-      return {
-        confidence: bestMatch.similarity,
-        distance,
-        direction,
-        bbox: [centerX - 0.1, 0.3, 0.2, 0.4]
-      };
+      return best;
     } catch (err) {
       console.error('[useMLInference] Search FAILED:', err);
       return null;
+    } finally {
+      busyRef.current--;
     }
-  }, [generateEmbedding]);
+  }, [detectObjects, generateEmbedding]);
 
   return {
     isInitialized,
@@ -231,22 +275,4 @@ export function useMLInference() {
     generateEmbedding,
     searchForItem
   };
-}
-
-function cosineSimilarity(a: number[], b: number[]): number {
-  if (a.length !== b.length) return 0;
-  
-  let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
-  
-  for (let i = 0; i < a.length; i++) {
-    dotProduct += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
-  }
-  
-  if (normA === 0 || normB === 0) return 0;
-  
-  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 }
