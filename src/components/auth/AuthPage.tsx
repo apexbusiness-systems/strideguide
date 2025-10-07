@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/Logo";
 import { z } from "zod";
 import { logger } from "@/utils/ProductionLogger";
+import { AuthTroubleshooter } from "./AuthTroubleshooter";
 
 const authSchema = z.object({
   email: z.string().email("Invalid email address").max(255),
@@ -49,6 +50,13 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
     setIsLoading(true);
     setError("");
 
+    // Check network connectivity
+    if (!navigator.onLine) {
+      setError("No internet connection. Please check your network and try again.");
+      setIsLoading(false);
+      return;
+    }
+
     // B4: Generate correlation ID for this attempt
     const correlationId = crypto.randomUUID();
     logger.info("Sign-in attempt started", { correlationId, action: "signin" });
@@ -74,12 +82,12 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
           errorMessage: error.message 
         });
         
-        // B4: Map errors to actionable user messages
+        // Enhanced error messages for mobile data issues
+        let userMessage = error.message;
         if (error.message.includes("Invalid login credentials") || error.status === 400) {
           setError("Email or password is incorrect.");
         } else if (error.message.includes("Failed to fetch") || error.name === "TypeError") {
-          // CORS/Preflight failure
-          setError("Sign-in temporarily unavailable. Please refresh and try again.");
+          setError("Network error. If on mobile data: 1) Toggle airplane mode on/off, 2) Restart browser, or 3) Use diagnostics below.");
           logger.error("CORS/Network failure detected", { 
             correlationId, 
             hint: "Check Supabase Auth URL configuration" 
@@ -112,8 +120,7 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
       if (error instanceof z.ZodError) {
         setError(error.errors[0].message);
       } else if (error instanceof TypeError && error.message.includes("fetch")) {
-        // B4: CORS/Preflight error
-        setError("Sign-in temporarily unavailable. Please refresh and try again.");
+        setError("Connection failed. Try: 1) Disable VPN/Data Saver, 2) Use WiFi, or 3) Run diagnostics below.");
         logger.error("Network/CORS error", { 
           correlationId, 
           hint: "Check preflight OPTIONS response" 
@@ -130,6 +137,13 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+
+    // Check network connectivity
+    if (!navigator.onLine) {
+      setError("No internet connection. Please check your network and try again.");
+      setIsLoading(false);
+      return;
+    }
 
     // B4: Generate correlation ID for this attempt
     const correlationId = crypto.randomUUID();
@@ -162,11 +176,11 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
           errorMessage: error.message 
         });
         
-        // B4: Map errors to actionable user messages
+        // Enhanced error messages for mobile data issues
         if (error.message.includes("User already registered")) {
           setError("An account with this email already exists. Please sign in instead.");
         } else if (error.message.includes("Failed to fetch") || error.name === "TypeError") {
-          setError("Sign-up temporarily unavailable. Please refresh and try again.");
+          setError("Network error. If on mobile data: 1) Toggle airplane mode on/off, 2) Restart browser, or 3) Use diagnostics below.");
           logger.error("CORS/Network failure detected", { 
             correlationId, 
             hint: "Check Supabase Auth URL configuration" 
@@ -196,7 +210,7 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
       if (error instanceof z.ZodError) {
         setError(error.errors[0].message);
       } else if (error instanceof TypeError && error.message.includes("fetch")) {
-        setError("Sign-up temporarily unavailable. Please refresh and try again.");
+        setError("Connection failed. Try: 1) Disable VPN/Data Saver, 2) Use WiFi, or 3) Run diagnostics below.");
         logger.error("Network/CORS error", { 
           correlationId, 
           hint: "Check preflight OPTIONS response" 
@@ -402,6 +416,8 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
                 </form>
               </TabsContent>
             </Tabs>
+            
+            <AuthTroubleshooter />
           </CardContent>
         </Card>
       </div>
