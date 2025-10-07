@@ -57,6 +57,7 @@ const App = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const effectiveUser = (DEV_CONFIG.BYPASS_AUTH ? (DEV_CONFIG.MOCK_USER as any) : null) || user;
 
   useEffect(() => {
     // DEV BYPASS: Skip auth entirely if enabled
@@ -118,22 +119,22 @@ const App = () => {
                 <Route 
                   path="/auth" 
                   element={
-                    user ? (
-                      <DashboardPage user={user} onSignOut={handleSignOut} />
+                    effectiveUser ? (
+                      <DashboardPage user={effectiveUser} onSignOut={handleSignOut} />
                     ) : (
                       <AuthPage onAuthSuccess={handleAuthSuccess} />
                     )
-                  } 
+                  }
                 />
                 <Route 
                   path="/dashboard" 
                   element={
-                    user ? (
-                      <DashboardPage user={user} onSignOut={handleSignOut} />
+                    effectiveUser ? (
+                      <DashboardPage user={effectiveUser} onSignOut={handleSignOut} />
                     ) : (
                       <AuthPage onAuthSuccess={handleAuthSuccess} />
                     )
-                  } 
+                  }
                 />
                 <Route path="/pricing" element={<PricingPage onBack={() => window.history.back()} />} />
                 <Route path="/help" element={<HelpPage onBack={() => window.history.back()} />} />
