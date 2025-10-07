@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { DEV_CONFIG } from '@/config/dev';
 
 const CONSENT_KEY = 'stride_consent_v1';
 
@@ -22,7 +23,17 @@ export default function ConsentModal() {
 
   useEffect(() => {
     const hasConsented = localStorage.getItem(CONSENT_KEY);
-    if (!hasConsented) {
+    if (hasConsented) return;
+
+    if ((DEV_CONFIG as any).BYPASS_AUTH) {
+      const consent = {
+        accepted: true,
+        telemetry: false,
+        timestamp: new Date().toISOString(),
+      };
+      localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
+      setOpen(false);
+    } else {
       setOpen(true);
     }
   }, []);

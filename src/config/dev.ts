@@ -20,14 +20,28 @@ export const DEV_CONFIG = {
   }
 } as const;
 
-// Safety check - disable bypass in production
-if (window.location.hostname !== 'localhost' && 
-    !window.location.hostname.includes('lovable.app')) {
+// Safety check and overrides - disable bypass in production except known dev hosts
+const hostname = window.location.hostname;
+const isDevHost =
+  hostname === 'localhost' ||
+  hostname.includes('lovable.app') ||
+  hostname.includes('lovableproject.com');
+
+const params = new URLSearchParams(window.location.search);
+const bypassParam = params.get('dev_bypass');
+
+if (bypassParam === '1') {
+  (DEV_CONFIG as any).BYPASS_AUTH = true;
+  console.warn('⚠️ DEV MODE: Bypass forced via ?dev_bypass=1');
+} else if (bypassParam === '0') {
   (DEV_CONFIG as any).BYPASS_AUTH = false;
-  console.warn('🔒 Dev bypass disabled - not in development environment');
+  console.warn('🔒 Dev bypass disabled via ?dev_bypass=0');
+} else if (!isDevHost) {
+  (DEV_CONFIG as any).BYPASS_AUTH = false;
+  console.warn('🔒 Dev bypass disabled - not in development host');
 }
 
-if (DEV_CONFIG.BYPASS_AUTH) {
+if ((DEV_CONFIG as any).BYPASS_AUTH) {
   console.warn('⚠️ DEV MODE: Authentication bypass is ENABLED');
-  console.warn('⚠️ Set DEV_CONFIG.BYPASS_AUTH = false to re-enable auth');
+  console.warn('⚠️ Set DEV_CONFIG.BYPASS_AUTH = false or use ?dev_bypass=0 to re-enable auth');
 }
