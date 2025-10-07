@@ -1,8 +1,8 @@
 // StrideGuide Service Worker - Security Hardened & Performance Optimized
-// Version 3.0 - Allowlist-based caching with deny-by-default fetch + Stale-While-Revalidate
+// Version 3.1 - CRITICAL FIX: Supabase hostname check (mobile data auth)
 
-const CACHE_NAME = 'stride-guide-v5';
-const CACHE_VERSION = 5;
+const CACHE_NAME = 'stride-guide-v6';
+const CACHE_VERSION = 6;
 const MAX_CACHE_SIZE = 100; // Maximum cached items
 const CACHE_EXPIRY_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
@@ -88,12 +88,17 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Helper to check if request is to Supabase
+// Helper to check if request is to Supabase - CRITICAL: Must catch ALL Supabase endpoints
 function isSupabaseRequest(request) {
   const url = new URL(request.url);
-  return url.origin.includes('supabase.co') || 
-         url.origin.includes('supabase.in') ||
-         url.pathname.includes('/auth/');
+  // Match any supabase.co or supabase.in domain (covers auth, rest, storage, realtime)
+  const isSupabaseOrigin = url.hostname.includes('supabase.co') || 
+                           url.hostname.includes('supabase.in');
+  
+  // Explicit project ID check (hardcoded for reliability)
+  const isProjectUrl = url.hostname.includes('yrndifsbsmpvmpudglcc');
+  
+  return isSupabaseOrigin || isProjectUrl;
 }
 
 // Fetch event - secure allowlist-based caching
@@ -103,8 +108,9 @@ self.addEventListener('fetch', (event) => {
   
   // 🔒 BYPASS: Allow Supabase Auth & API requests (all domains) - NEVER cache or intercept
   if (isSupabaseRequest(request)) {
-    console.log('[SW] ✅ BYPASS Supabase fetch:', request.method, url.href);
-    return; // Let browser handle directly - no SW interference
+    // CRITICAL: Return immediately WITHOUT calling event.respondWith()
+    // This allows the browser to handle the request natively (bypasses SW entirely)
+    return;
   }
   
   // 🔒 BYPASS: Stripe, payment processors, and external auth

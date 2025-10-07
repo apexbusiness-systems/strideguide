@@ -4,26 +4,30 @@
 
 This error typically occurs due to one of these issues:
 
-### 1. Supabase URL Configuration Not Set (MOST COMMON)
+### 1. Supabase URL Configuration Not Set (MOST COMMON - CAUSES "Network error")
+
+**🚨 CRITICAL**: This is the #1 cause of "Network error" on mobile/desktop.
 
 **Solution:** You MUST configure the Site URL and Redirect URLs in your Supabase Dashboard:
 
 1. Go to [Supabase Authentication Settings](https://supabase.com/dashboard/project/yrndifsbsmpvmpudglcc/auth/url-configuration)
 
-2. Set **Site URL** to:
-   - For Lovable preview: `https://your-project.lovable.app`
+2. Set **Site URL** to your current domain:
+   - For Lovable preview: `https://gptengineer-strideguide-enterprise.lovable.app`
    - For production: `https://your-custom-domain.com`
    - For local dev: `http://localhost:8080`
 
-3. Add **ALL** of these to **Redirect URLs**:
+3. Add **ALL** of these to **Redirect URLs** (one per line):
    ```
-   https://*.lovable.app/*
-   https://your-project.lovable.app/*
-   https://your-custom-domain.com/* (if applicable)
-   http://localhost:8080/* (for local dev)
+   https://*.lovable.app/**
+   https://gptengineer-strideguide-enterprise.lovable.app/**
+   https://your-custom-domain.com/** (if applicable)
+   http://localhost:8080/** (for local dev)
    ```
 
-4. Click **Save**
+4. Click **Save** and wait 30 seconds for changes to propagate
+
+5. **Clear browser cache** and try signing in again
 
 ### 2. Email Confirmation Required (Testing Issue)
 

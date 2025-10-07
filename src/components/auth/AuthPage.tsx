@@ -120,10 +120,11 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
       if (error instanceof z.ZodError) {
         setError(error.errors[0].message);
       } else if (error instanceof TypeError && error.message.includes("fetch")) {
-        setError("Connection failed. Try: 1) Disable VPN/Data Saver, 2) Use WiFi, or 3) Run diagnostics below.");
-        logger.error("Network/CORS error", { 
+        setError("Network error. If on mobile data: 1) Toggle airplane mode on/off, 2) Restart browser, or 3) Use diagnostics below.");
+        logger.error("Network/CORS error - likely Supabase URL config issue", { 
           correlationId, 
-          hint: "Check preflight OPTIONS response" 
+          currentUrl: window.location.origin,
+          hint: "Supabase Dashboard > Auth > URL Configuration must include current domain in Redirect URLs"
         });
       } else {
         setError(`Sign-in failed. Reference: ${correlationId.slice(0, 8)}`);

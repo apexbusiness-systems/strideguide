@@ -169,7 +169,7 @@ class EncryptedKVClass {
     const wrappingKey = await crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
-        salt: storedKey.salt,
+        salt: new Uint8Array(storedKey.salt),
         iterations: 100001,
         hash: 'SHA-256'
       },
@@ -208,10 +208,12 @@ class EncryptedKVClass {
     if (!this.cryptoKey) throw new Error('Crypto key not initialized');
     
     const iv = crypto.getRandomValues(new Uint8Array(12));
+    // Ensure data is proper BufferSource for crypto API
+    const dataBuffer = new Uint8Array(data);
     const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
       this.cryptoKey,
-      data
+      dataBuffer
     );
     
     // Combine IV + encrypted data
