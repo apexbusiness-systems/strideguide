@@ -1,47 +1,17 @@
 {
   "name": "StrideGuide",
   "short_name": "StrideGuide", 
-  "description": "Your seeing-eye assistant in your pocket. Visual guidance for seniors and blind users, works offline with English and French support.",
-  "start_url": "/",
+  "description": "Offline visual guidance with EN/FR, Finder, and Emergency SOS.",
+  "start_url": "/?source=pwa",
   "display": "standalone",
-  "background_color": "#0B0F14",
-  "theme_color": "#3730A3",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
   "orientation": "portrait",
   "categories": ["accessibility", "health", "utilities"],
   "lang": "en",
   "icons": [
-    {
-      "src": "/android-chrome-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/android-chrome-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/maskable_icon_512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshot-mobile-1080x1920.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "/screenshot-desktop-1920x1080.png", 
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide"
-    }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ],
   "shortcuts": [
     {
@@ -49,14 +19,14 @@
       "short_name": "Guidance",
       "description": "Start vision guidance immediately",
       "url": "/?shortcut=guidance",
-      "icons": [{ "src": "/android-chrome-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Emergency SOS",
       "short_name": "SOS", 
       "description": "Emergency assistance",
       "url": "/?shortcut=sos",
-      "icons": [{ "src": "/android-chrome-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

@@ -7,7 +7,7 @@
 
 export const DEV_CONFIG = {
   // Set to true to bypass authentication entirely
-  BYPASS_AUTH: true,
+  BYPASS_AUTH: false,
   
   // Mock user data used when bypass is enabled
   MOCK_USER: {
