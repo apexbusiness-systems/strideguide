@@ -19,20 +19,29 @@ import "./utils/PerformanceMonitor";
 // Load runtime config before app boot
 import { loadRuntimeConfig } from "./config/runtime";
 
-// Service Worker registration (disabled in preview/dev, enabled in production)
-const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost';
-const isPreview = window.location.hostname.includes('.lovable.app');
+// CRITICAL: SW kill-switch - default disabled until explicitly enabled
+const SW_ENABLED = import.meta.env.VITE_ENABLE_SW === 'true';
 
-if ("serviceWorker" in navigator && !isDevelopment && !isPreview) {
-  // Only register SW in production builds
+// Aggressive SW cleanup on load
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    Promise.all(regs.map(r => r.unregister()));
+  });
+  if ('caches' in window) {
+    caches.keys().then(names => Promise.all(names.map(n => caches.delete(n))));
+  }
+  console.log('[App] Service Worker cleanup executed');
+}
+
+// Only register SW if explicitly enabled via VITE_ENABLE_SW=true
+if (SW_ENABLED && "serviceWorker" in navigator) {
   const url = `/sw.js?v=${encodeURIComponent(SW_VERSION)}`;
   window.addEventListener("load", () => {
     navigator.serviceWorker.register(url, { 
       scope: '/',
-      updateViaCache: 'none' // Always check for updates
+      updateViaCache: 'none'
     }).then((registration) => {
-      console.log('[App] Service Worker registered, version:', SW_VERSION);
-      // Check for updates every hour
+      console.log('[App] Service Worker registered (VITE_ENABLE_SW=true), version:', SW_VERSION);
       setInterval(() => {
         registration.update().catch(() => {});
       }, 1000 * 60 * 60);
@@ -40,17 +49,8 @@ if ("serviceWorker" in navigator && !isDevelopment && !isPreview) {
       console.warn('[App] Service Worker registration failed:', err);
     });
   });
-} else if (isDevelopment || isPreview) {
-  console.log('[App] Service Worker DISABLED (dev/preview mode). Current version:', SW_VERSION);
-  // Unregister any existing service workers in dev/preview
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.getRegistrations().then((registrations) => {
-      registrations.forEach(reg => {
-        reg.unregister();
-        console.log('[App] Unregistered existing Service Worker in dev/preview mode');
-      });
-    });
-  }
+} else {
+  console.log('[App] Service Worker DISABLED (VITE_ENABLE_SW not set or false). Current version:', SW_VERSION);
 }
 
 // Preload critical resources

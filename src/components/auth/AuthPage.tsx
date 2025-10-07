@@ -13,6 +13,7 @@ import { Logo } from "@/components/Logo";
 import { z } from "zod";
 import { logger } from "@/utils/ProductionLogger";
 import { AuthTroubleshooter } from "./AuthTroubleshooter";
+import { AuthDiagnosticsInline } from "./AuthDiagnosticsInline";
 
 const authSchema = z.object({
   email: z.string().email("Invalid email address").max(255),
@@ -419,6 +420,7 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
             </Tabs>
             
             <AuthTroubleshooter />
+            <AuthDiagnosticsInline />
           </CardContent>
         </Card>
       </div>

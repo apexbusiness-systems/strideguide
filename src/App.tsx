@@ -21,6 +21,8 @@ const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
 const HelpPage = lazy(() => import("./pages/HelpPage"));
+const AuthDiagnosticsPage = lazy(() => import("./pages/AuthDiagnosticsPage"));
+const AuthMinPage = lazy(() => import("./pages/AuthMinPage"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -139,6 +141,8 @@ const App = () => {
                 <Route path="/pricing" element={<PricingPage onBack={() => window.history.back()} />} />
                 <Route path="/help" element={<HelpPage onBack={() => window.history.back()} />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/auth-diagnostics" element={<AuthDiagnosticsPage />} />
+                <Route path="/auth-min" element={<AuthMinPage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

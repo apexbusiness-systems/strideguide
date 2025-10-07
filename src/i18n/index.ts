@@ -10,42 +10,46 @@ import enLegacy from "./en.json";
 import frLegacy from "./fr.json";
 import enLanding from "./landing-en.json";
 
-// Merge legacy flat keys with new namespaced structure
+// CONSOLIDATED: Single i18n init with all namespaces bundled at build
 const resources = {
   en: { 
     common: enCommon,
     home: enHome,
-    landing: (enLanding as any).landing,
-    translation: enLegacy // Legacy support
+    landing: (enLanding as any).landing || {},
+    app: enLegacy,      // Renamed from 'translation' for clarity
+    plan: {},           // Placeholder for future plan translations
+    pricing: {}         // Placeholder for future pricing translations
   },
   fr: { 
     common: frCommon,
     home: frHome,
-    landing: (enLanding as any).landing, // fallback to EN until FR landing is ready
-    translation: frLegacy // Legacy support
+    landing: (enLanding as any).landing || {}, // Fallback to EN
+    app: frLegacy,
+    plan: {},
+    pricing: {}
   },
 };
 
-// Initialize i18n ONCE
+// Initialize i18n ONCE - HARD FREEZE: Block render until ready
 export const i18nReady = i18next
   .use(initReactI18next)
   .init({
     resources,
     lng: "en",
     fallbackLng: "en",
-    ns: ["common", "home", "landing", "translation"],
+    ns: ["common", "home", "landing", "app", "plan", "pricing"],
     defaultNS: "common",
     keySeparator: ".",
     nsSeparator: ":",
-    debug: true, // Enable debug to catch missing keys
-    saveMissing: true,
+    debug: false, // Disabled in prod
+    saveMissing: false,
     parseMissingKeyHandler: (key) => {
       console.error('[i18n] ❌ MISSING KEY:', key);
-      return key; // Return the key so we can see it in UI
+      return key; // Return the key so we can see it in UI during dev
     },
     interpolation: { escapeValue: false },
     react: { 
-      useSuspense: false // Prevent blocking during init
+      useSuspense: true // BLOCK render until i18n is ready
     },
   });
 
