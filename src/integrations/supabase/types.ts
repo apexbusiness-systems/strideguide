@@ -783,6 +783,65 @@ export type Database = {
       }
     }
     Functions: {
+      admin_create_feature: {
+        Args: {
+          _description: string
+          _is_enabled?: boolean
+          _name: string
+          _required_plan_level?: number
+        }
+        Returns: Json
+      }
+      admin_create_plan: {
+        Args: {
+          _features?: Json
+          _max_api_calls?: number
+          _max_users?: number
+          _name: string
+          _price_monthly: number
+          _price_yearly?: number
+          _priority_support?: boolean
+          _stripe_price_id: string
+          _stripe_yearly_price_id?: string
+          _white_label?: boolean
+        }
+        Returns: Json
+      }
+      admin_delete_feature: {
+        Args: { _feature_id: string }
+        Returns: boolean
+      }
+      admin_delete_plan: {
+        Args: { _plan_id: string }
+        Returns: boolean
+      }
+      admin_update_feature: {
+        Args: {
+          _description?: string
+          _feature_id: string
+          _is_enabled?: boolean
+          _name?: string
+          _required_plan_level?: number
+        }
+        Returns: Json
+      }
+      admin_update_plan: {
+        Args: {
+          _features?: Json
+          _is_active?: boolean
+          _max_api_calls?: number
+          _max_users?: number
+          _name?: string
+          _plan_id: string
+          _price_monthly?: number
+          _price_yearly?: number
+          _priority_support?: boolean
+          _stripe_price_id?: string
+          _stripe_yearly_price_id?: string
+          _white_label?: boolean
+        }
+        Returns: Json
+      }
       assign_admin_role: {
         Args: { target_role?: string; target_user_id: string }
         Returns: boolean
