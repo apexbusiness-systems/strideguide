@@ -842,6 +842,10 @@ export type Database = {
         }
         Returns: Json
       }
+      admins_exist: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       assign_admin_role: {
         Args: { target_role?: string; target_user_id: string }
         Returns: boolean

@@ -11,13 +11,44 @@ interface AdminSetupProps {
 }
 
 export const AdminSetup = ({ userId, userEmail }: AdminSetupProps) => {
-  // PHASE 1 MIGRATION: Temporarily disabled during index creation
-  // Re-enable after Phase 4 (admin assignment restrictions) is complete
-  const MIGRATION_MODE = true; // Set to false after migration complete
-  
   const { toast } = useToast();
   const [isAssigning, setIsAssigning] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminsExist, setAdminsExist] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Check if user is admin and if any admins exist
+  useState(() => {
+    const checkAdminStatus = async () => {
+      try {
+        // Check if any admins exist in the system
+        const { data: adminsExistData, error: adminsError } = await supabase.rpc('admins_exist');
+        
+        if (adminsError) {
+          console.error('Error checking if admins exist:', adminsError);
+        } else {
+          setAdminsExist(adminsExistData);
+        }
+
+        // Check if current user is admin
+        const { data: isAdminData, error: isAdminError } = await supabase.rpc('is_admin', {
+          _user_id: userId
+        });
+        
+        if (isAdminError) {
+          console.error('Error checking admin status:', isAdminError);
+        } else {
+          setIsAdmin(isAdminData);
+        }
+      } catch (error) {
+        console.error('Error in admin status check:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAdminStatus();
+  });
 
   const handleAssignAdmin = async () => {
     setIsAssigning(true);
@@ -54,17 +85,39 @@ export const AdminSetup = ({ userId, userEmail }: AdminSetupProps) => {
     }
   };
 
-  // Phase 1 Post-Migration: Read-only mode during index stabilization
-  if (MIGRATION_MODE) {
+  // Loading state
+  if (loading) {
     return (
-      <Card className="max-w-2xl mx-auto p-6 border-yellow-500/50">
+      <Card className="max-w-2xl mx-auto p-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-yellow-500" />
-            Admin Setup (Read-Only Mode)
+            <Shield className="h-5 w-5 text-primary" />
+            Admin Setup
           </CardTitle>
           <CardDescription>
-            Admin assignment is temporarily paused while system optimizations stabilize.
+            Checking admin status...
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  // User is already admin - hide this component
+  if (isAdmin) {
+    return null;
+  }
+
+  // Admins exist and user is not admin - show contact message
+  if (adminsExist) {
+    return (
+      <Card className="max-w-2xl mx-auto p-6 border-primary/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-primary" />
+            Admin Access Required
+          </CardTitle>
+          <CardDescription>
+            An administrator is needed to grant admin privileges.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -77,12 +130,12 @@ export const AdminSetup = ({ userId, userEmail }: AdminSetupProps) => {
             </p>
           </div>
           
-          <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-lg space-y-2">
-            <p className="text-sm font-medium text-yellow-600 dark:text-yellow-500">
-              ⚠️ Maintenance Window Active
+          <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg space-y-2">
+            <p className="text-sm font-medium text-primary">
+              🔒 Admin Assignment Locked
             </p>
             <p className="text-xs text-muted-foreground">
-              Database performance indexes are being applied. Admin assignment will be re-enabled after Phase 1 validation completes (est. 1-2 hours).
+              Only existing administrators can grant admin privileges. Please contact your system administrator to request access.
             </p>
           </div>
 
@@ -97,52 +150,24 @@ export const AdminSetup = ({ userId, userEmail }: AdminSetupProps) => {
             </ul>
           </div>
 
-          <Button 
-            disabled
-            className="w-full"
-            variant="outline"
-          >
-            Admin Assignment Paused (Phase 1 Migration)
-          </Button>
-
           <p className="text-xs text-muted-foreground text-center">
-            Check back after migration validation completes. Monitor progress in docs/PHASE_1_MIGRATION_GUIDE.md
+            This security measure ensures proper access control and audit trails for administrative actions.
           </p>
         </CardContent>
       </Card>
     );
   }
 
-  if (isAdmin) {
-    return (
-      <Card className="border-green-500">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-500" />
-            Admin Access Granted
-          </CardTitle>
-          <CardDescription>
-            You have been granted admin privileges.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Refreshing page to apply new permissions...
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
+  // No admins exist - allow first admin self-assignment
   return (
-    <Card className="border-primary">
+    <Card className="border-green-500/50">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-primary" />
-          Admin Setup
+          <Shield className="h-5 w-5 text-green-500" />
+          First Admin Setup
         </CardTitle>
         <CardDescription>
-          Grant yourself admin access to the dashboard and all features.
+          No administrators exist. You can assign yourself as the first admin.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -166,16 +191,25 @@ export const AdminSetup = ({ userId, userEmail }: AdminSetupProps) => {
           </ul>
         </div>
 
+        <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-lg space-y-2">
+          <p className="text-sm font-medium text-green-600 dark:text-green-500">
+            ✓ First Admin Eligibility Confirmed
+          </p>
+          <p className="text-xs text-muted-foreground">
+            As the first administrator, you'll establish the security baseline for the entire system. This is a one-time opportunity.
+          </p>
+        </div>
+
         <Button 
           onClick={handleAssignAdmin} 
           disabled={isAssigning}
           className="w-full"
         >
-          {isAssigning ? "Granting Admin Access..." : "Grant Admin Access"}
+          {isAssigning ? "Granting First Admin Access..." : "Become First Admin"}
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
-          This action will assign you the 'admin' role and grant full system access.
+          After assignment, only admins will be able to grant admin privileges to other users. This action is logged in the security audit trail.
         </p>
       </CardContent>
     </Card>
