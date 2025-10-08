@@ -210,9 +210,200 @@ Then re-enable admin UI by setting `MIGRATION_MODE = false` in `AdminSetup.tsx`.
 
 ## Post-Migration Actions
 
+### Immediate Tasks (First 1-2 Hours)
+
+**1. Re-enable Admin UI (Read-Only Mode)** ✅ COMPLETED
+- AdminSetup component now shows read-only mode
+- Users can see their admin info but cannot assign roles
+- Clear messaging about maintenance window
+
+**2. Run Smoke Tests**
+
+Run these tests to verify core functionality:
+
+#### Test 1: Login/Logout Flow
+```bash
+# Manual test procedure:
+1. Navigate to /auth
+2. Sign in with test account
+3. Verify session persists after page refresh
+4. Sign out successfully
+5. Verify redirect to landing page
+
+Expected: No errors, smooth auth flow, <2s response times
+```
+
+#### Test 2: Admin Dashboard Read Operations
+```sql
+-- Verify admin check uses new index
+EXPLAIN ANALYZE
+SELECT EXISTS (
+  SELECT 1 
+  FROM public.user_roles 
+  WHERE user_id = auth.uid() 
+    AND role IN ('admin', 'super-admin')
+);
+
+-- Expected: Index Scan using idx_user_roles_user_id_role
+-- Execution time: <50ms
+```
+
+#### Test 3: Audit Log Queries
+```sql
+-- Verify audit log query performance
+EXPLAIN ANALYZE
+SELECT 
+  user_id,
+  event_type,
+  severity,
+  created_at,
+  event_data
+FROM security_audit_log
+WHERE user_id = auth.uid()
+  AND created_at > now() - interval '7 days'
+ORDER BY created_at DESC
+LIMIT 50;
+
+-- Expected: Index Scan using idx_security_audit_log_user_event_time
+-- Execution time: <100ms
+```
+
+**3. Monitor Performance Metrics (1-2 Hours)**
+
+```sql
+-- Query 1: Check for blocked queries
+SELECT 
+  pid,
+  usename,
+  state,
+  wait_event_type,
+  wait_event,
+  query_start,
+  now() - query_start as duration,
+  query
+FROM pg_stat_activity
+WHERE state != 'idle'
+  AND query NOT ILIKE '%pg_stat_activity%'
+ORDER BY duration DESC;
+
+-- Expected: No queries blocked >5s, no LOCK waits
+```
+
+```sql
+-- Query 2: Verify index health and usage
+SELECT 
+  schemaname,
+  tablename,
+  indexname,
+  idx_scan,
+  idx_tup_read,
+  idx_tup_fetch
+FROM pg_stat_user_indexes
+WHERE indexname IN (
+  'idx_user_roles_user_id_role',
+  'idx_security_audit_log_user_event_time'
+)
+ORDER BY idx_scan DESC;
+
+-- Expected: idx_scan > 0 (indexes being used)
+```
+
+```sql
+-- Query 3: Table bloat check
+SELECT 
+  schemaname,
+  tablename,
+  pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as total_size,
+  pg_size_pretty(pg_relation_size(schemaname||'.'||tablename)) as table_size,
+  pg_size_pretty(pg_indexes_size(schemaname||'.'||tablename)) as indexes_size
+FROM pg_tables
+WHERE schemaname = 'public'
+  AND tablename IN ('user_roles', 'security_audit_log')
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+
+-- Expected: Minimal size increase (indexes add ~5-10% overhead)
+```
+
+**4. Document Migration Results**
+
+Fill in the following template and append to this document:
+
+```markdown
+---
+
+## Migration Execution Report
+
+**Date:** [YYYY-MM-DD HH:MM UTC]  
+**Executed By:** [Your Name/Email]  
+**Environment:** Production / Staging
+
+### Index Creation Timeline
+
+- **idx_user_roles_user_id_role**
+  - Start: [timestamp]
+  - Complete: [timestamp]
+  - Duration: [X seconds/minutes]
+  - Rows affected: [count]
+  - Locks encountered: Yes/No
+  - Notes: [any warnings or issues]
+
+- **idx_security_audit_log_user_event_time**
+  - Start: [timestamp]
+  - Complete: [timestamp]
+  - Duration: [X seconds/minutes]
+  - Rows affected: [count]
+  - Locks encountered: Yes/No
+  - Notes: [any warnings or issues]
+
+### Smoke Test Results
+
+- ✅/❌ Login/Logout Flow: [PASS/FAIL] - [notes]
+- ✅/❌ Admin Dashboard Reads: [PASS/FAIL] - [execution time: Xms]
+- ✅/❌ Audit Log Queries: [PASS/FAIL] - [execution time: Xms]
+
+### Performance Metrics (1-hour window)
+
+- Average user_roles query latency: [Xms]
+- Average security_audit_log query latency: [Xms]
+- Blocked queries detected: [Yes/No - count]
+- Index usage confirmed: [Yes/No]
+- Traffic disruptions: [None/Details]
+
+### Issues & Resolutions
+
+[Document any unexpected behavior, slowdowns, or errors encountered]
+
+### Decision: Proceed to Phase 2?
+
+- [ ] YES - All criteria met, proceed to Phase 2
+- [ ] NO - Issues detected, rollback or investigate
+
+**Next Steps:** [Action items]
+```
+
+---
+
+## Phase 2 Readiness Criteria
+
+Only proceed to Phase 2 when ALL of these are true:
+
+- ✅ Both indexes created successfully and valid (no invalid indexes in pg_indexes)
+- ✅ All smoke tests passing (login, admin reads, audit queries)
+- ✅ Index usage confirmed (idx_scan > 0 in pg_stat_user_indexes)
+- ✅ No blocked queries >5s detected in pg_stat_activity
+- ✅ Query latency within acceptable range (<50ms admin checks, <100ms audit queries)
+- ✅ Zero traffic disruptions reported by monitoring tools
+- ✅ Team approval obtained
+
+**If any criteria fails:** Investigate, document, and resolve before proceeding.
+
+---
+
+## Final Phase 1 Completion Actions
+
 1. Set `MIGRATION_MODE = false` in `src/components/auth/AdminSetup.tsx`
-2. Announce completion to team
-3. Monitor Supabase dashboard for 24 hours
-4. Archive this document with timestamp
+2. Announce completion to team with metrics summary
+3. Continue monitoring Supabase dashboard for 24 hours
+4. Archive this document with timestamp and results
 
 **Next Phase:** Phase 2 - Enhanced rate-limit logging with debounce

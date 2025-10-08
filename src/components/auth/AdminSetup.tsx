@@ -54,20 +54,59 @@ export const AdminSetup = ({ userId, userEmail }: AdminSetupProps) => {
     }
   };
 
-  // Block admin creation during migration
+  // Phase 1 Post-Migration: Read-only mode during index stabilization
   if (MIGRATION_MODE) {
     return (
-      <Card className="max-w-2xl mx-auto p-6">
+      <Card className="max-w-2xl mx-auto p-6 border-yellow-500/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-yellow-500" />
-            🔒 Admin Setup Temporarily Unavailable
+            Admin Setup (Read-Only Mode)
           </CardTitle>
+          <CardDescription>
+            Admin assignment is temporarily paused while system optimizations stabilize.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Admin setup is temporarily disabled during system maintenance (index optimization).
-            Expected completion: 2-4 AM maintenance window.
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <p className="text-sm">
+              <strong>User ID:</strong> <code className="text-xs bg-muted px-2 py-1 rounded">{userId}</code>
+            </p>
+            <p className="text-sm">
+              <strong>Email:</strong> {userEmail}
+            </p>
+          </div>
+          
+          <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-lg space-y-2">
+            <p className="text-sm font-medium text-yellow-600 dark:text-yellow-500">
+              ⚠️ Maintenance Window Active
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Database performance indexes are being applied. Admin assignment will be re-enabled after Phase 1 validation completes (est. 1-2 hours).
+            </p>
+          </div>
+
+          <div className="bg-muted p-4 rounded-lg space-y-2">
+            <p className="text-sm font-medium">Admin privileges include:</p>
+            <ul className="text-sm space-y-1 ml-4 list-disc">
+              <li>Access to admin dashboard</li>
+              <li>User management capabilities</li>
+              <li>Subscription and billing oversight</li>
+              <li>System analytics and monitoring</li>
+              <li>Feature flag management</li>
+            </ul>
+          </div>
+
+          <Button 
+            disabled
+            className="w-full"
+            variant="outline"
+          >
+            Admin Assignment Paused (Phase 1 Migration)
+          </Button>
+
+          <p className="text-xs text-muted-foreground text-center">
+            Check back after migration validation completes. Monitor progress in docs/PHASE_1_MIGRATION_GUIDE.md
           </p>
         </CardContent>
       </Card>
