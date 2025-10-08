@@ -61,6 +61,36 @@ export type Database = {
           },
         ]
       }
+      app_metrics: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          event: string
+          id: string
+          metadata: Json | null
+          ok: boolean
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          event: string
+          id?: string
+          metadata?: Json | null
+          ok?: boolean
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          event?: string
+          id?: string
+          metadata?: Json | null
+          ok?: boolean
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       billing_events: {
         Row: {
           amount: number | null
@@ -107,6 +137,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      call_logs: {
+        Row: {
+          call_sid: string
+          capture_completeness: number | null
+          captured_fields: Json | null
+          created_at: string | null
+          duration_sec: number | null
+          ended_at: string | null
+          fail_path: string | null
+          from_e164: string | null
+          handoff: boolean | null
+          handoff_reason: string | null
+          human_answered: boolean | null
+          id: string
+          mode: string | null
+          pickup_mode: string | null
+          recording_url: string | null
+          ring_attempted: boolean | null
+          ring_seconds: number | null
+          started_at: string | null
+          status: string | null
+          summary: string | null
+          to_e164: string | null
+          transcript_url: string | null
+        }
+        Insert: {
+          call_sid: string
+          capture_completeness?: number | null
+          captured_fields?: Json | null
+          created_at?: string | null
+          duration_sec?: number | null
+          ended_at?: string | null
+          fail_path?: string | null
+          from_e164?: string | null
+          handoff?: boolean | null
+          handoff_reason?: string | null
+          human_answered?: boolean | null
+          id?: string
+          mode?: string | null
+          pickup_mode?: string | null
+          recording_url?: string | null
+          ring_attempted?: boolean | null
+          ring_seconds?: number | null
+          started_at?: string | null
+          status?: string | null
+          summary?: string | null
+          to_e164?: string | null
+          transcript_url?: string | null
+        }
+        Update: {
+          call_sid?: string
+          capture_completeness?: number | null
+          captured_fields?: Json | null
+          created_at?: string | null
+          duration_sec?: number | null
+          ended_at?: string | null
+          fail_path?: string | null
+          from_e164?: string | null
+          handoff?: boolean | null
+          handoff_reason?: string | null
+          human_answered?: boolean | null
+          id?: string
+          mode?: string | null
+          pickup_mode?: string | null
+          recording_url?: string | null
+          ring_attempted?: boolean | null
+          ring_seconds?: number | null
+          started_at?: string | null
+          status?: string | null
+          summary?: string | null
+          to_e164?: string | null
+          transcript_url?: string | null
+        }
+        Relationships: []
       }
       emergency_contacts: {
         Row: {
@@ -727,6 +832,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      voice_settings: {
+        Row: {
+          amd_enabled: boolean | null
+          created_at: string | null
+          fail_open: boolean | null
+          id: string
+          llm_enabled: boolean | null
+          llm_max_reply_seconds: number | null
+          llm_speaking_rate: number | null
+          llm_voice: string | null
+          max_ring_reroutes: number | null
+          pickup_mode: string | null
+          pickup_rings: number | null
+          pickup_seconds: number | null
+          ring_target: string | null
+          ringback_tone: string | null
+          system_prompt: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amd_enabled?: boolean | null
+          created_at?: string | null
+          fail_open?: boolean | null
+          id?: string
+          llm_enabled?: boolean | null
+          llm_max_reply_seconds?: number | null
+          llm_speaking_rate?: number | null
+          llm_voice?: string | null
+          max_ring_reroutes?: number | null
+          pickup_mode?: string | null
+          pickup_rings?: number | null
+          pickup_seconds?: number | null
+          ring_target?: string | null
+          ringback_tone?: string | null
+          system_prompt?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amd_enabled?: boolean | null
+          created_at?: string | null
+          fail_open?: boolean | null
+          id?: string
+          llm_enabled?: boolean | null
+          llm_max_reply_seconds?: number | null
+          llm_speaking_rate?: number | null
+          llm_voice?: string | null
+          max_ring_reroutes?: number | null
+          pickup_mode?: string | null
+          pickup_rings?: number | null
+          pickup_seconds?: number | null
+          ring_target?: string | null
+          ringback_tone?: string | null
+          system_prompt?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

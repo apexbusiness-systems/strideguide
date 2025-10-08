@@ -23,6 +23,7 @@ import { useLostItemFinder, LearnedItem } from '@/hooks/useLostItemFinder';
 import { useMLInference } from '@/hooks/useMLInference';
 import { useAudioGuidance } from '@/hooks/useAudioGuidance';
 import { CameraView } from './CameraView';
+import { useJourneyTrace } from '@/hooks/useJourneyTrace';
 
 interface Props {
   isPremium?: boolean;

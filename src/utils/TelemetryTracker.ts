@@ -1,8 +1,9 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabaseClient';
 
 /**
  * Lightweight telemetry tracker for production observability
  * NO external vendors - all data stays in Supabase
+ * Emits to both journey_traces (detailed) and app_metrics (fast p95/error queries)
  */
 
 interface JourneyTrace {
@@ -68,6 +69,9 @@ class TelemetryTracker {
       duration_ms,
       metadata,
     });
+
+    // Also emit to app_metrics for fast p95 queries
+    this.emitMetric(journey, duration_ms, true, metadata);
   }
 
   /**
@@ -85,6 +89,9 @@ class TelemetryTracker {
       error,
       metadata,
     });
+
+    // Also emit to app_metrics (ok=false for error rate)
+    this.emitMetric(journey, duration_ms, false, { ...metadata, error });
   }
 
   /**
@@ -142,7 +149,7 @@ class TelemetryTracker {
   }
 
   /**
-   * Log journey event to database
+   * Log journey event to journey_traces (detailed tracking)
    */
   private async logJourney(trace: JourneyTrace) {
     try {
@@ -161,6 +168,34 @@ class TelemetryTracker {
       // Silent fail
       if (process.env.NODE_ENV === 'development') {
         console.error('Journey trace failed:', error);
+      }
+    }
+  }
+
+  /**
+   * Emit to app_metrics table (fast p95/error queries)
+   */
+  private async emitMetric(
+    event: string, 
+    duration_ms: number | undefined, 
+    ok: boolean, 
+    metadata?: Record<string, any>
+  ) {
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) return;
+
+      await supabase.from('app_metrics').insert({
+        user_id: user.id,
+        event,
+        duration_ms,
+        ok,
+        metadata: metadata || {},
+      });
+    } catch (error) {
+      // Silent fail
+      if (process.env.NODE_ENV === 'development') {
+        console.error('App metric emit failed:', error);
       }
     }
   }
