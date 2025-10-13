@@ -4,8 +4,9 @@ import type { Database } from './types';
 
 // CRITICAL: These are PUBLIC keys safe for client-side use
 // The anon key has RLS policies enforced - no sensitive data exposure
-const SUPABASE_URL = "https://yrndifsbsmpvmpudglcc.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlybmRpZnNic21wdm1wdWRnbGNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwNjA1NDUsImV4cCI6MjA3NDYzNjU0NX0.OBtOjMTiZrgV08ttxiIeT48_ITJ_C88gz_kO-2eLUEk";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL!;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY!;
+const SITE_URL = import.meta.env.VITE_PUBLIC_SITE_URL || window.location.origin;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -24,3 +25,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     },
   },
 });
+
+// Helper: always build redirectTo from your configured domain
+export const authRedirectTo = (path = "/app") =>
+  `${SITE_URL.replace(/\/$/, "")}${path}`;

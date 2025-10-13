@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, authRedirectTo } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,6 +72,9 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: validated.email,
         password: validated.password,
+        options: {
+          redirectTo: authRedirectTo("/auth"),
+        },
       });
 
       if (error) {
@@ -153,16 +156,14 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
 
     try {
       const validated = authSchema.parse(formData);
-      // CRITICAL: PWA redirect must be /app (matches Supabase allowed URLs)
-      const redirectUrl = `${window.location.origin}/app`;
 
-      logger.info("Calling Supabase signUp", { correlationId, redirectUrl });
+      logger.info("Calling Supabase signUp", { correlationId });
 
       const { data, error } = await supabase.auth.signUp({
         email: validated.email,
         password: validated.password,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: authRedirectTo("/auth"),
           data: {
             first_name: validated.firstName,
             last_name: validated.lastName,
@@ -236,9 +237,8 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
     setError("");
 
     try {
-      // CRITICAL: Password reset must redirect to /app (PWA)
       const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
-        redirectTo: `${window.location.origin}/app`,
+        redirectTo: authRedirectTo("/auth"),
       });
 
       if (error) {
