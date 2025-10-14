@@ -72,9 +72,6 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: validated.email,
         password: validated.password,
-        options: {
-          redirectTo: authRedirectTo("/auth"),
-        },
       });
 
       if (error) {
