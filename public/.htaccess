@@ -29,9 +29,20 @@
   RewriteRule ^(.*)$ /index.html [L,QSA]
 </IfModule>
 
-# CORS preflight handling (if needed for custom headers)
+# Security Headers
 <IfModule mod_headers.c>
-  # Handle OPTIONS preflight for /api/* endpoints
+  Header set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "DENY"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set Permissions-Policy "camera=(self), microphone=(), geolocation=(self), payment=()"
+  Header set Cross-Origin-Opener-Policy "same-origin"
+  Header set Cross-Origin-Resource-Policy "same-origin"
+  
+  # Content Security Policy (IONOS-compatible)
+  Header set Content-Security-Policy "default-src 'self'; connect-src 'self' https://yrndifsbsmpvmpudglcc.supabase.co wss://yrndifsbsmpvmpudglcc.supabase.co https://api.stripe.com; img-src 'self' data: blob: https://*.supabase.co; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; style-src 'self' 'unsafe-inline'; frame-src https://js.stripe.com https://hooks.stripe.com; base-uri 'self'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'none'"
+  
+  # CORS for API endpoints
   <FilesMatch "\.(php|json)$">
     Header always set Access-Control-Allow-Origin "https://strideguide.cam"
     Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"

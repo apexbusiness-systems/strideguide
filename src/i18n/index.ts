@@ -1,5 +1,6 @@
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
+import { resources as sosResources } from "./resources";
 
 // Bundle ALL translation files at build time
 import enCommon from "./locales/en/common.json";
@@ -16,17 +17,19 @@ const resources = {
     common: enCommon,
     home: enHome,
     landing: (enLanding as any).landing || {},
-    app: enLegacy,      // Renamed from 'translation' for clarity
-    plan: {},           // Placeholder for future plan translations
-    pricing: {}         // Placeholder for future pricing translations
+    app: enLegacy,
+    plan: {},
+    pricing: {},
+    translation: sosResources.en.translation  // Add SOS translations
   },
   fr: { 
     common: frCommon,
     home: frHome,
-    landing: (enLanding as any).landing || {}, // Fallback to EN
+    landing: (enLanding as any).landing || {},
     app: frLegacy,
     plan: {},
-    pricing: {}
+    pricing: {},
+    translation: sosResources.fr.translation  // Add SOS translations
   },
 };
 
