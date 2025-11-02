@@ -20,7 +20,7 @@ interface LogEntry {
 }
 
 class ProductionLogger {
-  private isDevelopment = process.env.NODE_ENV === 'development';
+  private isDevelopment = import.meta.env.MODE === 'development' || import.meta.env.DEV;
   private logBuffer: LogEntry[] = [];
   private maxBufferSize = 100;
 

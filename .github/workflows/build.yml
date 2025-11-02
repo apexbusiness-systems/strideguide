@@ -22,14 +22,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --onnxruntime-node-install-cuda=skip
-        env:
-          NODE_ENV: production
+        run: npm ci --onnxruntime-node-install-cuda=skip
 
       - name: Build application
-        run: npx vite build
-        env:
-          NODE_ENV: production
+        run: npm run build
 
       - name: Verify build output
         run: |

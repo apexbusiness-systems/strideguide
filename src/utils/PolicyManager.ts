@@ -60,11 +60,11 @@ class PolicyManagerClass {
         requireExplicitConsent: true
       },
       features: {
-        cloudDescribeEnabled: process.env.CLOUD_DESCRIBE_ENABLED === 'true',
+        cloudDescribeEnabled: (import.meta.env.CLOUD_DESCRIBE_ENABLED || process.env.CLOUD_DESCRIBE_ENABLED) === 'true',
         lowEndModeEnabled: false,
         winterModeEnabled: false,
         betaFeaturesEnabled: false,
-        debugModeEnabled: process.env.NODE_ENV === 'development'
+        debugModeEnabled: import.meta.env.MODE === 'development' || import.meta.env.DEV
       },
       version: '1.0.0',
       lastUpdated: new Date().toISOString()
