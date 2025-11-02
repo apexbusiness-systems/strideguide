@@ -142,7 +142,7 @@ class TelemetryTracker {
       );
     } catch (error) {
       // Silent fail - telemetry should never break app
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Telemetry flush failed:', error);
       }
     }
@@ -166,7 +166,7 @@ class TelemetryTracker {
       });
     } catch (error) {
       // Silent fail
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('Journey trace failed:', error);
       }
     }
@@ -194,7 +194,7 @@ class TelemetryTracker {
       });
     } catch (error) {
       // Silent fail
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('App metric emit failed:', error);
       }
     }

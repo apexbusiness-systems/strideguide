@@ -30,10 +30,15 @@ export default function AuthDiagnosticsPage() {
     }
 
     // 3. Supabase health check
-    const supabaseUrl = 'https://yrndifsbsmpvmpudglcc.supabase.co';
-    results.supabaseUrl = supabaseUrl.replace(/yrndifsbsmpvmpudglcc/g, 'yrndi***glcc');
+    const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
+    results.supabaseUrl = supabaseUrl ? supabaseUrl.replace(/[^/]+\.[^/]+\.supabase\.co/g, '***.supabase.co') : 'Not configured';
     
     try {
+      if (!supabaseUrl) {
+        results.healthStatus = 0;
+        results.healthText = 'VITE_SUPABASE_URL not configured';
+        return results;
+      }
       const healthResp = await fetch(`${supabaseUrl}/auth/v1/health`, { cache: 'no-store' });
       results.healthStatus = healthResp.status;
       results.healthText = await healthResp.text();

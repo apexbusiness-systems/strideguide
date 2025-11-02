@@ -24,9 +24,13 @@ export function AuthDiagnosticsInline() {
       results.swCount = 0;
     }
 
-    const supabaseUrl = 'https://yrndifsbsmpvmpudglcc.supabase.co';
+    const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
     
     try {
+      if (!supabaseUrl) {
+        results.healthStatus = 0;
+        return results;
+      }
       const healthResp = await fetch(`${supabaseUrl}/auth/v1/health`, { cache: 'no-store' });
       results.healthStatus = healthResp.status;
     } catch (err: any) {
