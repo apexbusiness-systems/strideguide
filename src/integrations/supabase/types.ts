@@ -519,7 +519,7 @@ export type Database = {
           event_data: Json | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           severity: string
           user_agent: string | null
           user_id: string | null
@@ -529,7 +529,7 @@ export type Database = {
           event_data?: Json | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           severity: string
           user_agent?: string | null
           user_id?: string | null
@@ -539,7 +539,7 @@ export type Database = {
           event_data?: Json | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           severity?: string
           user_agent?: string | null
           user_id?: string | null
@@ -972,14 +972,8 @@ export type Database = {
         }
         Returns: Json
       }
-      admin_delete_feature: {
-        Args: { _feature_id: string }
-        Returns: boolean
-      }
-      admin_delete_plan: {
-        Args: { _plan_id: string }
-        Returns: boolean
-      }
+      admin_delete_feature: { Args: { _feature_id: string }; Returns: boolean }
+      admin_delete_plan: { Args: { _plan_id: string }; Returns: boolean }
       admin_update_feature: {
         Args: {
           _description?: string
@@ -1007,10 +1001,7 @@ export type Database = {
         }
         Returns: Json
       }
-      admins_exist: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      admins_exist: { Args: never; Returns: boolean }
       assign_admin_role: {
         Args: { target_role?: string; target_user_id: string }
         Returns: boolean
@@ -1024,10 +1015,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      get_active_plan_level: {
-        Args: { _user_id: string }
-        Returns: number
-      }
+      get_active_plan_level: { Args: { _user_id: string }; Returns: number }
       get_user_subscription: {
         Args: { user_uuid: string }
         Returns: {
@@ -1042,14 +1030,8 @@ export type Database = {
           white_label: boolean
         }[]
       }
-      is_admin: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
-      is_org_admin: {
-        Args: { org_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_org_admin: { Args: { org_id: string }; Returns: boolean }
       log_audit_event_deduplicated: {
         Args: {
           _dedup_window_seconds?: number
