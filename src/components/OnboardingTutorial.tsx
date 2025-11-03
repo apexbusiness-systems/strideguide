@@ -61,7 +61,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onComple
         playStepAudio(0);
       }, 500);
     }
-  }, [currentStep, playStepAudio]);
+  }, [currentStep]);
 
   const playStepAudio = async (stepIndex: number) => {
     try {

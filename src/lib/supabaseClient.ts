@@ -1,17 +1,15 @@
 // Robust auth utilities with health + backoff for existing Supabase client
 import { supabase } from '@/integrations/supabase/client';
 
+const SUPABASE_URL = "https://yrndifsbsmpvmpudglcc.supabase.co";
+const SITE_URL = (import.meta.env.VITE_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, '');
+
 // Lightweight live check (CORS/redirect/cert)
 export async function assertSupabaseReachable(timeoutMs = 5000) {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    // Use environment variable instead of hardcoded URL
-    const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
-    if (!supabaseUrl) {
-      throw new Error('VITE_SUPABASE_URL not configured');
-    }
-    const url = new URL('/auth/v1/health', supabaseUrl);
+    const url = new URL('/auth/v1/health', SUPABASE_URL);
     const r = await fetch(url.toString(), { signal: controller.signal, credentials: 'omit' });
     if (!r.ok) throw new Error(`Health ${r.status}`);
   } finally { 
@@ -34,6 +32,9 @@ export async function withAuthBackoff<T>(fn: () => Promise<T>, label: string): P
   }
   throw new Error(`[auth] ${label} exhausted retries`);
 }
+
+// Auth redirect helper
+export const authRedirectTo = (path = '/auth') => `${SITE_URL}${path}`;
 
 // Re-export existing client
 export { supabase };
