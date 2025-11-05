@@ -23,10 +23,7 @@ const VoiceAssistant = () => {
   const currentTranscriptRef = useRef<string>('');
 
   const getWebSocketUrl = () => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    if (!supabaseUrl) {
-      throw new Error('VITE_SUPABASE_URL not configured');
-    }
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://yrndifsbsmpvmpudglcc.supabase.co";
     const url = supabaseUrl.replace('https://', 'wss://').replace('http://', 'ws://');
     return `${url}/functions/v1/realtime-voice`;
   };
