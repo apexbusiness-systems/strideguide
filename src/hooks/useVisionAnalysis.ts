@@ -85,7 +85,7 @@ export const useVisionAnalysis = () => {
       setLastResult(result);
       return data.description;
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error.name === 'AbortError') {
         console.log('Vision analysis aborted');
         return null;

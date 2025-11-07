@@ -16,7 +16,7 @@ export interface TestResult {
   error?: string;
   timestamp: Date;
   duration?: number;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 export class SystemReliabilityTester {
@@ -442,5 +442,5 @@ if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
 
 // Make available globally for manual testing
 if (typeof window !== 'undefined') {
-  (window as any).StrideGuideReliabilityTest = SystemReliabilityTester;
+  (window as Window & { StrideGuideReliabilityTest: typeof SystemReliabilityTester }).StrideGuideReliabilityTest = SystemReliabilityTester;
 }

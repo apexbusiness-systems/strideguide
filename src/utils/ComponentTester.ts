@@ -16,7 +16,7 @@ export class ComponentTester {
     
     try {
       // Test 1: AudioContext creation
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
       if (!AudioContextClass) {
         throw new Error('AudioContext not supported');
       }
@@ -64,7 +64,7 @@ export class ComponentTester {
         // Test permissions (without actually requesting)
         if ('permissions' in navigator) {
           try {
-            const permission = await navigator.permissions.query({ name: 'screen-wake-lock' as any });
+            const permission = await navigator.permissions.query({ name: 'screen-wake-lock' as PermissionName });
             console.log(`✅ Wake lock permission: ${permission.state}`);
             this.logTest('WakeLock', 'Permission', true, permission.state);
           } catch (permError) {
@@ -135,7 +135,7 @@ export class ComponentTester {
 
       // Test app install
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                          (window.navigator as any).standalone === true;
+                          (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
       
       if (isStandalone) {
         console.log('✅ Running as installed PWA');
@@ -308,5 +308,5 @@ if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
 
 // Make tester available globally for manual testing
 if (typeof window !== 'undefined') {
-  (window as any).StrideGuideTest = ComponentTester;
+  (window as Window & { StrideGuideTest: typeof ComponentTester }).StrideGuideTest = ComponentTester;
 }

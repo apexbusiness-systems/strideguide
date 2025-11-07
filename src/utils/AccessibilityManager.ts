@@ -525,10 +525,11 @@ export class AccessibilityManager {
         case 'button':
           description += 'button ';
           break;
-        case 'input':
+        case 'input': {
           const type = (element as HTMLInputElement).type;
           description += `${type} input `;
           break;
+        }
         case 'select':
           description += 'dropdown ';
           break;
@@ -597,7 +598,7 @@ export class AccessibilityManager {
     this.announce(summary, 'assertive');
   }
 
-  private applyMotorAssistance(settings: any): void {
+  private applyMotorAssistance(settings: { largerTargets?: boolean; stickyFocus?: boolean; reducedMotion?: boolean }): void {
     if (settings.largerTargets) {
       document.body.classList.add('large-targets');
     }

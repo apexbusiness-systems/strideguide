@@ -18,7 +18,7 @@ export const useAudioGuidance = (options: AudioGuidanceOptions) => {
 
     const initAudio = async () => {
       try {
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        const AudioContext = window.AudioContext || (window as Window & { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
         const context = new AudioContext();
         
         const gainNode = context.createGain();
@@ -189,6 +189,6 @@ export const useAudioGuidance = (options: AudioGuidanceOptions) => {
     playProximityBeacon,
     playObstacleAlert,
     speak,
-    isSupported: !!window.AudioContext || !!(window as any).webkitAudioContext
+    isSupported: !!window.AudioContext || !!(window as Window & { webkitAudioContext?: typeof window.AudioContext }).webkitAudioContext
   };
 };

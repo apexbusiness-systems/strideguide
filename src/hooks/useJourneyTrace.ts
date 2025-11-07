@@ -10,7 +10,7 @@ type JourneyName = 'start_guidance' | 'find_item' | 'settings_save';
  */
 export const useJourneyTrace = (
   journey: JourneyName,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ) => {
   const journeyKeyRef = useRef<string | null>(null);
   const hasStartedRef = useRef(false);
@@ -31,7 +31,7 @@ export const useJourneyTrace = (
   }, [journey, metadata]);
 
   return {
-    complete: (extraMetadata?: Record<string, any>) => {
+    complete: (extraMetadata?: Record<string, unknown>) => {
       if (journeyKeyRef.current) {
         telemetryTracker.completeJourney(
           journeyKeyRef.current,
@@ -43,7 +43,7 @@ export const useJourneyTrace = (
       }
     },
 
-    fail: (error: string, extraMetadata?: Record<string, any>) => {
+    fail: (error: string, extraMetadata?: Record<string, unknown>) => {
       if (journeyKeyRef.current) {
         telemetryTracker.failJourney(
           journeyKeyRef.current,

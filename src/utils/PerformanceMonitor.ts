@@ -254,7 +254,7 @@ export const performanceMonitor = new PerformanceMonitor();
 
 // Auto-expose in development
 if (import.meta.env.DEV && typeof window !== 'undefined') {
-  (window as any).performanceMonitor = performanceMonitor;
+  (window as Window & { performanceMonitor: typeof performanceMonitor }).performanceMonitor = performanceMonitor;
 }
 
 // Send metrics before page unload

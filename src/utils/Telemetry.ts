@@ -30,7 +30,7 @@ export interface TelemetryData {
   latency?: number;
   error?: string;
   flagSnapshot: Record<string, boolean>;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 class TelemetryTracker {
@@ -47,7 +47,7 @@ class TelemetryTracker {
   /**
    * Track an event with automatic correlation
    */
-  track(event: TelemetryEvent, metadata?: Record<string, any>): string {
+  track(event: TelemetryEvent, metadata?: Record<string, unknown>): string {
     const correlationId = this.generateCorrelationId();
     
     const data: TelemetryData = {
@@ -79,7 +79,7 @@ class TelemetryTracker {
   async trackWithLatency<T>(
     event: TelemetryEvent,
     fn: () => Promise<T>,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): Promise<T> {
     const start = performance.now();
     const correlationId = this.generateCorrelationId();

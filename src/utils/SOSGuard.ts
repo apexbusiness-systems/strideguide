@@ -152,12 +152,13 @@ class SOSGuardClass {
       return;
     }
 
-    const recognition = new (window as any).webkitSpeechRecognition();
+    const SpeechRecognitionAPI = (window as Window & { webkitSpeechRecognition: typeof SpeechRecognition }).webkitSpeechRecognition;
+    const recognition = new SpeechRecognitionAPI();
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = 'en-US';
     
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = event.results[0][0].transcript.toLowerCase().trim();
       console.log('Voice recognition result:', transcript);
       
@@ -166,7 +167,7 @@ class SOSGuardClass {
       }
     };
     
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.warn('Voice recognition error:', event.error);
     };
     

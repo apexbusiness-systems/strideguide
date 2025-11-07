@@ -8,7 +8,7 @@ import { useAdminAccess } from "@/hooks/useAdminAccess";
 interface SubscriptionData {
   id: string;
   plan_name: string;
-  plan_features: any;
+  plan_features: string[] | unknown;
   max_api_calls: number;
   max_users: number;
   priority_support: boolean;

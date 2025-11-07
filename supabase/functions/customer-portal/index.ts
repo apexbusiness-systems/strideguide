@@ -98,15 +98,16 @@ serve(async (req) => {
 
     console.log(`[${requestId}] Portal session created for user ${user.id}`);
     
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       url: session.url,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-    
-  } catch (error: any) {
+
+  } catch (error: unknown) {
+    const err = error as Error;
     console.error(`[${requestId}] Error creating customer portal:`, error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

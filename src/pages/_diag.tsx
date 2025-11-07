@@ -8,13 +8,14 @@ async function ping(url: string, opts?: RequestInit) {
     const r = await fetch(url, opts);
     const text = await r.text();
     return { ok: r.ok, status: r.status, ms: Date.now() - started, body: text.slice(0, 200) };
-  } catch (e: any) {
-    return { ok: false, status: 0, ms: Date.now() - started, body: (e?.message || "fetch failed").slice(0, 200) };
+  } catch (e: unknown) {
+    const error = e as Error;
+    return { ok: false, status: 0, ms: Date.now() - started, body: (error?.message || "fetch failed").slice(0, 200) };
   }
 }
 
 export default function Diag() {
-  const [res, setRes] = React.useState<any>(null);
+  const [res, setRes] = React.useState<Record<string, unknown> | null>(null);
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const site = import.meta.env.VITE_PUBLIC_SITE_URL || window.location.origin;

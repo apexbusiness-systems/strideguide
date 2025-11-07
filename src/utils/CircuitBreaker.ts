@@ -60,7 +60,7 @@ export class CircuitBreaker {
         const error = new Error(
           `Circuit breaker [${this.name}] is OPEN. Service unavailable. Retry after ${new Date(this.nextAttempt).toISOString()}`
         );
-        (error as any).circuitState = this.state;
+        (error as Error & { circuitState?: string }).circuitState = this.state;
         throw error;
       }
 
@@ -226,7 +226,7 @@ class CircuitBreakerRegistry {
    * Get all circuit breaker metrics
    */
   getAllMetrics() {
-    const metrics: any[] = [];
+    const metrics: Record<string, unknown>[] = [];
     this.breakers.forEach(breaker => {
       metrics.push(breaker.getMetrics());
     });

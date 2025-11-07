@@ -50,10 +50,10 @@ export async function queryWithTimeout<T>(
   queryBuilder: PostgrestBuilder<T>,
   timeoutMs: number = DEFAULT_QUERY_TIMEOUT,
   queryInfo?: string
-): Promise<{ data: T | null; error: any }> {
+): Promise<{ data: T | null; error: Error | null }> {
   try {
     const result = await withTimeout(queryBuilder, timeoutMs, queryInfo);
-    return result as any;
+    return result as unknown;
   } catch (error) {
     if (error instanceof QueryTimeoutError) {
       console.error('[QueryTimeout]', error.message);
@@ -86,11 +86,11 @@ export async function executeWithTimeout<T>(
  */
 export async function executeBatchQueries<T>(
   queries: Array<{
-    builder: PostgrestBuilder<any>;
+    builder: PostgrestBuilder<unknown>;
     timeout?: number;
     name?: string;
   }>
-): Promise<Array<{ data: any; error: any; name?: string }>> {
+): Promise<Array<{ data: unknown; error: Error | null; name?: string }>> {
   const promises = queries.map(({ builder, timeout, name }) =>
     queryWithTimeout(builder, timeout || DEFAULT_QUERY_TIMEOUT, name).then(
       result => ({
@@ -124,7 +124,7 @@ export function createTimeoutQuery(defaultTimeout: number = DEFAULT_QUERY_TIMEOU
     async single<T>(
       queryBuilder: PostgrestBuilder<T>,
       timeout?: number
-    ): Promise<{ data: T | null; error: any }> {
+    ): Promise<{ data: T | null; error: Error | null }> {
       return queryWithTimeout(queryBuilder, timeout || defaultTimeout);
     },
 
@@ -133,11 +133,11 @@ export function createTimeoutQuery(defaultTimeout: number = DEFAULT_QUERY_TIMEOU
      */
     async batch<T>(
       queries: Array<{
-        builder: PostgrestBuilder<any>;
+        builder: PostgrestBuilder<unknown>;
         timeout?: number;
         name?: string;
       }>
-    ): Promise<Array<{ data: any; error: any; name?: string }>> {
+    ): Promise<Array<{ data: unknown; error: Error | null; name?: string }>> {
       return executeBatchQueries(queries);
     },
 
@@ -148,7 +148,7 @@ export function createTimeoutQuery(defaultTimeout: number = DEFAULT_QUERY_TIMEOU
       serviceName: string,
       queryBuilder: PostgrestBuilder<T>,
       timeout?: number
-    ): Promise<{ data: T | null; error: any }> {
+    ): Promise<{ data: T | null; error: Error | null }> {
       const { withCircuitBreaker } = await import('./CircuitBreaker');
 
       return withCircuitBreaker(

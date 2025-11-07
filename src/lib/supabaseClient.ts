@@ -21,7 +21,8 @@ export async function assertSupabaseReachable(timeoutMs = 5000) {
     });
     if (!r.ok) throw new Error(`Health ${r.status}: ${await r.text()}`);
     return true;
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const error = e as Error;
     console.error('[Health] Supabase unreachable:', e.message);
     return false;
   } finally { 
@@ -36,7 +37,8 @@ export async function withAuthBackoff<T>(fn: () => Promise<T>, label: string): P
   for (let i = 0; i < max; i++) {
     try { 
       return await fn(); 
-    } catch (e: any) {
+    } catch (e: unknown) {
+    const error = e as Error;
       if (i === max - 1) {
         console.error(`[Auth] ${label} failed after ${max} attempts:`, e);
         throw e;

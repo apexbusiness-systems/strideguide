@@ -183,7 +183,7 @@ export class SSMLGenerator {
     }
 
     // Add prosody
-    const prosodyOptions: any = {};
+    const prosodyOptions: Record<string, string | number> = {};
     if (options.rate) prosodyOptions.rate = options.rate;
     if (options.pitch) prosodyOptions.pitch = options.pitch;
     if (options.volume) prosodyOptions.volume = options.volume;

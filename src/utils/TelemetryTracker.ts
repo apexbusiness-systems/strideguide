@@ -11,7 +11,7 @@ interface JourneyTrace {
   status: 'started' | 'completed' | 'failed';
   duration_ms?: number;
   error?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface PerformanceMetric {
@@ -39,7 +39,7 @@ class TelemetryTracker {
   /**
    * Start tracking a user journey
    */
-  startJourney(journey: JourneyTrace['journey'], metadata?: Record<string, any>) {
+  startJourney(journey: JourneyTrace['journey'], metadata?: Record<string, unknown>) {
     const key = `${journey}-${Date.now()}`;
     this.journeyStartTimes.set(key, performance.now());
 
@@ -56,7 +56,7 @@ class TelemetryTracker {
   /**
    * Complete a user journey successfully
    */
-  completeJourney(journeyKey: string, journey: JourneyTrace['journey'], metadata?: Record<string, any>) {
+  completeJourney(journeyKey: string, journey: JourneyTrace['journey'], metadata?: Record<string, unknown>) {
     const startTime = this.journeyStartTimes.get(journeyKey);
     if (!startTime) return;
 
@@ -77,7 +77,7 @@ class TelemetryTracker {
   /**
    * Mark a journey as failed
    */
-  failJourney(journeyKey: string, journey: JourneyTrace['journey'], error: string, metadata?: Record<string, any>) {
+  failJourney(journeyKey: string, journey: JourneyTrace['journey'], error: string, metadata?: Record<string, unknown>) {
     const startTime = this.journeyStartTimes.get(journeyKey);
     const duration_ms = startTime ? Math.round(performance.now() - startTime) : undefined;
     this.journeyStartTimes.delete(journeyKey);
@@ -179,7 +179,7 @@ class TelemetryTracker {
     event: string, 
     duration_ms: number | undefined, 
     ok: boolean, 
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ) {
     try {
       const user = (await supabase.auth.getUser()).data.user;

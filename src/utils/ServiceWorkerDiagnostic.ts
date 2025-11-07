@@ -22,7 +22,7 @@ export class ServiceWorkerDiagnostic {
         updateViaCache: reg.updateViaCache
       })),
       online: navigator.onLine,
-      connection: (navigator as any).connection?.effectiveType || 'unknown'
+      connection: (navigator as Navigator & { connection?: { effectiveType?: string } }).connection?.effectiveType || 'unknown'
     };
   }
 
@@ -65,5 +65,5 @@ export class ServiceWorkerDiagnostic {
 
 // Expose globally for console debugging
 if (typeof window !== 'undefined') {
-  (window as any).swDiagnostic = ServiceWorkerDiagnostic;
+  (window as Window & { swDiagnostic: typeof ServiceWorkerDiagnostic }).swDiagnostic = ServiceWorkerDiagnostic;
 }

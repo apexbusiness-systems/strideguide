@@ -115,7 +115,7 @@ class HealthManagerClass {
   setComponentStatus(component: keyof HealthStatus, status: string): void {
     if (component === 'overall') return; // Overall is computed
 
-    (this.status as any)[component] = status;
+    (this.status as Record<string, unknown>)[component] = status;
     this.updateOverallStatus();
   }
 

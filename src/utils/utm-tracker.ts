@@ -87,8 +87,9 @@ export class UTMTracker {
     if (utmData) {
       console.log('[UTM] App entry with attribution:', utmData);
       // Send to analytics if configured
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('event', 'app_entry', {
+      const win = window as Window & { gtag?: (...args: unknown[]) => void };
+      if (typeof window !== 'undefined' && win.gtag) {
+        win.gtag('event', 'app_entry', {
           ...utmData,
           timestamp: new Date().toISOString()
         });

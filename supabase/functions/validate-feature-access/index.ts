@@ -188,11 +188,12 @@ serve(async (req) => {
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     console.error(`[${requestId}] Validation error:`, error);
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      code: "INTERNAL_ERROR" 
+    return new Response(JSON.stringify({
+      error: err.message,
+      code: "INTERNAL_ERROR"
     }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
