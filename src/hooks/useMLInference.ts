@@ -41,8 +41,8 @@ export function useMLInference() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const detectorRef = useRef<any>(null);
-  const embedderRef = useRef<any>(null);
+  const detectorRef = useRef<unknown>(null);
+  const embedderRef = useRef<unknown>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const busyRef = useRef(0);
 
@@ -126,7 +126,7 @@ export function useMLInference() {
 
       const frameArea = imageData.width * imageData.height;
 
-      const results: Detection[] = detections.map((det: any) => {
+      const results: Detection[] = detections.map((det: { bbox: number[]; confidence: number }) => {
         const xmin = Math.round(det.box.xmin * imageData.width / 100);
         const ymin = Math.round(det.box.ymin * imageData.height / 100);
         const xmax = Math.round(det.box.xmax * imageData.width / 100);

@@ -16,7 +16,7 @@ const resources = {
   en: { 
     common: enCommon,
     home: enHome,
-    landing: (enLanding as any).landing || {},
+    landing: (enLanding as Record<string, unknown>).landing as Record<string, unknown> || {},
     app: enLegacy,
     plan: {},
     pricing: {},
@@ -25,7 +25,7 @@ const resources = {
   fr: { 
     common: frCommon,
     home: frHome,
-    landing: (enLanding as any).landing || {},
+    landing: (enLanding as Record<string, unknown>).landing as Record<string, unknown> || {},
     app: frLegacy,
     plan: {},
     pricing: {},

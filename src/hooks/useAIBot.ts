@@ -184,7 +184,7 @@ export const useAIBot = (user: User | null) => {
 
     setState(prev => ({ ...prev, isActive: true }));
     logger.info('AI Bot: Activated');
-  }, [state.isConnected, toast]);
+  }, [state.isConnected, toast, flags.enableEdgeCheck]);
 
   const deactivateBot = useCallback(() => {
     setState(prev => ({ ...prev, isActive: false }));
@@ -251,7 +251,7 @@ export const useAIBot = (user: User | null) => {
         variant: "destructive",
       });
     }
-  }, [state.isConnected, user, state.messages, toast]);
+  }, [state.isConnected, user, state.messages, toast, flags.enableEdgeCheck, supabase]);
 
   const retryConnection = useCallback(() => {
     setState(prev => ({ ...prev, connectionAttempts: 0, error: null }));

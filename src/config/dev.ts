@@ -30,18 +30,21 @@ const isDevHost =
 const params = new URLSearchParams(window.location.search);
 const bypassParam = params.get('dev_bypass');
 
+// Use type assertion to modify readonly config
+type WritableConfig = { -readonly [K in keyof typeof DEV_CONFIG]: (typeof DEV_CONFIG)[K] };
+
 if (bypassParam === '1') {
-  (DEV_CONFIG as any).BYPASS_AUTH = true;
+  (DEV_CONFIG as WritableConfig).BYPASS_AUTH = true;
   console.warn('⚠️ DEV MODE: Bypass forced via ?dev_bypass=1');
 } else if (bypassParam === '0') {
-  (DEV_CONFIG as any).BYPASS_AUTH = false;
+  (DEV_CONFIG as WritableConfig).BYPASS_AUTH = false;
   console.warn('🔒 Dev bypass disabled via ?dev_bypass=0');
 } else if (!isDevHost) {
-  (DEV_CONFIG as any).BYPASS_AUTH = false;
+  (DEV_CONFIG as WritableConfig).BYPASS_AUTH = false;
   console.warn('🔒 Dev bypass disabled - not in development host');
 }
 
-if ((DEV_CONFIG as any).BYPASS_AUTH) {
+if (DEV_CONFIG.BYPASS_AUTH) {
   console.warn('⚠️ DEV MODE: Authentication bypass is ENABLED');
   console.warn('⚠️ Set DEV_CONFIG.BYPASS_AUTH = false or use ?dev_bypass=0 to re-enable auth');
 }

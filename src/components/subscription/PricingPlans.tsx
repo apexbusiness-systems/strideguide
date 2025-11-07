@@ -16,7 +16,7 @@ interface SubscriptionPlan {
   price_yearly: number;
   stripe_price_id: string;
   stripe_yearly_price_id: string;
-  features: any;
+  features: string[] | unknown;
   max_api_calls: number;
   max_users: number;
   priority_support: boolean;
@@ -51,6 +51,7 @@ export const PricingPlans = ({ currentPlan, onSelectPlan }: PricingPlansProps) =
 
   useEffect(() => {
     loadPlans();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadPlans = async () => {

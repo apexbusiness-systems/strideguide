@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 
 export default function AuthDiagnosticsPage() {
-  const [diagnostics, setDiagnostics] = useState<any>(null);
+  const [diagnostics, setDiagnostics] = useState<Record<string, unknown> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const runDiagnostics = async () => {
     setIsLoading(true);
-    const results: any = {};
+    const results: Record<string, unknown> = {};
 
     // 1. Current origin
     results.origin = window.location.origin;
@@ -42,7 +42,8 @@ export default function AuthDiagnosticsPage() {
       const healthResp = await fetch(`${supabaseUrl}/auth/v1/health`, { cache: 'no-store' });
       results.healthStatus = healthResp.status;
       results.healthText = await healthResp.text();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as Error;
       results.healthStatus = 'FAILED';
       results.healthText = err.message;
       results.healthError = err.name;
@@ -62,7 +63,8 @@ export default function AuthDiagnosticsPage() {
       } else {
         results.authError = 'UNEXPECTED_SUCCESS';
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as Error;
       results.authError = err.message;
       results.authName = err.name;
       results.authStack = err.stack;
@@ -84,7 +86,8 @@ export default function AuthDiagnosticsPage() {
         user: data.session.user?.email || 'MASKED',
         expiresAt: data.session.expires_at
       } : null;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as Error;
       results.sessionError = err.message;
     }
 

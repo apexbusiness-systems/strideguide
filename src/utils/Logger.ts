@@ -6,15 +6,15 @@
 const IS_DEV = import.meta.env.MODE === 'development' || import.meta.env.DEV;
 
 export const Logger = {
-  log: (...args: any[]) => {
+  log: (...args: unknown[]) => {
     if (IS_DEV) console.log(...args);
   },
-  
-  warn: (...args: any[]) => {
+
+  warn: (...args: unknown[]) => {
     if (IS_DEV) console.warn(...args);
   },
-  
-  error: (...args: any[]) => {
+
+  error: (...args: unknown[]) => {
     // Always log errors, but sanitize in production
     if (IS_DEV) {
       console.error(...args);
@@ -22,12 +22,12 @@ export const Logger = {
       console.error('[Error occurred - check monitoring service]');
     }
   },
-  
-  debug: (...args: any[]) => {
+
+  debug: (...args: unknown[]) => {
     if (IS_DEV) console.debug(...args);
   },
-  
-  info: (...args: any[]) => {
+
+  info: (...args: unknown[]) => {
     if (IS_DEV) console.info(...args);
   }
 };

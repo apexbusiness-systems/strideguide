@@ -92,7 +92,7 @@ const Index: React.FC = () => {
     description: string;
     severity?: 'info' | 'warning' | 'critical';
     confirmText?: string;
-    action?: (data?: any) => void;
+    action?: (data?: unknown) => void;
   } | null>(null);
   
   // Premium notification system state

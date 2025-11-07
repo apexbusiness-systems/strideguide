@@ -48,6 +48,7 @@ const VisionGuidance: React.FC<VisionGuidanceProps> = ({
         clearInterval(intervalRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive, isAutoAnalyzing, mode, autoAnalyzeInterval]);
 
   const handleAnalyze = async () => {

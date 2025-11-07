@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function AuthMinPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{ success?: boolean; user?: unknown; error?: string; name?: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = async () => {
@@ -25,8 +25,9 @@ export default function AuthMinPage() {
       } else {
         setResult({ success: true, user: data.user });
       }
-    } catch (err: any) {
-      setResult({ error: err.message, name: err.name });
+    } catch (err: unknown) {
+      const error = err as Error;
+      setResult({ error: error.message, name: error.name });
     } finally {
       setIsLoading(false);
     }
@@ -50,8 +51,9 @@ export default function AuthMinPage() {
       } else {
         setResult({ success: true, user: data.user });
       }
-    } catch (err: any) {
-      setResult({ error: err.message, name: err.name });
+    } catch (err: unknown) {
+      const error = err as Error;
+      setResult({ error: error.message, name: error.name });
     } finally {
       setIsLoading(false);
     }

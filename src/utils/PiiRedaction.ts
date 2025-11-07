@@ -92,7 +92,7 @@ export function redactObject<T>(obj: T, placeholder: string = '[REDACTED]'): T {
 
   // Handle objects
   if (typeof obj === 'object') {
-    const redacted: any = {};
+    const redacted: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(obj)) {
       // Check if field name is sensitive

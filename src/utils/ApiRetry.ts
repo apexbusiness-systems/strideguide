@@ -3,6 +3,8 @@
  * Handles transient failures for external API calls (Stripe, OpenAI, Supabase)
  */
 
+import { SupabaseClient } from '@supabase/supabase-js';
+
 interface RetryOptions {
   maxRetries?: number;
   initialDelay?: number;
@@ -159,7 +161,7 @@ export async function fetchWithRetry(
  * );
  */
 export async function invokeWithRetry<T = unknown>(
-  supabase: any,
+  supabase: SupabaseClient,
   functionName: string,
   body?: Record<string, unknown>,
   options?: RetryOptions

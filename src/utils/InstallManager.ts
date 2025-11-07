@@ -57,10 +57,11 @@ class InstallManagerClass {
 
   private checkInstallState(): void {
     // Check if running in standalone mode
+    const nav = window.navigator as Navigator & { standalone?: boolean };
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                        (window.navigator as any).standalone ||
+                        nav.standalone ||
                         document.referrer.includes('android-app://');
-    
+
     this.currentState.isInstalled = isStandalone;
     
     // If already installed, can't install again
@@ -193,10 +194,11 @@ class InstallManagerClass {
   }
 
   // For debugging
-  getDebugInfo(): Record<string, any> {
+  getDebugInfo(): Record<string, unknown> {
+    const nav = window.navigator as Navigator & { standalone?: boolean };
     return {
       userAgent: navigator.userAgent,
-      standalone: (window.navigator as any).standalone,
+      standalone: nav.standalone,
       displayMode: window.matchMedia('(display-mode: standalone)').matches,
       hasDeferredPrompt: !!this.deferredPrompt,
       currentState: this.currentState,

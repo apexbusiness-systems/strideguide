@@ -231,15 +231,16 @@ export const useEmergencyRecording = () => {
   useEffect(() => {
     if (!settings.voiceActivation || !isInitialized) return;
 
-    let recognition: any;
-    
+    let recognition: SpeechRecognition | null = null;
+
     if ('webkitSpeechRecognition' in window) {
-      recognition = new (window as any).webkitSpeechRecognition();
+      const SpeechRecognitionAPI = (window as Window & { webkitSpeechRecognition: typeof SpeechRecognition }).webkitSpeechRecognition;
+      recognition = new SpeechRecognitionAPI();
       recognition.continuous = true;
       recognition.interimResults = false;
       recognition.lang = 'en-US';
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
         if (transcript.includes('strideguide record') || transcript.includes('stride guide record')) {
           startRecording('voice');

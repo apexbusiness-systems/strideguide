@@ -18,7 +18,7 @@ interface SubscriptionManagerProps {
 
 export const SubscriptionManager = ({ user }: SubscriptionManagerProps) => {
   const { toast } = useToast();
-  const { isPaymentsEnabled, enableEdgeCheck } = useFeatureFlags() as any;
+  const { isPaymentsEnabled, enableEdgeCheck } = useFeatureFlags() as { isPaymentsEnabled: boolean; enableEdgeCheck: boolean };
   const { subscription, isLoading, refreshSubscription } = useSubscription(user);
   const [showPricing, setShowPricing] = useState(false);
   const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
@@ -28,6 +28,7 @@ export const SubscriptionManager = ({ user }: SubscriptionManagerProps) => {
     if (subscription) {
       loadUsageData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscription]);
 
   const loadUsageData = async () => {

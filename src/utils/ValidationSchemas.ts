@@ -16,7 +16,7 @@ export const emergencyContactSchema = z.object({
     .trim()
     .min(10, "Phone number must be at least 10 digits")
     .max(20, "Phone number too long")
-    .regex(/^[\+]?[(]?[\d\s\-\(\)\.]{10,20}$/, "Invalid phone number format"),
+    .regex(/^[+]?[()]?[\d\s\-().]{10,20}$/, "Invalid phone number format"),
   
   relationship: z.string()
     .trim()
@@ -115,16 +115,16 @@ export const sanitizers = {
    * Sanitize phone number for SMS/calling
    */
   sanitizePhoneNumber: (phone: string): string => {
-    return phone.replace(/[^\d\+\-\(\)\s]/g, '').trim();
+    return phone.replace(/[^\d+\-() ]/g, '').trim();
   },
 
   /**
    * Remove sensitive data from logs
    */
-  sanitizeForLogging: (data: any): any => {
+  sanitizeForLogging: (data: unknown): unknown => {
     if (typeof data === 'string') {
-      return data.replace(/\b[\w\.-]+@[\w\.-]+\.\w+\b/g, '[EMAIL]')
-                 .replace(/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, '[PHONE]')
+      return data.replace(/\b[\w.-]+@[\w.-]+\.\w+\b/g, '[EMAIL]')
+                 .replace(/\b\d{3}[.-]?\d{3}[.-]?\d{4}\b/g, '[PHONE]')
                  .replace(/\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g, '[CARD]');
     }
     return data;

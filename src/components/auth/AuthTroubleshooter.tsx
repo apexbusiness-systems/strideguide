@@ -5,9 +5,17 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ServiceWorkerDiagnostic } from "@/utils/ServiceWorkerDiagnostic";
 import { AlertCircle, RefreshCw, Wifi, WifiOff } from "lucide-react";
 
+interface DiagnosticStatus {
+  online: boolean;
+  connection: string;
+  supported: boolean;
+  controller: ServiceWorker | null;
+  registrations: ServiceWorkerRegistration[];
+}
+
 export function AuthTroubleshooter() {
   const [isOpen, setIsOpen] = useState(false);
-  const [diagnostics, setDiagnostics] = useState<any>(null);
+  const [diagnostics, setDiagnostics] = useState<DiagnosticStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const runDiagnostics = async () => {

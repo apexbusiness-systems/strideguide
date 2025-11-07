@@ -1,6 +1,6 @@
 // @stride/stripe-webhook v2 - Production-hardened with signature verification
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.11.0?target=deno";
 
 import { getCorsHeaders } from "../_shared/cors.ts";
@@ -69,13 +69,14 @@ serve(async (req) => {
         stripeWebhookSecret
       );
       console.log(`[${requestId}] Signature verified for event ${event.id}, type: ${event.type}`);
-    } catch (err: any) {
-      console.error(`[${requestId}] Signature verification failed:`, err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error(`[${requestId}] Signature verification failed:`, error.message);
       await logSecurityEvent(supabase, null, "webhook_signature_failed", "critical", {
-        error: err.message
+        error: error.message
       });
-      return new Response(`Webhook signature verification failed: ${err.message}`, { 
-        status: 400 
+      return new Response(`Webhook signature verification failed: ${error.message}`, {
+        status: 400
       });
     }
 
@@ -114,16 +115,17 @@ serve(async (req) => {
     return new Response(JSON.stringify({ received: true, event: event.type }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     console.error(`[${requestId}] Webhook error:`, error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
 
-async function handleSubscriptionEvent(supabase: any, event: Stripe.Event, requestId: string) {
+async function handleSubscriptionEvent(supabase: SupabaseClient, event: Stripe.Event, requestId: string) {
   const subscription = event.data.object as Stripe.Subscription;
   
   console.log(`[${requestId}] Processing subscription event for ${subscription.id}`);
@@ -178,7 +180,7 @@ async function handleSubscriptionEvent(supabase: any, event: Stripe.Event, reque
   }
 }
 
-async function handlePaymentEvent(supabase: any, event: Stripe.Event, requestId: string) {
+async function handlePaymentEvent(supabase: SupabaseClient, event: Stripe.Event, requestId: string) {
   const invoice = event.data.object as Stripe.Invoice;
   
   console.log(`[${requestId}] Processing payment event for invoice ${invoice.id}`);
@@ -234,7 +236,7 @@ async function handlePaymentEvent(supabase: any, event: Stripe.Event, requestId:
   }
 }
 
-async function handleTrialEndingSoon(supabase: any, event: Stripe.Event, requestId: string) {
+async function handleTrialEndingSoon(supabase: SupabaseClient, event: Stripe.Event, requestId: string) {
   const subscription = event.data.object as Stripe.Subscription;
   
   console.log(`[${requestId}] Trial ending soon for subscription ${subscription.id}`);
@@ -255,11 +257,11 @@ async function handleTrialEndingSoon(supabase: any, event: Stripe.Event, request
 }
 
 async function logSecurityEvent(
-  supabase: any, 
-  userId: string | null, 
-  eventType: string, 
+  supabase: SupabaseClient,
+  userId: string | null,
+  eventType: string,
   severity: string,
-  eventData: any = {}
+  eventData: Record<string, unknown> = {}
 ) {
   try {
     await supabase

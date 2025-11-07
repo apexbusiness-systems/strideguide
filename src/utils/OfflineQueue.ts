@@ -218,7 +218,7 @@ export class OfflineQueue {
   /**
    * Serialize headers for storage
    */
-  private serializeHeaders(headers: any): Record<string, string> {
+  private serializeHeaders(headers: HeadersInit): Record<string, string> {
     if (!headers) return {};
 
     if (headers instanceof Headers) {

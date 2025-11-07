@@ -14,7 +14,7 @@ interface LogEntry {
   level: keyof LogLevel;
   message: string;
   timestamp: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   userId?: string;
   sessionId?: string;
 }
@@ -27,20 +27,20 @@ class ProductionLogger {
   /**
    * Sanitize data before logging to prevent sensitive info exposure
    */
-  private sanitize(data: any): any {
+  private sanitize(data: unknown): unknown {
     if (typeof data === 'string') {
       return data
-        .replace(/\b[\w\.-]+@[\w\.-]+\.\w+\b/g, '[EMAIL_REDACTED]')
+        .replace(/\b[\w.-]+@[\w.-]+\.\w+\b/g, '[EMAIL_REDACTED]')
         .replace(/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, '[PHONE_REDACTED]')
         .replace(/\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g, '[CARD_REDACTED]')
         .replace(/Bearer\s+\w+/g, 'Bearer [TOKEN_REDACTED]')
         .replace(/"password"\s*:\s*"[^"]*"/g, '"password":"[REDACTED]"');
     }
-    
+
     if (typeof data === 'object' && data !== null) {
-      const sanitized: any = {};
+      const sanitized: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(data)) {
-        if (['password', 'token', 'secret', 'key', 'auth'].some(sensitive => 
+        if (['password', 'token', 'secret', 'key', 'auth'].some(sensitive =>
           key.toLowerCase().includes(sensitive))) {
           sanitized[key] = '[REDACTED]';
         } else {
@@ -49,7 +49,7 @@ class ProductionLogger {
       }
       return sanitized;
     }
-    
+
     return data;
   }
 
@@ -59,7 +59,7 @@ class ProductionLogger {
   private createLogEntry(
     level: keyof LogLevel,
     message: string,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): LogEntry {
     return {
       level,
@@ -114,36 +114,36 @@ class ProductionLogger {
   /**
    * Public logging methods
    */
-  error(message: string, context?: Record<string, any>): void {
+  error(message: string, context?: Record<string, unknown>): void {
     const entry = this.createLogEntry('ERROR', message, context);
     this.addToBuffer(entry);
-    
+
     if (this.isDevelopment) {
       console.error(`[${entry.timestamp}] ERROR: ${message}`, entry.context || '');
     }
   }
 
-  warn(message: string, context?: Record<string, any>): void {
+  warn(message: string, context?: Record<string, unknown>): void {
     const entry = this.createLogEntry('WARN', message, context);
     this.addToBuffer(entry);
-    
+
     if (this.isDevelopment) {
       console.warn(`[${entry.timestamp}] WARN: ${message}`, entry.context || '');
     }
   }
 
-  info(message: string, context?: Record<string, any>): void {
+  info(message: string, context?: Record<string, unknown>): void {
     const entry = this.createLogEntry('INFO', message, context);
     this.addToBuffer(entry);
-    
+
     if (this.isDevelopment) {
       console.info(`[${entry.timestamp}] INFO: ${message}`, entry.context || '');
     }
   }
 
-  debug(message: string, context?: Record<string, any>): void {
+  debug(message: string, context?: Record<string, unknown>): void {
     if (!this.isDevelopment) return; // Never log debug in production
-    
+
     const entry = this.createLogEntry('DEBUG', message, context);
     console.debug(`[${entry.timestamp}] DEBUG: ${message}`, entry.context || '');
   }
@@ -170,7 +170,7 @@ class ProductionLogger {
 export const logger = new ProductionLogger();
 
 // Helper functions for easy migration from console.log
-export const logError = (message: string, context?: any) => logger.error(message, context);
-export const logWarn = (message: string, context?: any) => logger.warn(message, context);
-export const logInfo = (message: string, context?: any) => logger.info(message, context);
-export const logDebug = (message: string, context?: any) => logger.debug(message, context);
+export const logError = (message: string, context?: Record<string, unknown>) => logger.error(message, context);
+export const logWarn = (message: string, context?: Record<string, unknown>) => logger.warn(message, context);
+export const logInfo = (message: string, context?: Record<string, unknown>) => logger.info(message, context);
+export const logDebug = (message: string, context?: Record<string, unknown>) => logger.debug(message, context);

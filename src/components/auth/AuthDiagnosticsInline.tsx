@@ -4,14 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle, XCircle, AlertCircle, RefreshCw } from "lucide-react";
 
+interface DiagnosticResults {
+  origin: string;
+  swController: string | null;
+  swCount: number;
+  healthStatus: number | string;
+  authTest: string;
+  preflightBlocked?: boolean;
+  hasSession: boolean;
+}
+
 export function AuthDiagnosticsInline() {
   const [isOpen, setIsOpen] = useState(false);
-  const [diagnostics, setDiagnostics] = useState<any>(null);
+  const [diagnostics, setDiagnostics] = useState<DiagnosticResults | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const runDiagnostics = async () => {
     setIsLoading(true);
-    const results: any = {};
+    const results: Partial<DiagnosticResults> = {};
 
     results.origin = window.location.origin;
 
@@ -33,7 +43,7 @@ export function AuthDiagnosticsInline() {
       }
       const healthResp = await fetch(`${supabaseUrl}/auth/v1/health`, { cache: 'no-store' });
       results.healthStatus = healthResp.status;
-    } catch (err: any) {
+    } catch (err: unknown) {
       results.healthStatus = 'FAILED';
     }
 
@@ -43,9 +53,10 @@ export function AuthDiagnosticsInline() {
         password: 'dummy-12345',
       });
       results.authTest = error?.message || 'OK';
-    } catch (err: any) {
-      results.authTest = err.message;
-      results.preflightBlocked = err.name === 'TypeError';
+    } catch (err: unknown) {
+      const error = err as Error;
+      results.authTest = error.message;
+      results.preflightBlocked = error.name === 'TypeError';
     }
 
     try {
@@ -55,7 +66,7 @@ export function AuthDiagnosticsInline() {
       results.hasSession = false;
     }
 
-    setDiagnostics(results);
+    setDiagnostics(results as DiagnosticResults);
     setIsLoading(false);
   };
 

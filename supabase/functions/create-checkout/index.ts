@@ -165,14 +165,15 @@ Deno.serve(async (req: Request) => {
 
     console.log("Checkout session created", { sessionId: session.id, url: session.url });
 
-    return new Response(JSON.stringify({ url: session.url, sessionId: session.id }), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    return new Response(JSON.stringify({ url: session.url, sessionId: session.id }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     console.error("Error in create-checkout:", error);
-    return new Response(JSON.stringify({ error: error.message || "Internal server error" }), { 
-      status: 500, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    return new Response(JSON.stringify({ error: err.message || "Internal server error" }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });

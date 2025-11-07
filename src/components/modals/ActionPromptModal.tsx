@@ -13,10 +13,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle, Info, Zap } from 'lucide-react';
 
+interface ConfirmData {
+  value?: string;
+  description?: string;
+  location?: string;
+  contactName?: string;
+  notes?: string;
+}
+
 interface ActionPromptModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data?: any) => void;
+  onConfirm: (data?: ConfirmData) => void;
   type: 'confirmation' | 'input' | 'hazard-report' | 'emergency-setup';
   title: string;
   description: string;
