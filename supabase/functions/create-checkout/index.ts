@@ -1,12 +1,13 @@
 import Stripe from "https://esm.sh/stripe@14?target=deno";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, ALLOWED_ORIGINS } from "../_shared/cors.ts";
+import { isValidRedirectUrl, sanitizeRedirectUrl } from "../_shared/url-validator.ts";
 
 Deno.serve(async (req: Request) => {
+  // SECURITY FIX: Use proper CORS headers instead of wildcard
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -100,9 +101,16 @@ Deno.serve(async (req: Request) => {
       httpClient: Stripe.createFetchHttpClient() 
     });
 
-    const siteUrl = Deno.env.get("PUBLIC_SITE_URL") ?? req.headers.get("origin") ?? "";
-    const success_url = successUrl ? `${siteUrl}${successUrl}` : `${siteUrl}/app?checkout=success`;
-    const cancel_url = cancelUrl ? `${siteUrl}${cancelUrl}` : `${siteUrl}/app?checkout=cancel`;
+    // SECURITY FIX: Validate redirect URLs to prevent open redirect attacks
+    // Use configured site URL or first allowed origin as fallback (never user input)
+    const siteUrl = Deno.env.get("PUBLIC_SITE_URL") ?? ALLOWED_ORIGINS[0];
+
+    // Sanitize success and cancel URLs
+    const successPath = successUrl ? sanitizeRedirectUrl(successUrl, '/app?checkout=success') : '/app?checkout=success';
+    const cancelPath = cancelUrl ? sanitizeRedirectUrl(cancelUrl, '/app?checkout=cancel') : '/app?checkout=cancel';
+
+    const success_url = successPath.startsWith('http') ? successPath : `${siteUrl}${successPath}`;
+    const cancel_url = cancelPath.startsWith('http') ? cancelPath : `${siteUrl}${cancelPath}`;
 
     console.log("Creating checkout session", { userId: user.id, planId, priceId, isYearly });
 
