@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { isValidRedirectUrl } from "../_shared/url-validator.ts";
 
 serve(async (req) => {
   const origin = req.headers.get("origin");
@@ -16,9 +17,21 @@ serve(async (req) => {
 
   try {
     const { returnUrl } = await req.json();
-    
+
     if (!returnUrl) {
       return new Response(JSON.stringify({ error: "returnUrl is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // SECURITY FIX: Validate redirect URL to prevent open redirect attacks
+    if (!isValidRedirectUrl(returnUrl)) {
+      console.error(`[${requestId}] Invalid return URL blocked: ${returnUrl}`);
+      return new Response(JSON.stringify({
+        error: "Invalid return URL",
+        code: "INVALID_RETURN_URL"
+      }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

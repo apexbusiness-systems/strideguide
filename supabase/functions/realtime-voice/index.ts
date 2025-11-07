@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 serve(async (req) => {
   const origin = req.headers.get("origin");
@@ -20,17 +21,68 @@ serve(async (req) => {
 
     const upgrade = req.headers.get("upgrade") || "";
     if (upgrade.toLowerCase() !== "websocket") {
-      return new Response("Expected WebSocket upgrade", { 
+      return new Response("Expected WebSocket upgrade", {
         status: 426,
-        headers: corsHeaders 
+        headers: corsHeaders
       });
     }
 
+    // CRITICAL SECURITY FIX: Authenticate before WebSocket upgrade
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader) {
+      console.error(`[${requestId}] Missing authorization header`);
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false }
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error(`[${requestId}] Authentication failed:`, authError?.message);
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    console.log(`[${requestId}] User authenticated: ${user.id}`);
+
+    // COST CONTROL: Track connection for session timeout
+    const SESSION_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+    const sessionStartTime = Date.now();
+    let messageCount = 0;
+    const MAX_MESSAGES_PER_SESSION = 600; // ~1 message per second for 10 minutes
+
     const { socket: clientSocket, response } = Deno.upgradeWebSocket(req);
     let openaiSocket: WebSocket | null = null;
+    let sessionTimeoutId: number | null = null;
+
+    // COST CONTROL: Auto-disconnect after timeout
+    const scheduleSessionTimeout = () => {
+      if (sessionTimeoutId !== null) {
+        clearTimeout(sessionTimeoutId);
+      }
+      sessionTimeoutId = setTimeout(() => {
+        console.log(`[${requestId}] Session timeout after ${SESSION_TIMEOUT_MS / 1000 / 60} minutes`);
+        clientSocket.close(1000, "Session timeout - maximum duration reached");
+        if (openaiSocket?.readyState === WebSocket.OPEN) {
+          openaiSocket.close();
+        }
+      }, SESSION_TIMEOUT_MS);
+    };
 
     clientSocket.onopen = async () => {
-      console.log(`[${requestId}] Client WebSocket opened`);
+      console.log(`[${requestId}] Client WebSocket opened for user: ${user.id}`);
+      scheduleSessionTimeout();
       
       try {
         // Connect to OpenAI Realtime API
@@ -154,6 +206,28 @@ Be warm, reassuring, and actionable.`,
     };
 
     clientSocket.onmessage = (event) => {
+      // RATE LIMITING: Check message count
+      messageCount++;
+      if (messageCount > MAX_MESSAGES_PER_SESSION) {
+        console.warn(`[${requestId}] Rate limit exceeded: ${messageCount} messages`);
+        clientSocket.close(1008, "Rate limit exceeded");
+        if (openaiSocket?.readyState === WebSocket.OPEN) {
+          openaiSocket.close();
+        }
+        return;
+      }
+
+      // COST CONTROL: Check session duration
+      const sessionDuration = Date.now() - sessionStartTime;
+      if (sessionDuration > SESSION_TIMEOUT_MS) {
+        console.warn(`[${requestId}] Session duration exceeded: ${sessionDuration}ms`);
+        clientSocket.close(1000, "Session timeout");
+        if (openaiSocket?.readyState === WebSocket.OPEN) {
+          openaiSocket.close();
+        }
+        return;
+      }
+
       // Forward client messages to OpenAI
       if (openaiSocket?.readyState === WebSocket.OPEN) {
         openaiSocket.send(event.data);
@@ -165,7 +239,13 @@ Be warm, reassuring, and actionable.`,
     };
 
     clientSocket.onclose = () => {
-      console.log(`[${requestId}] Client WebSocket closed`);
+      const sessionDuration = Date.now() - sessionStartTime;
+      console.log(`[${requestId}] Client WebSocket closed. Duration: ${Math.round(sessionDuration / 1000)}s, Messages: ${messageCount}`);
+
+      // Cleanup
+      if (sessionTimeoutId !== null) {
+        clearTimeout(sessionTimeoutId);
+      }
       if (openaiSocket?.readyState === WebSocket.OPEN) {
         openaiSocket.close();
       }
