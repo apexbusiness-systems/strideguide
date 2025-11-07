@@ -4,8 +4,6 @@
  * Falls back to safe defaults if unavailable
  */
 
-import { ALLOWED_ORIGINS, isLovablePreview } from "../_shared/cors.ts";
-
 interface RuntimeConfig {
   enablePayments: boolean;
   enableNewAuth: boolean;
@@ -21,41 +19,8 @@ const DEFAULT_CONFIG: RuntimeConfig = {
 let cachedConfig: RuntimeConfig | null = null;
 
 /**
- * Validates that an origin is safe to fetch from (prevents SSRF)
- */
-function isValidOrigin(origin: string): boolean {
-  if (!origin) return false;
-
-  try {
-    const url = new URL(origin);
-
-    // Only allow http/https
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-      return false;
-    }
-
-    const fullOrigin = `${url.protocol}//${url.host}`;
-
-    // Check against allowed origins
-    if (ALLOWED_ORIGINS.includes(fullOrigin)) {
-      return true;
-    }
-
-    // Check if Lovable preview
-    if (isLovablePreview(fullOrigin)) {
-      return true;
-    }
-
-    return false;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Load runtime config from app origin
  * Non-blocking: returns defaults if fetch fails
- * SECURITY: Validates origin to prevent SSRF attacks
  */
 export async function loadRuntimeConfig(appOrigin: string): Promise<RuntimeConfig> {
   if (cachedConfig) {
@@ -63,12 +28,6 @@ export async function loadRuntimeConfig(appOrigin: string): Promise<RuntimeConfi
   }
 
   try {
-    // SECURITY FIX: Validate origin to prevent SSRF
-    if (!isValidOrigin(appOrigin)) {
-      console.warn(`[Config] Invalid origin blocked: ${appOrigin}`);
-      return DEFAULT_CONFIG;
-    }
-
     const response = await fetch(`${appOrigin}/config/runtime.json`, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
