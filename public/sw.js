@@ -34,7 +34,32 @@ function isCacheFresh(cachedResponse, url) {
   return (now - cachedTime) < ttl;
 }
 
-self.addEventListener("install", (e) => e.waitUntil(self.skipWaiting()));
+// Conditional skipWaiting - only skip if no clients or user approves
+self.addEventListener("install", (e) => {
+  e.waitUntil((async () => {
+    // Check if there are any clients
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+
+    if (clients.length === 0) {
+      // No clients - safe to skip waiting immediately
+      console.log('[SW] No active clients, skipping waiting immediately');
+      await self.skipWaiting();
+    } else {
+      // Clients exist - wait for user approval or page reload
+      console.log('[SW] Active clients detected, waiting for user approval');
+      // Message all clients about update
+      clients.forEach(client => {
+        client.postMessage({
+          type: 'SW_UPDATE_AVAILABLE',
+          payload: {
+            version: CACHE,
+            requiresReload: true
+          }
+        });
+      });
+    }
+  })());
+});
 self.addEventListener("activate", (e) =>
   e.waitUntil((async () => {
     await clients.claim();
@@ -132,6 +157,14 @@ self.addEventListener("push", (e) => {
       };
       e.waitUntil(self.registration.showNotification(data.title || 'StrideGuide Alert', options));
     }
+  }
+});
+
+// Handle messages from clients (e.g., update approval)
+self.addEventListener("message", (e) => {
+  if (e.data && e.data.type === 'SKIP_WAITING') {
+    console.log('[SW] User approved update, skipping waiting');
+    self.skipWaiting();
   }
 });
 
