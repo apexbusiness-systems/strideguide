@@ -1,6 +1,38 @@
-// @stride/sw v3 — GET-only allowlist; no index.html/SW caching; safe updates
-const CACHE = "sg-2025-10-08-app-scope-v2";
+// @stride/sw v4 — GET-only allowlist; TTL cache expiration; safe updates
+const CACHE = "sg-2025-11-07-app-scope-v4";
 const ALLOW = [/^\/app\/$/, /^\/app\/index\.html$/, /^\/app\/assets\//, /^\/icons\//, /^\/audio\//, /^\/ml\//, /^\/manifest\.webmanifest$/];
+
+// Cache TTL (Time To Live) in milliseconds
+const CACHE_TTL = {
+  assets: 7 * 24 * 60 * 60 * 1000, // 7 days for hashed assets
+  icons: 30 * 24 * 60 * 60 * 1000, // 30 days for icons
+  audio: 14 * 24 * 60 * 60 * 1000, // 14 days for audio files
+  ml: 14 * 24 * 60 * 60 * 1000, // 14 days for ML models
+  default: 24 * 60 * 60 * 1000, // 1 day for everything else
+};
+
+// Get TTL for a URL
+function getTTL(url) {
+  if (/\/app\/assets\//.test(url)) return CACHE_TTL.assets;
+  if (/\/icons\//.test(url)) return CACHE_TTL.icons;
+  if (/\/audio\//.test(url)) return CACHE_TTL.audio;
+  if (/\/ml\//.test(url)) return CACHE_TTL.ml;
+  return CACHE_TTL.default;
+}
+
+// Check if cached response is still fresh
+function isCacheFresh(cachedResponse, url) {
+  if (!cachedResponse) return false;
+
+  const cachedDate = cachedResponse.headers.get('sw-cached-at');
+  if (!cachedDate) return false; // No cache timestamp
+
+  const cachedTime = new Date(cachedDate).getTime();
+  const now = Date.now();
+  const ttl = getTTL(url);
+
+  return (now - cachedTime) < ttl;
+}
 
 self.addEventListener("install", (e) => e.waitUntil(self.skipWaiting()));
 self.addEventListener("activate", (e) =>
@@ -24,17 +56,44 @@ self.addEventListener("fetch", (e) => {
   if (!ALLOW.some(rx => rx.test(url.pathname))) return;
 
   e.respondWith(caches.open(CACHE).then(async (c) => {
-    // Cache-first strategy for hashed static assets
-    const hit = await c.match(r, { ignoreSearch: true });
-    if (hit) return hit;
+    // Cache-first strategy with TTL validation
+    const cached = await c.match(r, { ignoreSearch: true });
 
-    // SECURITY FIX: Removed cache: "no-store" contradiction
-    // Fetch fresh version and cache it
-    const res = await fetch(r);
-    if (res && res.ok) {
-      c.put(r, res.clone());
+    // Check if cache is still fresh
+    if (cached && isCacheFresh(cached, url.pathname)) {
+      console.log('[SW] Cache hit (fresh):', url.pathname);
+      return cached;
     }
-    return res;
+
+    // Cache miss or stale - fetch fresh version
+    try {
+      const res = await fetch(r);
+      if (res && res.ok) {
+        // Clone response and add cache timestamp header
+        const headers = new Headers(res.headers);
+        headers.set('sw-cached-at', new Date().toISOString());
+
+        const responseToCache = new Response(res.body, {
+          status: res.status,
+          statusText: res.statusText,
+          headers: headers
+        });
+
+        // Cache the response with timestamp
+        c.put(r, responseToCache.clone());
+        console.log('[SW] Cached fresh:', url.pathname);
+
+        return responseToCache;
+      }
+      return res;
+    } catch (err) {
+      // Network failure - return stale cache if available
+      if (cached) {
+        console.log('[SW] Network failed, returning stale cache:', url.pathname);
+        return cached;
+      }
+      throw err;
+    }
   }));
 });
 
@@ -76,4 +135,4 @@ self.addEventListener("push", (e) => {
   }
 });
 
-console.log('[SW] StrideGuide Service Worker v3 loaded');
+console.log('[SW] StrideGuide Service Worker v4 loaded with TTL cache expiration');
