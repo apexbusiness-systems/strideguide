@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,43 +25,7 @@ const VisionGuidance: React.FC<VisionGuidanceProps> = ({
   const [audioEnabled, setAudioEnabled] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-analyze when active
-  useEffect(() => {
-    if (!isActive || !isAutoAnalyzing || !videoRef.current) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      return;
-    }
-
-    // Initial analysis
-    handleAnalyze();
-
-    // Set up interval
-    intervalRef.current = setInterval(() => {
-      handleAnalyze();
-    }, autoAnalyzeInterval);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActive, isAutoAnalyzing, mode, autoAnalyzeInterval]);
-
-  const handleAnalyze = async () => {
-    if (!videoRef.current || isAnalyzing) return;
-
-    const description = await analyzeFrame(videoRef.current, mode);
-    
-    if (description && audioEnabled) {
-      speakEnhancedDescription(description, mode);
-    }
-  };
-
-  const speakEnhancedDescription = (description: string, analysisMode: VisionMode) => {
+  const speakEnhancedDescription = useCallback((description: string, analysisMode: VisionMode) => {
     let ssml: string;
 
     switch (analysisMode) {
@@ -74,7 +38,7 @@ const VisionGuidance: React.FC<VisionGuidanceProps> = ({
           const isHighSeverity = /danger|immediate|critical|steep|fall/i.test(description);
           const isMediumSeverity = /caution|watch|careful|uneven/i.test(description);
           const severity = isHighSeverity ? 'high' : isMediumSeverity ? 'medium' : 'low';
-          
+
           ssml = SSMLGenerator.hazardAlert('Hazard Detected', description, severity);
         }
         break;
@@ -107,7 +71,42 @@ const VisionGuidance: React.FC<VisionGuidanceProps> = ({
         });
       }
     });
-  };
+  }, [toast]);
+
+  const handleAnalyze = useCallback(async () => {
+    if (!videoRef.current || isAnalyzing) return;
+
+    const description = await analyzeFrame(videoRef.current, mode);
+
+    if (description && audioEnabled) {
+      speakEnhancedDescription(description, mode);
+    }
+  }, [videoRef, isAnalyzing, analyzeFrame, mode, audioEnabled, speakEnhancedDescription]);
+
+  // Auto-analyze when active
+  useEffect(() => {
+    if (!isActive || !isAutoAnalyzing || !videoRef.current) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
+
+    // Initial analysis
+    handleAnalyze();
+
+    // Set up interval
+    intervalRef.current = setInterval(() => {
+      handleAnalyze();
+    }, autoAnalyzeInterval);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isActive, isAutoAnalyzing, autoAnalyzeInterval, handleAnalyze]);
 
   const toggleAutoAnalyze = () => {
     setIsAutoAnalyzing(prev => !prev);

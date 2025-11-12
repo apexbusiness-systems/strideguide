@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,10 +51,9 @@ export const PricingPlans = ({ currentPlan, onSelectPlan }: PricingPlansProps) =
 
   useEffect(() => {
     loadPlans();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadPlans]);
 
-  const loadPlans = async () => {
+  const loadPlans = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("subscription_plans")
@@ -82,7 +81,7 @@ export const PricingPlans = ({ currentPlan, onSelectPlan }: PricingPlansProps) =
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
   const handleSelectPlan = (planId: string) => {
     // Gate payments behind feature flag

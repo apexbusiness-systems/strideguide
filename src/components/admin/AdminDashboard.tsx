@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -59,10 +59,9 @@ export const AdminDashboard = () => {
 
   useEffect(() => {
     loadDashboardData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadDashboardData]);
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     setIsLoading(true);
     try {
       await Promise.all([
@@ -79,7 +78,7 @@ export const AdminDashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
   const loadStats = async () => {
     const { data: profiles } = await supabase

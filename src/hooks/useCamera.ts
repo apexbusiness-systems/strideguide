@@ -131,7 +131,7 @@ export const useCamera = (config: CameraConfig) => {
     // Ensure valid video dimensions
     const videoWidth = video.videoWidth || config.width;
     const videoHeight = video.videoHeight || config.height;
-    
+
     if (videoWidth === 0 || videoHeight === 0) {
       console.warn('Invalid video dimensions');
       return null;
@@ -145,10 +145,10 @@ export const useCamera = (config: CameraConfig) => {
 
     // Draw video frame to canvas
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
+
     // Get image data
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
-  }, [isActive]);
+  }, [isActive, config.width, config.height]);
 
   // Start continuous frame processing
   const startFrameProcessing = useCallback((

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -61,10 +61,9 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onComple
         playStepAudio(0);
       }, 500);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentStep]);
+  }, [currentStep, playStepAudio]);
 
-  const playStepAudio = async (stepIndex: number) => {
+  const playStepAudio = useCallback(async (stepIndex: number) => {
     try {
       if (!AudioArmer.isArmed()) {
         await AudioArmer.initialize();
@@ -90,7 +89,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onComple
         AudioArmer.announceText(t("audio.tapToArm") || "Tap once to allow sound");
       }
     }
-  };
+  }, [steps, t]);
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {

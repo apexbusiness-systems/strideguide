@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,34 +31,49 @@ export const CameraView: React.FC<CameraViewProps> = ({
   });
 
   // Track guidance journey
-  const journeyTrace = useJourneyTrace('start_guidance', { 
+  const journeyTrace = useJourneyTrace('start_guidance', {
     camera: 'environment',
     resolution: '640x480'
   });
 
+  // Extract camera functions and state to avoid object dependency issues
+  const cameraIsActive = camera.isActive;
+  const cameraError = camera.error;
+  const startCamera = useCallback(() => camera.startCamera(), [camera]);
+  const stopCamera = useCallback(() => camera.stopCamera(), [camera]);
+  const startFrameProcessing = useCallback((callback: (imageData: ImageData) => void, targetFPS: number) =>
+    camera.startFrameProcessing(callback, targetFPS), [camera]);
+  const stopFrameProcessing = useCallback(() => camera.stopFrameProcessing(), [camera]);
+
+  // Extract journey trace functions
+  const completeJourneyTrace = useCallback((data: { fps_avg: number }) =>
+    journeyTrace.complete(data), [journeyTrace]);
+  const failJourneyTrace = useCallback((error: string) =>
+    journeyTrace.fail(error), [journeyTrace]);
+
   // Start/stop camera based on isActive prop
   useEffect(() => {
-    if (isActive && !camera.isActive) {
-      camera.startCamera();
-    } else if (!isActive && camera.isActive) {
-      camera.stopCamera();
-      journeyTrace.complete({ fps_avg: fps });
+    if (isActive && !cameraIsActive) {
+      startCamera();
+    } else if (!isActive && cameraIsActive) {
+      stopCamera();
+      completeJourneyTrace({ fps_avg: fps });
     }
-  }, [isActive, camera, fps, journeyTrace]);
+  }, [isActive, cameraIsActive, startCamera, stopCamera, completeJourneyTrace, fps]);
 
   // Track errors
   useEffect(() => {
-    if (camera.error) {
-      journeyTrace.fail(camera.error);
+    if (cameraError) {
+      failJourneyTrace(cameraError);
     }
-  }, [camera.error, journeyTrace]);
+  }, [cameraError, failJourneyTrace]);
 
   // Handle frame processing
   useEffect(() => {
-    if (isActive && camera.isActive && onFrame) {
-      camera.startFrameProcessing((imageData) => {
+    if (isActive && cameraIsActive && onFrame) {
+      startFrameProcessing((imageData) => {
         onFrame(imageData);
-        
+
         // Update FPS counter
         fpsCounterRef.current++;
         const now = Date.now();
@@ -69,9 +84,9 @@ export const CameraView: React.FC<CameraViewProps> = ({
         }
       }, 8); // Target 8 FPS for good balance
 
-      return () => camera.stopFrameProcessing();
+      return () => stopFrameProcessing();
     }
-  }, [isActive, camera.isActive, onFrame, camera]);
+  }, [isActive, cameraIsActive, onFrame, startFrameProcessing, stopFrameProcessing]);
 
   if (!camera.isSupported) {
     return (
