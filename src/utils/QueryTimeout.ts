@@ -47,23 +47,19 @@ async function withTimeout<T>(
  * Wrap a Supabase query with timeout
  */
 export async function queryWithTimeout<T>(
-  queryBuilder: PostgrestBuilder<T>,
+  queryBuilder: any,
   timeoutMs: number = DEFAULT_QUERY_TIMEOUT,
   queryInfo?: string
 ): Promise<{ data: T | null; error: Error | null }> {
   try {
     const result = await withTimeout(queryBuilder, timeoutMs, queryInfo);
-    return result as unknown;
+    return result as { data: T | null; error: Error | null };
   } catch (error) {
     if (error instanceof QueryTimeoutError) {
       console.error('[QueryTimeout]', error.message);
       return {
         data: null,
-        error: {
-          message: error.message,
-          code: 'QUERY_TIMEOUT',
-          details: queryInfo,
-        },
+        error: new Error(error.message),
       };
     }
     throw error;
@@ -86,7 +82,7 @@ export async function executeWithTimeout<T>(
  */
 export async function executeBatchQueries<T>(
   queries: Array<{
-    builder: PostgrestBuilder<unknown>;
+    builder: any;
     timeout?: number;
     name?: string;
   }>
@@ -122,7 +118,7 @@ export function createTimeoutQuery(defaultTimeout: number = DEFAULT_QUERY_TIMEOU
      * Execute single query with timeout
      */
     async single<T>(
-      queryBuilder: PostgrestBuilder<T>,
+      queryBuilder: any,
       timeout?: number
     ): Promise<{ data: T | null; error: Error | null }> {
       return queryWithTimeout(queryBuilder, timeout || defaultTimeout);
@@ -133,7 +129,7 @@ export function createTimeoutQuery(defaultTimeout: number = DEFAULT_QUERY_TIMEOU
      */
     async batch<T>(
       queries: Array<{
-        builder: PostgrestBuilder<unknown>;
+        builder: any;
         timeout?: number;
         name?: string;
       }>
@@ -146,7 +142,7 @@ export function createTimeoutQuery(defaultTimeout: number = DEFAULT_QUERY_TIMEOU
      */
     async withCircuitBreaker<T>(
       serviceName: string,
-      queryBuilder: PostgrestBuilder<T>,
+      queryBuilder: any,
       timeout?: number
     ): Promise<{ data: T | null; error: Error | null }> {
       const { withCircuitBreaker } = await import('./CircuitBreaker');
