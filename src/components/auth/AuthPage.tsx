@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/Logo";
 import { z } from "zod";
 import { logger } from "@/utils/ProductionLogger";
+import { handleAuthError } from "@/utils/AuthErrorHandler";
 import { AuthTroubleshooter } from "./AuthTroubleshooter";
 import { AuthDiagnosticsInline } from "./AuthDiagnosticsInline";
 
@@ -81,34 +82,8 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
       });
 
       if (error) {
-        // B4: Log error with correlation ID (sensitive data auto-sanitized by ProductionLogger)
-        logger.error("Sign-in error", { 
-          correlationId, 
-          status: error.status, 
-          errorName: error.name,
-          errorMessage: error.message 
-        });
-        
-        // Enhanced error messages - CHECK SPECIFIC ERRORS FIRST
-        if (error.message.includes("Email not confirmed")) {
-          setError("Please verify your email address before signing in. Check your inbox for a confirmation link.");
-        } else if (error.message.includes("Invalid login credentials")) {
-          setError("Email or password is incorrect.");
-        } else if (error.message.includes("Failed to fetch") || error.name === "TypeError") {
-          setError("Network error. If on mobile data: 1) Toggle airplane mode on/off, 2) Restart browser, or 3) Use diagnostics below.");
-          logger.error("CORS/Network failure detected", { 
-            correlationId, 
-            hint: "Check Supabase Auth URL configuration" 
-          });
-        } else if (error.status === 400 || error.status === 401 || error.status === 403) {
-          setError("Email or password is incorrect.");
-        } else if (error.message.includes("timeout") || error.status === 504) {
-          setError("Service unreachable. Try again shortly.");
-        } else {
-          // B4: Show correlation ID to user for support reference
-          setError(`Sign-in failed. Reference: ${correlationId.slice(0, 8)}`);
-          logger.error("Unexpected sign-in error", { correlationId, error });
-        }
+        const { message } = handleAuthError(error, correlationId, "signin");
+        setError(message);
         return;
       }
 
@@ -125,15 +100,9 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
       
       if (error instanceof z.ZodError) {
         setError(error.errors[0].message);
-      } else if (error instanceof TypeError && error.message.includes("fetch")) {
-        setError("Network error. If on mobile data: 1) Toggle airplane mode on/off, 2) Restart browser, or 3) Use diagnostics below.");
-        logger.error("Network/CORS error - likely Supabase URL config issue", { 
-          correlationId, 
-          currentUrl: window.location.origin,
-          hint: "Supabase Dashboard > Auth > URL Configuration must include current domain in Redirect URLs"
-        });
       } else {
-        setError(`Sign-in failed. Reference: ${correlationId.slice(0, 8)}`);
+        const { message } = handleAuthError(error, correlationId, "signin");
+        setError(message);
       }
     } finally {
       setIsLoading(false);
@@ -174,31 +143,8 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
       });
 
       if (error) {
-        // B4: Log error with correlation ID
-        logger.error("Sign-up error", { 
-          correlationId, 
-          status: error.status, 
-          errorName: error.name,
-          errorMessage: error.message 
-        });
-        
-        // Enhanced error messages for mobile data issues
-        if (error.message.includes("User already registered")) {
-          setError("An account with this email already exists. Please sign in instead.");
-        } else if (error.message.includes("Failed to fetch") || error.name === "TypeError") {
-          setError("Network error. If on mobile data: 1) Toggle airplane mode on/off, 2) Restart browser, or 3) Use diagnostics below.");
-          logger.error("CORS/Network failure detected", { 
-            correlationId, 
-            hint: "Check Supabase Auth URL configuration" 
-          });
-        } else if (error.status === 422) {
-          setError("Invalid email or password format.");
-        } else if (error.message.includes("timeout") || error.status === 504) {
-          setError("Service unreachable. Try again shortly.");
-        } else {
-          setError(`Sign-up failed. Reference: ${correlationId.slice(0, 8)}`);
-          logger.error("Unexpected sign-up error", { correlationId, error });
-        }
+        const { message } = handleAuthError(error, correlationId, "signup");
+        setError(message);
         return;
       }
 
@@ -215,14 +161,9 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
       
       if (error instanceof z.ZodError) {
         setError(error.errors[0].message);
-      } else if (error instanceof TypeError && error.message.includes("fetch")) {
-        setError("Connection failed. Try: 1) Disable VPN/Data Saver, 2) Use WiFi, or 3) Run diagnostics below.");
-        logger.error("Network/CORS error", { 
-          correlationId, 
-          hint: "Check preflight OPTIONS response" 
-        });
       } else {
-        setError(`Sign-up failed. Reference: ${correlationId.slice(0, 8)}`);
+        const { message } = handleAuthError(error, correlationId, "signup");
+        setError(message);
       }
     } finally {
       setIsLoading(false);
@@ -238,13 +179,16 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
     setIsLoading(true);
     setError("");
 
+    const correlationId = crypto.randomUUID();
+    
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
         redirectTo: authRedirectTo("/auth"),
       });
 
       if (error) {
-        setError(error.message);
+        const { message } = handleAuthError(error, correlationId, "reset");
+        setError(message);
         return;
       }
 
