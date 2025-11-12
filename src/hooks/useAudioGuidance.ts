@@ -99,46 +99,60 @@ export const useAudioGuidance = (options: AudioGuidanceOptions) => {
   }, [options.enabled, options.volume]);
 
   // Play proximity beacon (hot/cold feedback)
+  const beaconTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const playProximityBeacon = useCallback((distance: number) => {
     if (!options.enabled || !audioContextRef.current) return;
 
     const context = audioContextRef.current;
-    
+
     // Calculate beep rate based on distance (closer = faster beeps)
     const maxDistance = 1.0;
     const minInterval = 0.2; // Fastest beep interval (seconds)
     const maxInterval = 2.0; // Slowest beep interval (seconds)
-    
+
     const normalizedDistance = Math.min(distance / maxDistance, 1);
     const interval = minInterval + (normalizedDistance * (maxInterval - minInterval));
-    
+
     // Play beacon tone
     const oscillator = context.createOscillator();
     const envelope = context.createGain();
-    
+
     oscillator.connect(envelope);
     envelope.connect(gainNodeRef.current!);
-    
+
     oscillator.frequency.setValueAtTime(800, context.currentTime);
     oscillator.type = 'square';
-    
+
     const now = context.currentTime;
     const beepDuration = 0.1;
-    
+
     envelope.gain.setValueAtTime(0, now);
     envelope.gain.linearRampToValueAtTime(options.volume * 0.3, now + 0.01);
     envelope.gain.exponentialRampToValueAtTime(0.001, now + beepDuration);
-    
+
     oscillator.start(now);
     oscillator.stop(now + beepDuration);
-    
-    // Schedule next beep
-    setTimeout(() => {
+
+    // Clear any existing timeout to prevent multiple beacons
+    if (beaconTimeoutRef.current) {
+      clearTimeout(beaconTimeoutRef.current);
+    }
+
+    // Schedule next beep - store timeout ID for cleanup
+    beaconTimeoutRef.current = setTimeout(() => {
       if (options.enabled) {
         playProximityBeacon(distance);
       }
     }, interval * 1000);
   }, [options.enabled, options.volume]);
+
+  const stopProximityBeacon = useCallback(() => {
+    if (beaconTimeoutRef.current) {
+      clearTimeout(beaconTimeoutRef.current);
+      beaconTimeoutRef.current = null;
+    }
+  }, []);
 
   // Play alert sound for obstacles
   const playObstacleAlert = useCallback(() => {
@@ -184,9 +198,23 @@ export const useAudioGuidance = (options: AudioGuidanceOptions) => {
     window.speechSynthesis.speak(utterance);
   }, [options.enabled, options.volume]);
 
+  // Cleanup on unmount or when audio is disabled
+  useEffect(() => {
+    return () => {
+      stopProximityBeacon();
+      if (oscillatorRef.current) {
+        oscillatorRef.current.stop();
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, [stopProximityBeacon]);
+
   return {
     playDirectionalTone,
     playProximityBeacon,
+    stopProximityBeacon,
     playObstacleAlert,
     speak,
     isSupported: !!window.AudioContext || !!(window as Window & { webkitAudioContext?: typeof window.AudioContext }).webkitAudioContext

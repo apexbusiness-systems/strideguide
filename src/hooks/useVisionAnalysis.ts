@@ -14,7 +14,7 @@ export const useVisionAnalysis = () => {
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [lastResult, setLastResult] = useState<VisionAnalysisResult | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const isCancelledRef = useRef(false);
 
   const analyzeFrame = useCallback(async (
     videoElement: HTMLVideoElement | null,
@@ -24,12 +24,11 @@ export const useVisionAnalysis = () => {
       return null;
     }
 
-    // Cancel any ongoing analysis
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+    // Mark any ongoing analysis as cancelled
+    isCancelledRef.current = true;
 
-    abortControllerRef.current = new AbortController();
+    // Reset cancellation flag for new analysis
+    isCancelledRef.current = false;
     setIsAnalyzing(true);
 
     try {
@@ -63,10 +62,22 @@ export const useVisionAnalysis = () => {
 
       const imageData = canvas.toDataURL('image/jpeg', 0.8);
 
+      // Check if cancelled before making request
+      if (isCancelledRef.current) {
+        console.log('Vision analysis cancelled before request');
+        return null;
+      }
+
       // Call vision API
       const { data, error } = await supabase.functions.invoke('vision-stream', {
         body: { imageData, mode },
       });
+
+      // Check if cancelled after request
+      if (isCancelledRef.current) {
+        console.log('Vision analysis cancelled after request');
+        return null;
+      }
 
       if (error) {
         throw error;
@@ -87,8 +98,10 @@ export const useVisionAnalysis = () => {
 
     } catch (error: unknown) {
       const err = error as { name?: string; message?: string };
-      if (err.name === 'AbortError') {
-        console.log('Vision analysis aborted');
+
+      // Check if cancelled during error handling
+      if (isCancelledRef.current) {
+        console.log('Vision analysis cancelled');
         return null;
       }
 
@@ -118,14 +131,11 @@ export const useVisionAnalysis = () => {
       return null;
     } finally {
       setIsAnalyzing(false);
-      abortControllerRef.current = null;
     }
   }, [isAnalyzing, toast]);
 
   const cancelAnalysis = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+    isCancelledRef.current = true;
   }, []);
 
   return {

@@ -15,6 +15,10 @@ export function useFeatureFlags() {
     setLoading(true);
     loadRuntimeConfig()
       .then(setConfig)
+      .catch((error) => {
+        console.error('Failed to load runtime config:', error);
+        // Keep default config on error
+      })
       .finally(() => setLoading(false));
   }, []);
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,10 +28,9 @@ export const SubscriptionManager = ({ user }: SubscriptionManagerProps) => {
     if (subscription) {
       loadUsageData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subscription]);
+  }, [subscription, loadUsageData]);
 
-  const loadUsageData = async () => {
+  const loadUsageData = useCallback(async () => {
     if (!subscription) return;
 
     try {
@@ -54,7 +53,7 @@ export const SubscriptionManager = ({ user }: SubscriptionManagerProps) => {
     } catch (error) {
       console.error("Error loading usage data:", error);
     }
-  };
+  }, [subscription, user.id]);
 
   const handleSelectPlan = async (planId: string, isYearly: boolean) => {
     // Gate payments behind feature flag
