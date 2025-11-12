@@ -585,21 +585,8 @@ const Index: React.FC = () => {
           <UsageMeter />
         </div>
 
-        {/* Top Bar: Install Chip + Language Toggle (≤5 controls) */}
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <InstallPromptChip />
-          <Button
-            onClick={() => setCurrentLanguage(currentLanguage === 'en' ? 'fr' : 'en')}
-            variant="ghost"
-            size="sm"
-            className="min-h-[44px] min-w-[44px]"
-            aria-label={currentLanguage === 'en' ? 'Passer au français' : 'Switch to English'}
-          >
-            <Globe className="h-5 w-5" />
-            <span className="ml-2 hidden sm:inline">{currentLanguage === 'en' ? 'FR' : 'EN'}</span>
-          </Button>
-        </div>
-        
+        {/* Install Components - no visual containers, self-contained */}
+        <InstallPromptChip />
         <IOSInstallSheet />
 
         {/* AI Bot Status */}
@@ -739,7 +726,7 @@ const Index: React.FC = () => {
           </FeatureGate>
         </div>
 
-        <PWAInstaller />
+        {/* PWAInstaller removed - replaced by InstallPromptChip + IOSInstallSheet */}
 
         {/* Status Indicators */}
         <div className="space-y-2">
@@ -810,8 +797,7 @@ const Index: React.FC = () => {
         />
       </FeatureGate>
 
-      {/* T-B: iOS Install Sheet - bottom sheet for iOS users */}
-      <IOSInstallSheet />
+      {/* iOS Install Sheet already rendered above */}
     </div>
   );
 };
