@@ -89,9 +89,10 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
           errorMessage: error.message 
         });
         
-        // Enhanced error messages for mobile data issues
-        const userMessage = error.message;
-        if (error.message.includes("Invalid login credentials") || error.status === 400) {
+        // Enhanced error messages - CHECK SPECIFIC ERRORS FIRST
+        if (error.message.includes("Email not confirmed")) {
+          setError("Please verify your email address before signing in. Check your inbox for a confirmation link.");
+        } else if (error.message.includes("Invalid login credentials")) {
           setError("Email or password is incorrect.");
         } else if (error.message.includes("Failed to fetch") || error.name === "TypeError") {
           setError("Network error. If on mobile data: 1) Toggle airplane mode on/off, 2) Restart browser, or 3) Use diagnostics below.");
@@ -99,12 +100,10 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
             correlationId, 
             hint: "Check Supabase Auth URL configuration" 
           });
-        } else if (error.status === 401 || error.status === 403) {
+        } else if (error.status === 400 || error.status === 401 || error.status === 403) {
           setError("Email or password is incorrect.");
         } else if (error.message.includes("timeout") || error.status === 504) {
           setError("Service unreachable. Try again shortly.");
-        } else if (error.message.includes("Email not confirmed")) {
-          setError("Please verify your email address before signing in. Check your inbox for a confirmation link.");
         } else {
           // B4: Show correlation ID to user for support reference
           setError(`Sign-in failed. Reference: ${correlationId.slice(0, 8)}`);
