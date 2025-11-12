@@ -598,7 +598,7 @@ export class AccessibilityManager {
     this.announce(summary, 'assertive');
   }
 
-  private applyMotorAssistance(settings: { largerTargets?: boolean; stickyFocus?: boolean; reducedMotion?: boolean }): void {
+  private applyMotorAssistance(settings: { largerTargets?: boolean; stickyFocus?: boolean; reducedMotion?: boolean; clickDelay?: number; hoverExtension?: number; autoFocus?: boolean }): void {
     if (settings.largerTargets) {
       document.body.classList.add('large-targets');
     }

@@ -18,7 +18,7 @@ export const useAudioGuidance = (options: AudioGuidanceOptions) => {
 
     const initAudio = async () => {
       try {
-        const AudioContext = window.AudioContext || (window as Window & { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
+        const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
         const context = new AudioContext();
         
         const gainNode = context.createGain();

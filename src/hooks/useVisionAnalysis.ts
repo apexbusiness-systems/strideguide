@@ -86,7 +86,8 @@ export const useVisionAnalysis = () => {
       return data.description;
 
     } catch (error: unknown) {
-      if (error.name === 'AbortError') {
+      const err = error as { name?: string; message?: string };
+      if (err.name === 'AbortError') {
         console.log('Vision analysis aborted');
         return null;
       }
@@ -94,13 +95,13 @@ export const useVisionAnalysis = () => {
       console.error('Vision analysis error:', error);
       
       // Handle specific error codes
-      if (error.message?.includes('RATE_LIMITED')) {
+      if (err.message?.includes('RATE_LIMITED')) {
         toast({
           title: "Rate Limited",
           description: "Please wait a moment before analyzing again.",
           variant: "destructive",
         });
-      } else if (error.message?.includes('PAYMENT_REQUIRED')) {
+      } else if (err.message?.includes('PAYMENT_REQUIRED')) {
         toast({
           title: "Credits Depleted",
           description: "Please add AI credits to continue using vision features.",

@@ -23,7 +23,7 @@ export async function assertSupabaseReachable(timeoutMs = 5000) {
     return true;
   } catch (e: unknown) {
     const error = e as Error;
-    console.error('[Health] Supabase unreachable:', e.message);
+    console.error('[Health] Supabase unreachable:', error.message);
     return false;
   } finally { 
     clearTimeout(t); 

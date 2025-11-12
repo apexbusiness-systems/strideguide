@@ -442,5 +442,5 @@ if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
 
 // Make available globally for manual testing
 if (typeof window !== 'undefined') {
-  (window as Window & { StrideGuideReliabilityTest: typeof SystemReliabilityTester }).StrideGuideReliabilityTest = SystemReliabilityTester;
+  (window as unknown as { StrideGuideReliabilityTest: typeof SystemReliabilityTester }).StrideGuideReliabilityTest = SystemReliabilityTester;
 }

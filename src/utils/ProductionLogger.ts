@@ -65,7 +65,7 @@ class ProductionLogger {
       level,
       message,
       timestamp: new Date().toISOString(),
-      context: context ? this.sanitize(context) : undefined,
+      context: context ? this.sanitize(context) as Record<string, unknown> : undefined,
       sessionId: this.getSessionId(),
     };
   }

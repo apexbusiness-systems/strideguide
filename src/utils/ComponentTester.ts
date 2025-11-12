@@ -16,7 +16,7 @@ export class ComponentTester {
     
     try {
       // Test 1: AudioContext creation
-      const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
       if (!AudioContextClass) {
         throw new Error('AudioContext not supported');
       }
@@ -308,5 +308,5 @@ if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
 
 // Make tester available globally for manual testing
 if (typeof window !== 'undefined') {
-  (window as Window & { StrideGuideTest: typeof ComponentTester }).StrideGuideTest = ComponentTester;
+  (window as unknown as { StrideGuideTest: typeof ComponentTester }).StrideGuideTest = ComponentTester;
 }

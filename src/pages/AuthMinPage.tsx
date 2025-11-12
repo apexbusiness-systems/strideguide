@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function AuthMinPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [result, setResult] = useState<{ success?: boolean; user?: unknown; error?: string; name?: string } | null>(null);
+  const [result, setResult] = useState<{ success?: boolean; user?: unknown; error?: string; name?: string; status?: number | string; currentUser?: unknown } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = async () => {

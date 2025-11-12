@@ -245,7 +245,7 @@ export const SubscriptionManager = ({ user }: SubscriptionManagerProps) => {
           <div>
             <h4 className="font-semibold mb-2">Plan Features</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {subscription?.plan_features.map((feature, index) => (
+              {Array.isArray(subscription?.plan_features) && subscription.plan_features.map((feature, index) => (
                 <div key={index} className="flex items-center text-sm">
                   <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                   {feature}

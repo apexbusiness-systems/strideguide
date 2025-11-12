@@ -65,5 +65,5 @@ export class ServiceWorkerDiagnostic {
 
 // Expose globally for console debugging
 if (typeof window !== 'undefined') {
-  (window as Window & { swDiagnostic: typeof ServiceWorkerDiagnostic }).swDiagnostic = ServiceWorkerDiagnostic;
+  (window as unknown as { swDiagnostic: typeof ServiceWorkerDiagnostic }).swDiagnostic = ServiceWorkerDiagnostic;
 }

@@ -114,7 +114,7 @@ export function useMLInference() {
       ctx.putImageData(imageData, 0, 0);
 
       // REAL object detection with DETR
-      const detections = await detectorRef.current(canvas, {
+      const detections = await (detectorRef.current as ((image: HTMLCanvasElement, options: { threshold: number; percentage: boolean }) => Promise<Array<{ bbox: number[]; confidence: number; label: string; score: number }>>))(canvas, {
         threshold: SAFETY.MIN_DETR_SCORE,
         percentage: true,
       });
@@ -126,11 +126,11 @@ export function useMLInference() {
 
       const frameArea = imageData.width * imageData.height;
 
-      const results: Detection[] = detections.map((det: { bbox: number[]; confidence: number }) => {
-        const xmin = Math.round(det.box.xmin * imageData.width / 100);
-        const ymin = Math.round(det.box.ymin * imageData.height / 100);
-        const xmax = Math.round(det.box.xmax * imageData.width / 100);
-        const ymax = Math.round(det.box.ymax * imageData.height / 100);
+      const results: Detection[] = detections.map((det: { bbox: number[]; confidence: number; label: string; score: number }) => {
+        const xmin = Math.round(det.bbox[0] * imageData.width / 100);
+        const ymin = Math.round(det.bbox[1] * imageData.height / 100);
+        const xmax = Math.round(det.bbox[2] * imageData.width / 100);
+        const ymax = Math.round(det.bbox[3] * imageData.height / 100);
         
         const x = xmin;
         const y = ymin;
@@ -185,7 +185,7 @@ export function useMLInference() {
       }
 
       // REAL embedding generation
-      const result = await embedderRef.current(canvas, {
+      const result = await (embedderRef.current as ((canvas: HTMLCanvasElement, options: { pooling: string; normalize: boolean }) => Promise<{ data: ArrayLike<number> }>))(canvas, {
         pooling: 'mean',
         normalize: true,
       });

@@ -45,8 +45,8 @@ export default function AuthDiagnosticsPage() {
     } catch (err: unknown) {
       const error = err as Error;
       results.healthStatus = 'FAILED';
-      results.healthText = err.message;
-      results.healthError = err.name;
+      results.healthText = error.message;
+      results.healthError = error.name;
     }
 
     // 4. Real sign-in attempt (dummy credentials)
@@ -64,16 +64,16 @@ export default function AuthDiagnosticsPage() {
         results.authError = 'UNEXPECTED_SUCCESS';
       }
     } catch (err: unknown) {
-      const error = err as Error;
-      results.authError = err.message;
-      results.authName = err.name;
-      results.authStack = err.stack;
+      const error = err as Error & { status?: number };
+      results.authError = error.message;
+      results.authName = error.name;
+      results.authStack = error.stack;
       
       // 5. Detect preflight vs credentials issue
-      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
         results.preflightBlocked = true;
         results.hint = 'CORS/OPTIONS blocked - check Supabase redirect URLs';
-      } else if (err.status === 400 || err.status === 401) {
+      } else if (error.status === 400 || error.status === 401) {
         results.preflightBlocked = false;
         results.hint = 'Credentials invalid (expected for dummy login)';
       }
@@ -88,7 +88,7 @@ export default function AuthDiagnosticsPage() {
       } : null;
     } catch (err: unknown) {
       const error = err as Error;
-      results.sessionError = err.message;
+      results.sessionError = error.message;
     }
 
     setDiagnostics(results);
@@ -155,25 +155,25 @@ export default function AuthDiagnosticsPage() {
               <>
                 <ResultRow 
                   label="Current Origin" 
-                  value={diagnostics.origin}
+                  value={String(diagnostics.origin || '')}
                   status="success"
                 />
 
                 <ResultRow 
                   label="Service Worker Controller" 
-                  value={diagnostics.swController || 'NONE'}
+                  value={String(diagnostics.swController || 'NONE')}
                   status={diagnostics.swController ? 'warning' : 'success'}
                 />
 
                 <ResultRow 
                   label="SW Registrations" 
-                  value={`${diagnostics.swRegistrations.length} active (${JSON.stringify(diagnostics.swRegistrations)})`}
-                  status={diagnostics.swRegistrations.length === 0 ? 'success' : 'warning'}
+                  value={`${Array.isArray(diagnostics.swRegistrations) ? diagnostics.swRegistrations.length : 0} active (${JSON.stringify(diagnostics.swRegistrations)})`}
+                  status={Array.isArray(diagnostics.swRegistrations) && diagnostics.swRegistrations.length === 0 ? 'success' : 'warning'}
                 />
 
                 <ResultRow 
                   label="Supabase Project" 
-                  value={diagnostics.supabaseUrl}
+                  value={String(diagnostics.supabaseUrl || '')}
                   status="success"
                 />
 
@@ -186,20 +186,20 @@ export default function AuthDiagnosticsPage() {
                 <ResultRow 
                   label="Auth Test (Dummy Credentials)" 
                   value={`Error: ${diagnostics.authError || 'NONE'} | Status: ${diagnostics.authStatus || 'N/A'} | Name: ${diagnostics.authName || 'N/A'}`}
-                  status={diagnostics.authError?.includes('Invalid') ? 'success' : 'error'}
+                  status={typeof diagnostics.authError === 'string' && diagnostics.authError.includes('Invalid') ? 'success' : 'error'}
                 />
 
                 {diagnostics.preflightBlocked !== undefined && (
                   <ResultRow 
                     label="Preflight/CORS Detection" 
-                    value={diagnostics.hint}
+                    value={String(diagnostics.hint || '')}
                     status={diagnostics.preflightBlocked ? 'error' : 'success'}
                   />
                 )}
 
                 <ResultRow 
                   label="Current Session" 
-                  value={diagnostics.session ? `User: ${diagnostics.session.user} | Expires: ${diagnostics.session.expiresAt}` : 'NO SESSION'}
+                  value={diagnostics.session ? `User: ${(diagnostics.session as { user?: string; expiresAt?: string }).user || 'unknown'} | Expires: ${(diagnostics.session as { user?: string; expiresAt?: string }).expiresAt || 'unknown'}` : 'NO SESSION'}
                   status={diagnostics.session ? 'success' : 'warning'}
                 />
 

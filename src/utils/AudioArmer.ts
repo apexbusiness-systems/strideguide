@@ -13,7 +13,7 @@ class AudioArmerClass {
 
     try {
       // Create AudioContext only after user gesture
-      const AudioContext = window.AudioContext || (window as Window & { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
+      const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
       this.audioContext = new AudioContext();
       
       if (this.audioContext.state === 'suspended') {

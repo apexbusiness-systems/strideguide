@@ -31,7 +31,7 @@ const params = new URLSearchParams(window.location.search);
 const bypassParam = params.get('dev_bypass');
 
 // Use type assertion to modify readonly config
-type WritableConfig = { -readonly [K in keyof typeof DEV_CONFIG]: (typeof DEV_CONFIG)[K] };
+type WritableConfig = { -readonly [K in keyof typeof DEV_CONFIG]: boolean | typeof DEV_CONFIG.MOCK_USER };
 
 if (bypassParam === '1') {
   (DEV_CONFIG as WritableConfig).BYPASS_AUTH = true;

@@ -6,11 +6,16 @@ import { ServiceWorkerDiagnostic } from "@/utils/ServiceWorkerDiagnostic";
 import { AlertCircle, RefreshCw, Wifi, WifiOff } from "lucide-react";
 
 interface DiagnosticStatus {
-  online: boolean;
-  connection: string;
+  online?: boolean;
+  connection?: string;
   supported: boolean;
-  controller: ServiceWorker | null;
-  registrations: ServiceWorkerRegistration[];
+  controller?: string | null;
+  registrations: Array<{
+    scope: string;
+    scriptURL: string;
+    state: ServiceWorkerState;
+    updateViaCache: ServiceWorkerUpdateViaCache;
+  }>;
 }
 
 export function AuthTroubleshooter() {
