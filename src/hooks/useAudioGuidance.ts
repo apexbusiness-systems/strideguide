@@ -119,7 +119,13 @@ export const useAudioGuidance = (options: AudioGuidanceOptions) => {
     const envelope = context.createGain();
 
     oscillator.connect(envelope);
-    envelope.connect(gainNodeRef.current!);
+
+    // Ensure gain node is initialized before connecting
+    if (!gainNodeRef.current) {
+      console.error('[AudioGuidance] Gain node not initialized');
+      return;
+    }
+    envelope.connect(gainNodeRef.current);
 
     oscillator.frequency.setValueAtTime(800, context.currentTime);
     oscillator.type = 'square';
@@ -162,10 +168,16 @@ export const useAudioGuidance = (options: AudioGuidanceOptions) => {
     
     const oscillator = context.createOscillator();
     const envelope = context.createGain();
-    
+
     oscillator.connect(envelope);
-    envelope.connect(gainNodeRef.current!);
-    
+
+    // Ensure gain node is initialized before connecting
+    if (!gainNodeRef.current) {
+      console.error('[AudioGuidance] Gain node not initialized');
+      return;
+    }
+    envelope.connect(gainNodeRef.current);
+
     // Use descending tone for alert
     const now = context.currentTime;
     const duration = 0.5;

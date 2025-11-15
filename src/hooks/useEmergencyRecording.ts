@@ -157,10 +157,15 @@ export const useEmergencyRecording = () => {
       navigator.vibrate(heartbeatPattern);
     }
 
-    // TTS announcement
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance('Emergency recording started');
-      speechSynthesis.speak(utterance);
+    // TTS announcement with error handling
+    if ('speechSynthesis' in window && window.speechSynthesis) {
+      try {
+        const utterance = new SpeechSynthesisUtterance('Emergency recording started');
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.error('[ERM] Speech synthesis failed:', err);
+        // Continue without TTS - not critical for functionality
+      }
     }
 
     toast({
@@ -198,10 +203,15 @@ export const useEmergencyRecording = () => {
     setCurrentSession(null);
     setIsRecording(false);
 
-    // TTS announcement
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance('Emergency recording stopped');
-      speechSynthesis.speak(utterance);
+    // TTS announcement with error handling
+    if ('speechSynthesis' in window && window.speechSynthesis) {
+      try {
+        const utterance = new SpeechSynthesisUtterance('Emergency recording stopped');
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.error('[ERM] Speech synthesis failed:', err);
+        // Continue without TTS - not critical for functionality
+      }
     }
 
     // Store session metadata (encrypted)

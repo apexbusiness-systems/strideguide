@@ -2,14 +2,18 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// PRODUCTION-GRADE: Use environment variables with fallback for builds
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://yrndifsbsmpvmpudglcc.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlybmRpZnNic21wdm1wdWRnbGNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwNjA1NDUsImV4cCI6MjA3NDYzNjU0NX0.OBtOjMTiZrgV08ttxiIeT48_ITJ_C88gz_kO-2eLUEk";
+// SECURITY: Environment variables are REQUIRED - no fallbacks
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const SITE_URL = import.meta.env.VITE_PUBLIC_SITE_URL || "https://strideguide.cam";
 
-// Fail-fast validation for production
+// Fail-fast validation: Throw error if required env vars are missing
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  console.error('[Supabase] Missing required environment variables. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+  throw new Error(
+    '[Supabase] CRITICAL: Missing required environment variables. ' +
+    'Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file. ' +
+    'See .env.example for template.'
+  );
 }
 
 // Import the supabase client like this:

@@ -26,7 +26,11 @@ const VisionPanel: React.FC<VisionPanelProps> = ({ onBack }) => {
     if (!w || !h) return null;
     c.width = w;
     c.height = h;
-    const ctx = c.getContext('2d', { willReadFrequently: true })!;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    if (!ctx) {
+      console.error('[VisionPanel] Failed to get canvas 2d context');
+      return null;
+    }
     ctx.drawImage(v, 0, 0, w, h);
     return ctx.getImageData(0, 0, w, h);
   }, []);

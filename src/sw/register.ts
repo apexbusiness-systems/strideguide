@@ -8,11 +8,15 @@ export function registerSW() {
   // Preview mode: unregister all SW and clear caches
   if (isPreview) {
     navigator.serviceWorker.getRegistrations().then(regs => {
-      Promise.all(regs.map(r => r.unregister())).catch(() => {});
+      Promise.all(regs.map(r => r.unregister())).catch(err => {
+        console.warn('[SW] Preview: Failed to unregister some workers:', err);
+      });
     });
     if ('caches' in window) {
       caches.keys().then(names => {
-        Promise.all(names.map(name => caches.delete(name))).catch(() => {});
+        Promise.all(names.map(name => caches.delete(name))).catch(err => {
+          console.warn('[SW] Preview: Failed to clear some caches:', err);
+        });
       });
     }
     console.log('[SW] Preview: all workers unregistered, caches cleared');
@@ -28,7 +32,9 @@ export function registerSW() {
       regs.forEach(r => {
         if (r.scope === window.location.origin + '/' || !r.scope.includes('/app/')) {
           console.log(`[SW] Marketing page: unregistering non-/app/ worker at ${r.scope}`);
-          r.unregister().catch(() => {});
+          r.unregister().catch(err => {
+            console.warn(`[SW] Failed to unregister worker at ${r.scope}:`, err);
+          });
         }
       });
     });
